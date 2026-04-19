@@ -631,9 +631,24 @@ const Game = {
     const btnMenu = document.getElementById('btn-mobile-menu');
     const menu = document.getElementById('mobile-menu');
 
+    // Função para fechar TODOS os painéis
+    const closeAllPanels = () => {
+      document.getElementById('agents-panel')?.classList.add('hidden');
+      document.getElementById('council-panel')?.classList.add('hidden');
+      document.getElementById('inbox-panel')?.classList.add('hidden');
+      document.getElementById('console-panel')?.classList.add('hidden');
+      document.getElementById('settings-panel')?.classList.add('hidden');
+      document.getElementById('minimap')?.classList.add('hidden');
+      document.getElementById('chat-panel')?.classList.add('hidden');
+    };
+
     if (btnMenu && menu) {
-      btnMenu.addEventListener('click', () => {
+      // Toggle do menu
+      btnMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
         menu.classList.toggle('hidden');
+        const overlay = document.getElementById('mobile-menu-overlay');
+        if (overlay) overlay.classList.toggle('hidden', menu.classList.contains('hidden'));
       });
 
       // Itens do menu
@@ -641,47 +656,64 @@ const Game = {
         item.addEventListener('click', () => {
           const acao = item.dataset.action;
           menu.classList.add('hidden');
+          const overlay = document.getElementById('mobile-menu-overlay');
+          if (overlay) overlay.classList.add('hidden');
 
+          // Fechar todos os painéis primeiro
+          closeAllPanels();
+
+          // Abrir o painel selecionado
           switch (acao) {
-            case 'agents':
-              document.getElementById('agents-panel').classList.toggle('hidden');
+            case 'agents': {
+              const p = document.getElementById('agents-panel');
+              p.classList.remove('hidden');
               if (typeof Interactions !== 'undefined') Interactions.updateAgentsList();
               break;
-            case 'council':
-              document.getElementById('council-panel').classList.toggle('hidden');
+            }
+            case 'council': {
+              const p = document.getElementById('council-panel');
+              p.classList.remove('hidden');
               this.updateCouncilUI();
               break;
-            case 'inbox':
-              document.getElementById('inbox-panel').classList.toggle('hidden');
+            }
+            case 'inbox': {
+              const p = document.getElementById('inbox-panel');
+              p.classList.remove('hidden');
               if (typeof Inbox !== 'undefined') Inbox.render();
               break;
-            case 'console':
-              document.getElementById('console-panel').classList.toggle('hidden');
+            }
+            case 'console': {
+              const p = document.getElementById('console-panel');
+              p.classList.remove('hidden');
               const inp = document.getElementById('console-input');
               if (inp) setTimeout(() => inp.focus(), 100);
               break;
-            case 'minimap':
-              document.getElementById('minimap').classList.toggle('hidden');
+            }
+            case 'minimap': {
+              document.getElementById('minimap').classList.remove('hidden');
               break;
-            case 'fullscreen':
+            }
+            case 'fullscreen': {
               if (document.fullscreenElement) document.exitFullscreen();
               else document.documentElement.requestFullscreen();
               break;
-            case 'settings':
-              document.getElementById('settings-panel').classList.toggle('hidden');
+            }
+            case 'settings': {
+              const p = document.getElementById('settings-panel');
+              p.classList.remove('hidden');
               break;
+            }
+            case 'chat': {
+              const p = document.getElementById('chat-panel');
+              p.classList.remove('hidden');
+              break;
+            }
           }
         });
       });
 
       // Fechar menu ao clicar fora
       const overlay = document.getElementById('mobile-menu-overlay');
-      
-      btnMenu.addEventListener('click', () => {
-        const isHidden = menu.classList.contains('hidden');
-        menu.classList.toggle('hidden');
-        if (overlay) overlay.classList.toggle('hidden', !isHidden);
-      });
 
       document.addEventListener('click', (e) => {
         if (!e.target.closest('#mobile-menu') && !e.target.closest('#btn-mobile-menu')) {
@@ -698,15 +730,17 @@ const Game = {
       }
     }
 
-    // Botões rápidos mobile (console e inbox)
+    // Botões rápidos mobile (console e inbox) — fecham outros painéis
     const mobileConsole = document.getElementById('btn-mobile-console');
     const mobileInbox = document.getElementById('btn-mobile-inbox');
 
     if (mobileConsole) {
       mobileConsole.addEventListener('click', () => {
         const panel = document.getElementById('console-panel');
-        panel.classList.toggle('hidden');
-        if (!panel.classList.contains('hidden')) {
+        const isOpen = !panel.classList.contains('hidden');
+        closeAllPanels();
+        if (!isOpen) {
+          panel.classList.remove('hidden');
           const inp = document.getElementById('console-input');
           if (inp) setTimeout(() => inp.focus(), 100);
         }
@@ -716,10 +750,14 @@ const Game = {
     if (mobileInbox) {
       mobileInbox.addEventListener('click', () => {
         const panel = document.getElementById('inbox-panel');
-        panel.classList.toggle('hidden');
-        if (!panel.classList.contains('hidden') && typeof Inbox !== 'undefined') {
-          Inbox.render();
-          Inbox.markAllRead();
+        const isOpen = !panel.classList.contains('hidden');
+        closeAllPanels();
+        if (!isOpen) {
+          panel.classList.remove('hidden');
+          if (typeof Inbox !== 'undefined') {
+            Inbox.render();
+            Inbox.markAllRead();
+          }
         }
       });
     }

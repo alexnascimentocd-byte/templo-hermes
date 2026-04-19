@@ -1864,27 +1864,44 @@ body {
   .header-buttons-desktop { display: none !important; }
   .header-buttons-mobile { display: flex !important; }
 
-  #council-panel, #mcp-panel, #inbox-panel, #settings-panel {
+  #council-panel, #mcp-panel, #inbox-panel, #settings-panel, #chat-panel {
     width: calc(100% - 16px);
     left: 8px;
     right: 8px;
     top: 50px;
     bottom: 55px;
     max-height: calc(100vh - 105px);
+    border-radius: 6px;
+  }
+
+  #chat-panel {
+    transform: none;
   }
 
   #console-panel {
     width: calc(100% - 16px);
     left: 8px;
+    right: 8px;
     transform: none;
     top: 50px;
+    bottom: 55px;
+    max-height: calc(100vh - 105px);
+    border-radius: 6px;
   }
 
-  .console-body { height: 350px; }
+  .console-body { height: calc(100vh - 260px); }
+  .chat-body { height: calc(100vh - 200px); }
 
   .header-center { display: none; }
   .header-left h1 { font-size: 10px; }
 
   .setting-item { flex-wrap: wrap; }
   .setting-slider { width: 80px; }
+
+  /* Fechar painéis no mobile fica mais fácil */
+  #close-console, #close-chat, #close-council, #close-inbox, #close-settings, #close-agents {
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 18px;
+  }
 }
