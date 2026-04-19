@@ -94,16 +94,17 @@ const PriorityChat = {
   container: null,
   
   init() {
-    // Criar container do chat no canto inferior esquerdo
+    // Criar container do chat no canto superior esquerdo (abaixo da logo)
     this.container = document.createElement('div');
     this.container.id = 'priority-chat';
     this.container.style.cssText = `
-      position: fixed; bottom: 70px; left: 10px;
+      position: fixed; top: 56px; left: 10px;
       width: 300px; max-height: 200px;
       background: rgba(26,26,46,0.9); border: 2px solid #4a1a6b;
       overflow-y: auto; z-index: 90;
       font-family: 'Press Start 2P', monospace; font-size: 8px;
       display: none;
+      border-radius: 0 0 6px 6px;
     `;
     document.body.appendChild(this.container);
     
