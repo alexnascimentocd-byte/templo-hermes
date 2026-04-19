@@ -1252,6 +1252,39 @@ const Console = {
         this.log('⚡ Tick executado — agentes agiram', 'sucesso');
         break;
 
+      case 'loja': case 'shop':
+        this.log(eco.loja.verEstoque(), 'info');
+        break;
+
+      case 'comprar': case 'buy':
+        const agCompra = args[1];
+        const idxCompra = parseInt(args[2]);
+        if (!agCompra || isNaN(idxCompra)) {
+          this.log('Uso: alquimia comprar <agenteId> <indiceLoja>', 'erro');
+          return;
+        }
+        const rCompra = eco.loja.comprar(agCompra, idxCompra);
+        this.log(rCompra.msg, rCompra.sucesso ? 'sucesso' : 'erro');
+        break;
+
+      case 'ranking': case 'rank':
+        this.log(eco.verRanking(), 'info');
+        break;
+
+      case 'evento': case 'event':
+        const subEv = args[1] || 'status';
+        if (subEv === 'disparar' || subEv === 'start') {
+          const ev = eco.eventos.disparar();
+          this.log(`🎭 Evento iniciado: ${ev.nome}`, 'sucesso');
+        } else {
+          this.log(eco.eventos.status(), 'info');
+        }
+        break;
+
+      case 'mapa': case 'map':
+        this.log(eco.gerarMapaCalor(), 'info');
+        break;
+
       default:
         this.log('\n⚗️ ALCHEMY ECONOMY — Comandos:', 'info');
         this.log('  alquimia status      — Visão geral', 'info');
@@ -1260,6 +1293,12 @@ const Console = {
         this.log('  alquimia catálogo    — Todos os itens', 'info');
         this.log('  alquimia receitas    — Combinações possíveis', 'info');
         this.log('  alquimia stats       — Estatísticas', 'info');
+        this.log('  alquimia loja        — Ver loja', 'info');
+        this.log('  alquimia comprar <ag> <idx> — Comprar item', 'info');
+        this.log('  alquimia ranking     — Ranking dos mais ricos', 'info');
+        this.log('  alquimia evento      — Status do evento', 'info');
+        this.log('  alquimia evento disparar — Forçar evento', 'info');
+        this.log('  alquimia mapa        — Mapa de itens', 'info');
         this.log('  alquimia tick        — Forçar ação autônoma', 'info');
         this.log('  transmutar <i1> <i2> <agente> — Combinar itens', 'info');
     }

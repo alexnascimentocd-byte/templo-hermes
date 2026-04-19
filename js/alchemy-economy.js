@@ -75,6 +75,29 @@ const AlchemyEconomy = {
     // Espalhar itens pelo mapa
     this.espelharItensNoChao(15);
 
+    // Iniciar loja
+    this.loja.init();
+
+    // Reabastecer loja a cada 5 minutos
+    setInterval(() => {
+      this.loja.reabastecer();
+      PriorityChat.addMessage('🏪 Loja', 'Estoque renovado! Itens frescos disponíveis.', 3);
+    }, 300000);
+
+    // Disparar evento aleatório a cada 2 minutos
+    setInterval(() => {
+      if (!this.eventos.ativo && Math.random() > 0.4) {
+        this.eventos.disparar();
+      }
+    }, 120000);
+
+    // Gerar itens novos no chão a cada 90s
+    setInterval(() => {
+      if (this.itensNoChao.length < 20) {
+        this.espelharItensNoChao(3);
+      }
+    }, 90000);
+
     console.log('⚗️ Alchemy Economy inicializado');
   },
 
@@ -373,5 +396,327 @@ const AlchemyEconomy = {
       transmutacoes: this.transmutacoesFeitas.length,
       comercios: this.comercioLog.length
     };
+  },
+
+  // ===== 🏪 LOJA =====
+  loja: {
+    estoque: [],
+    precoBase: 50,
+
+    init() {
+      this.reabastecer();
+    },
+
+    reabastecer() {
+      this.estoque = [];
+      const todosItens = Object.entries(AlchemyEconomy.catalogo)
+        .filter(([_, item]) => item.tier <= 2);
+
+      // Colocar 4-6 itens aleatórios na loja
+      const qtd = 4 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < qtd; i++) {
+        const [tipoId, template] = todosItens[Math.floor(Math.random() * todosItens.length)];
+        const preco = template.valor * 3; // Loja cobra 3x o valor
+        this.estoque.push({
+          tipoId,
+          nome: template.nome,
+          icon: template.icon,
+          tier: template.tier,
+          preco,
+          desconto: Math.random() > 0.7 ? Math.floor(Math.random() * 30) + 10 : 0
+        });
+      }
+
+      // 10% chance de item raro (tier 3)
+      if (Math.random() < 0.1) {
+        const raros = Object.entries(AlchemyEconomy.catalogo)
+          .filter(([_, item]) => item.tier === 3);
+        if (raros.length > 0) {
+          const [tipoId, template] = raros[Math.floor(Math.random() * raros.length)];
+          this.estoque.push({
+            tipoId,
+            nome: template.nome,
+            icon: template.icon,
+            tier: template.tier,
+            preco: template.valor * 5,
+            desconto: 0,
+            raro: true
+          });
+        }
+      }
+    },
+
+    comprar(agenteId, indexEstoque) {
+      if (indexEstoque < 0 || indexEstoque >= this.estoque.length) {
+        return { sucesso: false, msg: 'Item não disponível na loja.' };
+      }
+
+      const itemLoja = this.estoque[indexEstoque];
+      const precoFinal = itemLoja.desconto > 0
+        ? Math.floor(itemLoja.preco * (1 - itemLoja.desconto / 100))
+        : itemLoja.preco;
+
+      // Verificar se agente tem itens suficientes pra trocar como pagamento
+      const inv = AlchemyEconomy.inventarios[agenteId] || [];
+      const valorTotal = inv.reduce((s, i) => s + i.valor, 0);
+
+      if (valorTotal < precoFinal) {
+        return {
+          sucesso: false,
+          msg: `Saldo insuficiente. Você tem ${valorTotal} moedas em itens, precisa de ${precoFinal}.`
+        };
+      }
+
+      // Remover itens de menor valor até pagar
+      let restante = precoFinal;
+      const removidos = [];
+      const invSorted = [...inv].sort((a, b) => a.valor - b.valor);
+      for (const item of invSorted) {
+        if (restante <= 0) break;
+        const idx = AlchemyEconomy.inventarios[agenteId].indexOf(item);
+        if (idx >= 0) {
+          AlchemyEconomy.inventarios[agenteId].splice(idx, 1);
+          restante -= item.valor;
+          removidos.push(item);
+        }
+      }
+
+      // Entregar item comprado
+      const novoItem = AlchemyEconomy.criarInstancia(itemLoja.tipoId);
+      if (!AlchemyEconomy.inventarios[agenteId]) AlchemyEconomy.inventarios[agenteId] = [];
+      AlchemyEconomy.inventarios[agenteId].push(novoItem);
+
+      // Remover da loja
+      this.estoque.splice(indexEstoque, 1);
+
+      return {
+        sucesso: true,
+        msg: `🛒 Comprou ${itemLoja.icon} ${itemLoja.nome} por ${precoFinal} moedas!\nPagou com: ${removidos.map(i => i.icon).join(' ')}`,
+        item: novoItem,
+        pago: removidos
+      };
+    },
+
+    verEstoque() {
+      if (this.estoque.length === 0) return '🏪 Loja vazia. Reabastecimento em breve...';
+
+      let out = '🏪 LOJA ALQUÍMICA\n\n';
+      this.estoque.forEach((item, i) => {
+        const desconto = item.desconto > 0 ? ` (-${item.desconto}%)` : '';
+        const raro = item.raro ? ' ⭐ RARO' : '';
+        const precoFinal = item.desconto > 0
+          ? Math.floor(item.preco * (1 - item.desconto / 100))
+          : item.preco;
+        out += `  [${i}] ${item.icon} ${item.nome} (Tier ${item.tier})${raro}${desconto}\n`;
+        out += `      Preço: ${precoFinal} moedas\n`;
+      });
+      return out;
+    }
+  },
+
+  // ===== 🏆 RANKING =====
+  verRanking() {
+    const ranking = Agents.roster
+      .map(agente => {
+        const inv = this.inventarios[agente.id] || [];
+        const valor = inv.reduce((s, i) => s + i.valor, 0);
+        const maiorTier = inv.length > 0 ? Math.max(...inv.map(i => i.tier)) : 0;
+        const transmutacoes = this.transmutacoesFeitas.filter(t => t.agente === agente.id).length;
+        return {
+          agente,
+          itens: inv.length,
+          valor,
+          maiorTier,
+          transmutacoes,
+          score: valor + (maiorTier * 20) + (transmutacoes * 10)
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+
+    let out = '🏆 RANKING — Mentes Mais Ricas\n\n';
+    ranking.forEach((r, i) => {
+      const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+      out += `${medalha} ${r.agente.icon} ${r.agente.name}\n`;
+      out += `   💰 ${r.valor} moedas | 📦 ${r.itens} itens | ⚗️ ${r.transmutacoes} transmutações\n`;
+      out += `   🏅 Maior Tier: ${r.maiorTier} | Score: ${r.score}\n\n`;
+    });
+    return out;
+  },
+
+  // ===== 🎭 EVENTOS ESPECIAIS =====
+  eventos: {
+    ativo: null,
+    historico: [],
+
+    tipos: [
+      {
+        nome: '⭐ Chuva de Estrelas',
+        descricao: 'Itens raros caem do céu do templo!',
+        efeito: (eco) => {
+          const raros = Object.entries(eco.catalogo).filter(([_, i]) => i.tier >= 3);
+          if (raros.length === 0) return;
+          const [tipoId] = raros[Math.floor(Math.random() * raros.length)];
+          for (let i = 0; i < 3; i++) {
+            const item = eco.criarInstancia(tipoId);
+            if (item) {
+              item.x = Math.floor(Math.random() * 20) + 5;
+              item.y = Math.floor(Math.random() * 20) + 5;
+              item.zona = 'Evento';
+              eco.itensNoChao.push(item);
+            }
+          }
+        }
+      },
+      {
+        nome: '🔥 Forno Aceso',
+        descricao: 'Transmutações dão o dobro de XP!',
+        efeito: () => { /* bonus handled in transmutar */ }
+      },
+      {
+        nome: '🌪️ Tempestade Alquímica',
+        descricao: 'Itens se movem aleatoriamente pelo mapa!',
+        efeito: (eco) => {
+          eco.itensNoChao.forEach(item => {
+            item.x = Math.floor(Math.random() * 25) + 2;
+            item.y = Math.floor(Math.random() * 25) + 2;
+            item.zona = 'Tempestade';
+          });
+        }
+      },
+      {
+        nome: '🤝 Feira de Trocas',
+        descricao: 'Agentes trocam itens com desconto de 50%!',
+        efeito: (eco) => {
+          const agentes = Agents.roster.filter(a => Agents.active.includes(a));
+          for (let i = 0; i < 5; i++) {
+            if (agentes.length < 2) break;
+            const a1 = agentes[Math.floor(Math.random() * agentes.length)];
+            let a2 = agentes[Math.floor(Math.random() * agentes.length)];
+            while (a2.id === a1.id) a2 = agentes[Math.floor(Math.random() * agentes.length)];
+
+            const inv1 = eco.inventarios[a1.id] || [];
+            if (inv1.length > 0) {
+              const item = inv1[Math.floor(Math.random() * inv1.length)];
+              eco.darItem(a1.id, a2.id, item.id);
+            }
+          }
+        }
+      },
+      {
+        nome: '💎 Veio de Ouro',
+        descricao: 'Ouro Potável aparece no subsolo!',
+        efeito: (eco) => {
+          for (let i = 0; i < 2; i++) {
+            const item = eco.criarInstancia('ouro_potavel');
+            if (item) {
+              item.x = Math.floor(Math.random() * 20) + 5;
+              item.y = Math.floor(Math.random() * 20) + 5;
+              item.zona = 'Subsolo';
+              eco.itensNoChao.push(item);
+            }
+          }
+        }
+      },
+      {
+        nome: '🧪 Laboratório Secreto',
+        descricao: 'Receita secreta revelada por tempo limitado!',
+        efeito: () => { /* visual only */ }
+      }
+    ],
+
+    disparar() {
+      const evento = this.tipos[Math.floor(Math.random() * this.tipos.length)];
+      this.ativo = {
+        ...evento,
+        inicio: Date.now(),
+        duracao: 60000 // 1 minuto
+      };
+
+      evento.efeito(AlchemyEconomy);
+
+      this.historico.push({
+        nome: evento.nome,
+        timestamp: Date.now()
+      });
+
+      // Notificar
+      PriorityChat.addMessage('🎭 EVENTO', `${evento.nome}\n${evento.descricao}`, 5);
+
+      // Auto-finalizar
+      setTimeout(() => {
+        this.ativo = null;
+      }, this.ativo.duracao);
+
+      return evento;
+    },
+
+    status() {
+      if (!this.ativo) return '🎭 Nenhum evento ativo.';
+      const restante = Math.max(0, Math.floor((this.ativo.duracao - (Date.now() - this.ativo.inicio)) / 1000));
+      return `🎭 ${this.ativo.nome}\n${this.ativo.descricao}\n⏱️ Restam ${restante}s`;
+    }
+  },
+
+  // ===== 🗺️ ITENS NO MAPA =====
+  desenharItensNoMapa(ctx, tileSize, offsetX, offsetY, viewportX, viewportY, viewportW, viewportH) {
+    if (!ctx) return;
+
+    for (const item of this.itensNoChao) {
+      const screenX = (item.x - viewportX) * tileSize + offsetX;
+      const screenY = (item.y - viewportY) * tileSize + offsetY;
+
+      // Só desenhar se estiver visível
+      if (screenX < -tileSize || screenX > viewportW + tileSize) continue;
+      if (screenY < -tileSize || screenY > viewportH + tileSize) continue;
+
+      // Brilho pulsante
+      const pulse = 0.5 + Math.sin(Date.now() / 500 + item.x * 0.3) * 0.3;
+      const size = tileSize * 0.6;
+
+      // Fundo brilhante
+      ctx.globalAlpha = pulse * 0.4;
+      ctx.fillStyle = item.tier >= 3 ? '#ffd700' : item.tier >= 2 ? '#4a8aff' : '#888888';
+      ctx.beginPath();
+      ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, size * 0.7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Ícone do item
+      ctx.globalAlpha = 1;
+      ctx.font = `${size}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(item.icon, screenX + tileSize / 2, screenY + tileSize / 2);
+    }
+
+    ctx.globalAlpha = 1;
+  },
+
+  // Gerar mapa de calor dos itens
+  gerarMapaCalor() {
+    const mapa = {};
+    for (const item of this.itensNoChao) {
+      const key = `${Math.floor(item.x / 5)},${Math.floor(item.y / 5)}`;
+      if (!mapa[key]) mapa[key] = { itens: [], valor: 0 };
+      mapa[key].itens.push(item);
+      mapa[key].valor += item.valor;
+    }
+
+    let out = '🗺️ MAPA DE ITENS (por zona 5x5):\n\n';
+    for (let y = 0; y < 6; y++) {
+      let linha = '';
+      for (let x = 0; x < 6; x++) {
+        const key = `${x},${y}`;
+        const zona = mapa[key];
+        if (zona) {
+          const densidade = zona.itens.length;
+          linha += densidade >= 3 ? '🟠' : densidade >= 2 ? '🟡' : '🟢';
+        } else {
+          linha += '⚫';
+        }
+      }
+      out += linha + '\n';
+    }
+    out += '\n🟠 Muitos itens | 🟡 Alguns | 🟢 Poucos | ⚫ Vazio';
+    return out;
   }
 };

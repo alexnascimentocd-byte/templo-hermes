@@ -164,6 +164,7 @@ const Renderer = {
   
   // Renderizar itens do mundo
   renderItems(ctx, T) {
+    // Renderizar itens do Items.registry (original)
     for (const item of Object.values(Items.registry)) {
       const screenX = item.x * T - this.camera.x;
       const screenY = item.y * T - this.camera.y;
@@ -182,10 +183,47 @@ const Renderer = {
         const runeGlow = Math.sin(this.animFrame * 0.05) * 0.3 + 0.7;
         ctx.fillStyle = `rgba(212,165,71,${runeGlow})`;
         ctx.font = '12px serif';
-        ctx.fillText('✦', screenX + T - 8, screenY + 12);
+        ctx.fillText('✦', screenX + T - 8, screenY + 10);
       }
     }
-    ctx.textAlign = 'left';
+
+    // Renderizar itens da AlchemyEconomy (itens alquímicos no chão)
+    if (typeof AlchemyEconomy !== 'undefined') {
+      for (const item of AlchemyEconomy.itensNoChao) {
+        const screenX = item.x * T - this.camera.x;
+        const screenY = item.y * T - this.camera.y;
+
+        if (screenX < -T || screenX > this.canvas.width + T) continue;
+        if (screenY < -T || screenY > this.canvas.height + T) continue;
+
+        // Brilho pulsante por tier
+        const pulse = 0.5 + Math.sin(this.animFrame * 0.08 + item.x * 0.3) * 0.3;
+        const glowSize = T * (item.tier >= 3 ? 0.8 : item.tier >= 2 ? 0.6 : 0.4);
+
+        // Halo de brilho
+        ctx.globalAlpha = pulse * 0.3;
+        const colors = { 1: '#888888', 2: '#4a8aff', 3: '#ffd700', 4: '#ff44ff' };
+        ctx.fillStyle = colors[item.tier] || '#888';
+        ctx.beginPath();
+        ctx.arc(screenX + T / 2, screenY + T / 2, glowSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ícone do item
+        ctx.globalAlpha = 1;
+        ctx.font = `${T * 0.55}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(item.icon, screenX + T / 2, screenY + T / 2);
+
+        // Tier indicator (pequeno número)
+        if (item.tier >= 2) {
+          ctx.font = '10px sans-serif';
+          ctx.fillStyle = colors[item.tier];
+          ctx.fillText(`T${item.tier}`, screenX + T - 6, screenY + 8);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
   },
   
   // Renderizar agentes
