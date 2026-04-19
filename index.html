@@ -68,6 +68,8 @@
       <button class="mobile-menu-item" data-action="fullscreen">⛶ Tela Cheia</button>
       <button class="mobile-menu-item" data-action="settings">⚙️ Configurações</button>
     </div>
+    <!-- Overlay para fechar menu ao clicar fora -->
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay hidden"></div>
 
     <!-- Container do Templo (Canvas) -->
     <div id="temple-container">
@@ -179,7 +181,32 @@
         <button class="quick-action" data-cmd="invocar todos" title="Invocar Todos">🔼</button>
         <button class="quick-action" data-cmd="energia encher" title="Encher Energia">💊</button>
         <button class="quick-action" data-cmd="limpar" title="Limpar">🔃</button>
-        <button class="quick-action" data-cmd="ajuda" title="Ajuda">📲</button>
+        <button class="quick-action toggle-mode" data-cmd="modo" title="Modo Conversação">💬</button>
+      </div>
+    </div>
+
+    <!-- Modo Conversação Livre -->
+    <div id="chat-panel" class="hidden">
+      <div class="panel-header console-header">
+        <h2>💬 Conversação Livre</h2>
+        <button id="close-chat">✕</button>
+      </div>
+      <div class="chat-body">
+        <div id="chat-output" class="chat-output">
+          <div class="chat-welcome">
+            ╔═══════════════════════════════════╗
+            ║  💬 MODO CONVERSAÇÃO LIVRE         ║
+            ╠═══════════════════════════════════╣
+            ║  Fale livremente com o Templo.    ║
+            ║  As 15 mentes responderão.         ║
+            ║  Digite sua mensagem abaixo...     ║
+            ╚═══════════════════════════════════╝
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" class="chat-input" placeholder="Digite sua mensagem livre..." autocomplete="off" spellcheck="false">
+          <button id="chat-send" class="chat-send">⬆️</button>
+        </div>
       </div>
     </div>
 
@@ -318,12 +345,7 @@
             <span class="terminal-prompt">👑 Terminal do Mestre</span>
             <span id="terminal-status" class="terminal-status">● CONECTADO</span>
           </div>
-          <div id="terminal-log" class="terminal-log"></div>
-          <div class="terminal-input-row">
-            <span class="terminal-prefix">Zói &gt;</span>
-            <input type="text" id="terminal-input" class="terminal-input" placeholder="Digite sua opinião, direcionamento ou pergunta...">
-            <button id="terminal-send" class="terminal-send">⬆</button>
-          </div>
+          <!-- Atalhos no TOPO para não serem cobertos -->
           <div class="terminal-shortcuts">
             <button class="shortcut-btn" data-msg="Concordo com essa linha. Continuem.">👍 Concordo</button>
             <button class="shortcut-btn" data-msg="Discordo. Pensem de novo sobre isso.">👎 Discordo</button>
@@ -331,6 +353,12 @@
             <button class="shortcut-btn" data-msg="Mudem o foco. Isso já foi resolvido.">🔄 Mudem foco</button>
             <button class="shortcut-btn" data-msg="Cheguem a um consenso agora.">⚖️ Consenso</button>
             <button class="shortcut-btn" data-msg="Busquem a opinião de quem ainda não falou.">🗣️ Chamem outros</button>
+          </div>
+          <div id="terminal-log" class="terminal-log"></div>
+          <div class="terminal-input-row">
+            <span class="terminal-prefix">Zói &gt;</span>
+            <input type="text" id="terminal-input" class="terminal-input" placeholder="Digite sua opinião, direcionamento ou pergunta...">
+            <button id="terminal-send" class="terminal-send">⬆</button>
           </div>
         </div>
       </div>

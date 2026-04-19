@@ -81,20 +81,20 @@ const Council = {
 
     PriorityChat.addMessage('Conselho', `━━━ Rodada ${this.round}/${this.maxRounds} ━━━`, 4);
 
-    // Cada participante contribui
+    // Cada participante contribui (com pausa maior pra ler)
     this.participants.forEach((agent, i) => {
       setTimeout(() => {
         this.agentSpeaks(agent);
-      }, i * 1500);
+      }, i * 3500); // 3.5s entre cada agente (era 1.5s)
     });
 
     // Após todos falarem, próxima rodada ou consultar outros
-    const totalDelay = this.participants.length * 1500 + 2000;
+    const totalDelay = this.participants.length * 3500 + 5000;
     setTimeout(() => {
       if (this.round < this.maxRounds) {
         // Rodada de consulta cruzada
         this.crossConsult();
-        setTimeout(() => this.startDebateRound(), 3000);
+        setTimeout(() => this.startDebateRound(), 6000); // 6s entre rodadas (era 3s)
       } else {
         this.conclude();
       }
@@ -351,7 +351,7 @@ const Council = {
 
         // XP por responder ao Mestre
         Agents.gainExperience(agent, 20);
-      }, (i + 1) * 1200);
+      }, (i + 1) * 2500); // 2.5s entre respostas (era 1.2s)
     });
 
     // Enviar pro Inbox também

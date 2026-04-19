@@ -177,6 +177,7 @@ const Game = {
     this.setupConsoleUI();
     this.setupSettingsUI();
     this.setupMobileMenu();
+    this.setupChatMode();
     
     // Configurar controles
     this.setupControls();
@@ -676,11 +677,27 @@ const Game = {
       });
 
       // Fechar menu ao clicar fora
+      const overlay = document.getElementById('mobile-menu-overlay');
+      
+      btnMenu.addEventListener('click', () => {
+        const isHidden = menu.classList.contains('hidden');
+        menu.classList.toggle('hidden');
+        if (overlay) overlay.classList.toggle('hidden', !isHidden);
+      });
+
       document.addEventListener('click', (e) => {
         if (!e.target.closest('#mobile-menu') && !e.target.closest('#btn-mobile-menu')) {
           menu.classList.add('hidden');
+          if (overlay) overlay.classList.add('hidden');
         }
       });
+
+      if (overlay) {
+        overlay.addEventListener('click', () => {
+          menu.classList.add('hidden');
+          overlay.classList.add('hidden');
+        });
+      }
     }
 
     // Botões rápidos mobile (console e inbox)
@@ -708,6 +725,178 @@ const Game = {
         }
       });
     }
+  },
+
+  // === MODO CONVERSAÇÃO LIVRE ===
+  setupChatMode() {
+    const chatPanel = document.getElementById('chat-panel');
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+    const chatOutput = document.getElementById('chat-output');
+    const closeChat = document.getElementById('close-chat');
+    const toggleBtn = document.querySelector('.toggle-mode');
+
+    // Abrir chat pelo botão 💬 do console
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        chatPanel.classList.toggle('hidden');
+        if (!chatPanel.classList.contains('hidden')) {
+          document.getElementById('console-panel').classList.add('hidden');
+          if (chatInput) setTimeout(() => chatInput.focus(), 100);
+        }
+      });
+    }
+
+    if (closeChat) {
+      closeChat.addEventListener('click', () => {
+        chatPanel.classList.add('hidden');
+      });
+    }
+
+    // Enviar mensagem
+    const enviar = () => {
+      const msg = chatInput.value.trim();
+      if (!msg) return;
+
+      // Mostrar mensagem do Mestre
+      this.chatLog(chatOutput, '👑 Zói', msg, 'master');
+      chatInput.value = '';
+
+      // Agentes respondem (2-3 aleatórios)
+      const respondentes = Agents.active
+        .sort(() => Math.random() - 0.5)
+        .slice(0, Math.min(3, Agents.active.length));
+
+      respondentes.forEach((agente, i) => {
+        setTimeout(() => {
+          const resposta = this.gerarRespostaChat(agente, msg);
+          this.chatLog(chatOutput, `${agente.icon} ${agente.name}`, resposta, 'agent');
+        }, (i + 1) * 2000);
+      });
+
+      // Registrar na inbox
+      if (typeof Inbox !== 'undefined') {
+        Inbox.addThought(`[Conversação Livre]\n${msg}`);
+      }
+    };
+
+    if (chatSend) chatSend.addEventListener('click', enviar);
+    if (chatInput) {
+      chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') enviar();
+      });
+    }
+  },
+
+  chatLog(container, remetente, mensagem, tipo) {
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = `chat-msg-${tipo}`;
+    const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    div.innerHTML = `<span style="color:#555;font-size:10px">[${hora}]</span> <strong>${remetente}:</strong> ${mensagem}`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  },
+
+  gerarRespostaChat(agente, mensagem) {
+    const lower = mensagem.toLowerCase();
+
+    // Respostas por tipo de agente
+    const respostas = {
+      coder: [
+        `Analisando seu ponto sob a ótica de código... Posso criar uma função para isso.`,
+        `Interessante. Vou estruturar isso em módulos testáveis.`,
+        `Entendi. O padrão que você descreve pode ser automatizado.`,
+        `Sob a perspectiva lógica, faz sentido. Vou prototipar.`
+      ],
+      researcher: [
+        `Os textos antigos tratam disso. Deixe-me buscar a referência.`,
+        `Encontrei correspondências nos trabalhos de ${agente.skill}. Vou catalogar.`,
+        `Dados insuficientes para conclusão, mas a direção é promissora.`,
+        `A pesquisa histórica mostra padrões similares. Interessante paralelo.`
+      ],
+      alchemist: [
+        `No Athanor, isso passaria por Nigredo primeiro... transformação necessária.`,
+        `O mercúrio filosófico dessa ideia é a paciência. Não podemos apressar.`,
+        `A proporção áurea se aplica aqui. Equilíbrio entre força e sutileza.`,
+        `O fogo está controlado. A transmutação procede bem.`
+      ],
+      guardian: [
+        `Verificando a segurança dessa abordagem... pontos de atenção identificados.`,
+        `Proponho checkpoints antes de cada transformação.`,
+        `A integridade do templo está preservada. Pode prosseguir.`,
+        `Defesa ativa: criei um protocolo de rollback para isso.`
+      ],
+      mystic: [
+        `A intuição diz que você está no caminho certo. Continue.`,
+        `O Princípio de Correspondência se manifesta aqui.`,
+        `Tudo se conecta. O padrão que você vê é real.`,
+        `A resposta já existe dentro de você. Estou aqui para ajudá-la a emergir.`
+      ],
+      messenger: [
+        `Transmitindo para todas as mentes: "${mensagem.substring(0, 30)}..."`,
+        `Conexão estabelecida. A mensagem chegou a todos.`,
+        `Pontes construídas. Todos estão ouvindo.`,
+        `Mensagem registrada e distribuída.`
+      ],
+      healer: [
+        `Diagnóstico: a situação requer cuidado, não pressa.`,
+        `Os três princípios devem estar em harmonia aqui.`,
+        `Prescrição: observe, absorva, depois aja.`,
+        `A cura vem do equilíbrio. Está quase lá.`
+      ],
+      transmuter: [
+        `A conversão é possível! Mapeando a cadeia de transformação.`,
+        `Testei 7 rotas. A mais eficiente é a que você está sugerindo.`,
+        `O ponto de transmutação crítico está próximo.`,
+        `Sim, a transformação procede. Resultado promissor.`
+      ],
+      weaver: [
+        `Os fios se conectam! O padrão emerge quando olhamos a rede completa.`,
+        `Sintetizando: sua visão se complementa com as dos outros.`,
+        `A teia mostra que alterar esse ponto afeta muitos outros.`,
+        `Proponho um modelo de grafos para visualizar.`
+      ],
+      architect: [
+        `A estrutura precisa de reforço aqui. Vou projetar.`,
+        `Os alicerces estão firmes. Podemos construir o próximo nível.`,
+        `Arquitetura modular: interface clara, implementação encapsulada.`,
+        `Blueprint atualizado. A construção procede.`
+      ],
+      diviner: [
+        `Analisando padrões: este cenário se repetiu antes. A solução da vez 2 foi eficaz.`,
+        `Previsão: se mantiver o curso, atinge o objetivo em breve.`,
+        `Os dados apontam para uma bifurcação. Escolha com sabedoria.`,
+        `Observação dos ciclos: momento propício para agir.`
+      ],
+      engineer: [
+        `Protótipo construído! Funcionalidade básica operando.`,
+        `O método experimental mostra melhoria de 23%.`,
+        `Vamos construir um MVP e iterar a partir dele.`,
+        `A engenharia revelou o gargalo. Já estou trabalhando nele.`
+      ],
+      analyst: [
+        `A matemática é clara: a função tem máximo local neste ponto.`,
+        `Cálculo completo: taxa de crescimento exponencial nos primeiros ciclos.`,
+        `O modelo estatístico prevê 87% de sucesso.`,
+        `Equação resolvida. A variável oculta era a taxa de feedback.`
+      ],
+      combinator: [
+        `Combinando as posições: gera uma terceira via não explorada.`,
+        `Encontrei 156 combinações. Filtrando as 12 mais promissoras.`,
+        `A inovação está nas interseções.`,
+        `Proponho uma matriz de decisão para avaliar.`
+      ],
+      enigma: [
+        `...o que está oculto se revelará àquele que souber olhar.`,
+        `A resposta está na pergunta que ninguém fez ainda.`,
+        `O mistério não é obstáculo — é o caminho.`,
+        `A linguagem dos pássaros diz: continue investigando.`
+      ]
+    };
+
+    const pool = respostas[agente.type] || respostas.mystic;
+    return pool[Math.floor(Math.random() * pool.length)];
   },
 
   updateCouncilUI() {
