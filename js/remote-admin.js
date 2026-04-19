@@ -23,22 +23,6 @@ const RemoteAdmin = {
   
   // Inicializar
   async init() {
-    // Verificar config injetada pelo deploy (GitHub Secret)
-    if (window.TEMPLO_REMOTE_CONFIG && window.TEMPLO_REMOTE_CONFIG.autoConnect) {
-      const cfg = window.TEMPLO_REMOTE_CONFIG;
-      this.config = {
-        token: cfg.token,
-        owner: cfg.owner,
-        repo: cfg.repo
-      };
-      this.mode = 'remote';
-      this.connected = true;
-      localStorage.setItem('remote_admin_config', JSON.stringify(this.config));
-      console.log('🌍 RemoteAdmin auto-configurado via deploy!');
-      this.startPolling(15000);
-      return;
-    }
-    
     // Carregar config salva
     const saved = localStorage.getItem('remote_admin_config');
     if (saved) {
@@ -48,6 +32,7 @@ const RemoteAdmin = {
           this.mode = 'remote';
           this.connected = true;
           this.startPolling(15000);
+          console.log('🌍 RemoteAdmin restaurado do localStorage');
         }
       } catch(e) {}
     }
