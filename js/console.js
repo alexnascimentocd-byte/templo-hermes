@@ -517,37 +517,29 @@ const Console = {
       case 'status':
         const ativos = typeof Agents !== 'undefined' ? Agents.active.length : 0;
         const total = typeof Agents !== 'undefined' ? Agents.roster.length : 0;
+        
+        // Verificar se Hermes Agent está disponível
+        const hermesStatus = typeof window.HermesAgent !== 'undefined' ? '✅ Ativo' : '❌ Inativo';
+        const hermesStats = typeof window.HermesAgent !== 'undefined' ? window.HermesAgent.getMemoryStats() : { total: 0 };
+        
         this.log(`🤖 Status do Agente Hermes:`, 'info');
         this.log(`  Nome: Hermes Agent`, 'cinza');
         this.log(`  Versão: 1.0.0`, 'cinza');
-        this.log(`  Status: ✅ Ativo`, 'cinza');
+        this.log(`  Status: ${hermesStatus}`, 'cinza');
         this.log(`  Função: Escrever sínteses no Livro de Memórias`, 'cinza');
         this.log(`  Agentes ativos: ${ativos}/${total}`, 'cinza');
-        this.log(`  Memórias escritas: ${this.getMemories().length}`, 'cinza');
+        this.log(`  Memórias escritas: ${hermesStats.total}`, 'cinza');
+        this.log(`  Sínteses automáticas: ${hermesStats.autoSynthesis || 0}`, 'cinza');
+        this.log(`  Memórias do usuário: ${hermesStats.userMemories || 0}`, 'cinza');
         break;
       case 'write':
-        this.log(`✍️ Hermes Agent está escrevendo uma síntese...`, 'info');
-        setTimeout(() => {
-          const synthesis = {
-            id: Date.now(),
-            title: `Síntese automática: ${new Date().toLocaleDateString('pt-BR')}`,
-            description: 'Síntese gerada automaticamente pelo Hermes Agent',
-            date: new Date().toLocaleDateString('pt-BR'),
-            tags: ['automática', 'agente', 'síntese'],
-            content: '## Síntese do Dia\n\nO agente Hermes registrou as experiências do dia no Livro de Memórias Coletivas.\n\n---\n\n**Experiências:**\n- Interações com o terminal mestre\n- Desenvolvimento de funcionalidades\n- Aprendizados acumulados',
-            author: 'Hermes Agent',
-            type: 'auto-synthesis'
-          };
-          
-          const memories = this.getMemories();
-          memories.push(synthesis);
-          this.saveMemories(memories);
-          
-          // Atualizar o livro de memória no jogo
-          this.updateMemoryBook(synthesis);
-          
+        if (typeof window.HermesAgent !== 'undefined') {
+          this.log(`✍️ Hermes Agent está escrevendo uma síntese...`, 'info');
+          window.HermesAgent.writeAutoSynthesis();
           this.log(`✅ Síntese escrita por Hermes Agent.`, 'sucesso');
-        }, 1500);
+        } else {
+          this.log(`❌ Hermes Agent não está disponível.`, 'erro');
+        }
         break;
       case 'learn':
         this.log(`🧠 Hermes Agent está aprendendo...`, 'info');
@@ -556,11 +548,58 @@ const Console = {
           this.log(`📚 Novos padrões reconhecidos e integrados.`, 'info');
         }, 2000);
         break;
+      case 'memory':
+        if (typeof window.HermesAgent !== 'undefined') {
+          const memories = window.HermesAgent.memories;
+          if (memories.length === 0) {
+            this.log(`📖 Nenhuma memória registrada ainda.`, 'cinza');
+          } else {
+            this.log(`📖 Memórias do Hermes Agent (${memories.length}):`, 'info');
+            memories.slice(-5).forEach((memory, index) => {
+              this.log(`  ${index + 1}. ${memory.title} (${memory.date})`, 'mente');
+            });
+            if (memories.length > 5) {
+              this.log(`  ... e mais ${memories.length - 5} memórias`, 'cinza');
+            }
+          }
+        } else {
+          this.log(`❌ Hermes Agent não está disponível.`, 'erro');
+        }
+        break;
+      case 'add':
+        if (args.length < 3) {
+          this.log('❌ Uso: agente add "título" "conteúdo"', 'erro');
+          return;
+        }
+        if (typeof window.HermesAgent !== 'undefined') {
+          const title = args[1];
+          const content = args.slice(2).join(' ');
+          const memory = window.HermesAgent.addMemory(title, content);
+          this.log(`✅ Memória adicionada: ${memory.title}`, 'sucesso');
+        } else {
+          this.log(`❌ Hermes Agent não está disponível.`, 'erro');
+        }
+        break;
+      case 'stats':
+        if (typeof window.HermesAgent !== 'undefined') {
+          const stats = window.HermesAgent.getMemoryStats();
+          this.log(`📊 Estatísticas do Hermes Agent:`, 'info');
+          this.log(`  Total de memórias: ${stats.total}`, 'cinza');
+          this.log(`  Última síntese: ${stats.lastDate}`, 'cinza');
+          this.log(`  Sínteses automáticas: ${stats.autoSynthesis}`, 'cinza');
+          this.log(`  Memórias do usuário: ${stats.userMemories}`, 'cinza');
+        } else {
+          this.log(`❌ Hermes Agent não está disponível.`, 'erro');
+        }
+        break;
       default:
         this.log(`🤖 Comandos do Agente:`, 'info');
         this.log(`  agente status  - Mostra status do agente`, 'cinza');
         this.log(`  agente write   - Hermes escreve uma síntese`, 'cinza');
         this.log(`  agente learn   - Hermes aprende novos padrões`, 'cinza');
+        this.log(`  agente memory  - Lista memórias do agente`, 'cinza');
+        this.log(`  agente add [t] [c] - Adiciona memória`, 'cinza');
+        this.log(`  agente stats   - Mostra estatísticas`, 'cinza');
     }
   },
 
@@ -664,6 +703,11 @@ const Console = {
 ║  github       — Comandos do GitHub    ║
 ║  deploy       — Comandos de deploy    ║
 ║  agente       — Controlar Hermes      ║
+║  agente status — Status do agente     ║
+║  agente write — Escrever síntese      ║
+║  agente memory — Ver memórias         ║
+║  agente add   — Adicionar memória     ║
+║  agente stats — Estatísticas          ║
 ║  info         — Sobre o templo        ║
 ║  limpar       — Limpar este terminal  ║
 ║  ajuda        — Esta mensagem         ║

@@ -1450,15 +1450,32 @@ body {
 }
 
 .quick-action {
-  padding: 6px 8px;
+  padding: 6px 10px;
   background: rgba(74, 255, 74, 0.05);
   border: 1px solid #1a3a1a;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 36px;
+  min-width: auto;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.quick-action .quick-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.quick-action .quick-label {
+  font-size: 10px;
+  color: #888;
+  font-family: 'Press Start 2P', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .quick-action:hover {

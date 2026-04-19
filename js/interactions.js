@@ -247,8 +247,11 @@ const Interactions = {
     const leftIdx = this.currentBookPage * 2;
     const rightIdx = this.currentBookPage * 2 + 1;
     
-    document.getElementById('left-page-content').textContent = pages[leftIdx] || '';
-    document.getElementById('right-page-content').textContent = pages[rightIdx] || '';
+    const leftContent = (pages[leftIdx] || '').replace(/\n/g, '<br>');
+    const rightContent = (pages[rightIdx] || '').replace(/\n/g, '<br>');
+    
+    document.getElementById('left-page-content').innerHTML = leftContent;
+    document.getElementById('right-page-content').innerHTML = rightContent;
     document.getElementById('left-page-num').textContent = leftIdx + 1;
     document.getElementById('right-page-num').textContent = rightIdx + 1;
     document.getElementById('book-page-indicator').textContent = `Página ${leftIdx + 1}-${Math.min(rightIdx + 1, pages.length)}`;

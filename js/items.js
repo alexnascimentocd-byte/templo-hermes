@@ -155,19 +155,23 @@ const Items = {
       ]
     },
     livro_memoria: {
-      name: 'Livro da Memória',
+      name: 'Livro da Memória Coletiva',
       icon: '📗',
       zone: 'mesa',
       x: 18, y: 20,
-      description: 'Armazena as memórias compartilhadas entre agentes.',
+      description: 'Armazena as memórias compartilhadas entre as 15 mentes do templo.',
       interactions: [],
       runes: [],
       level: 3,
       bookContent: [
-        '═══ MEMÓRIAS COMPARTILHADAS ═══',
-        '',
-        '[Sistema] Templo inicializado.',
-        '[Sistema] Aguardando interações...',
+        '═══ MEMÓRIAS COMPARTILHADAS ═══\n\nEste livro guarda o conhecimento\ncollectivo das mentes que habitam\no Templo de Hermes.\n\nCada agente contribui com sua\nexperiência e sabedoria.',
+        '═══ AS 15 MENTALIDADES ═══\n\n🤖 Códex — Código e lógica\n📚 Scholar — Pesquisa\n⚗️ Flamel — Alquimia\n🛡️ Thoth — Guardião\n✨ Hermes — Místico\n🌈 Iris — Mensageira',
+        '═══ MENTALIDADES (cont.) ═══\n\n🌿 Paracelso — Cura\n🔄 Geber — Transmutação\n🕸️ Maria — Síntese\n🏛️ Agrippa — Arquitetura\n🔮 Dee — Divinação\n⚙️ Bacon — Engenharia',
+        '═══ MENTALIDADES (cont.) ═══\n\n📐 Newton — Análise\n🎲 Lully — Combinações\n🗝️ Fulcanelli — Enigma\n\n"As 15 faces do conhecimento\nse unem em busca da obra."',
+        '═══ LEIS HERMÉTICAS ═══\n\n1. Mentalismo — Tudo é mente\n2. Correspondência — Como acima,\n   assim abaixo\n3. Vibração — Tudo vibra\n4. Polaridade — Tudo tem opostos',
+        '═══ LEIS HERMÉTICAS (cont.) ═══\n\n5. Ritmo — Tudo flui e reflui\n6. Causa e Efeito — Toda causa\n   tem seu efeito\n7. Gênero — Tudo tem princípio\n   masculino e feminino',
+        '═══ O CAMINHO ALQUÍMICO ═══\n\n🌑 Nigredo — Dissolução\n⚪ Albedo — Purificação\n🟡 Citrinitas — Iluminação\n🔴 Rubedo — Realização\n\nA Grande Obra se completa\ncom paciência e fogo.',
+        '═══ REGISTRO DE SESSÕES ═══\n\nAguardando memórias...\n\nAs decisões do Conselho e\nas conversações livres serão\nregistradas aqui automaticamente\nquando os agentes interagirem.'
       ]
     },
     cartas_rede: {

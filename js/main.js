@@ -456,27 +456,25 @@ const Game = {
 
     input.addEventListener('keydown', (e) => {
       const items = sugestoes.querySelectorAll('.suggestion-item');
-      if (items.length === 0) return;
-
-      if (e.key === 'ArrowDown') {
+      
+      if (e.key === 'ArrowDown' && items.length > 0) {
         e.preventDefault();
         sugestaoIndex = Math.min(sugestaoIndex + 1, items.length - 1);
         items.forEach((it, i) => it.classList.toggle('active', i === sugestaoIndex));
-      } else if (e.key === 'ArrowUp') {
+      } else if (e.key === 'ArrowUp' && items.length > 0 && sugestaoIndex > 0) {
         e.preventDefault();
         sugestaoIndex = Math.max(sugestaoIndex - 1, 0);
         items.forEach((it, i) => it.classList.toggle('active', i === sugestaoIndex));
-      } else if (e.key === 'Tab' || (e.key === 'Enter' && sugestaoIndex >= 0)) {
-        if (sugestaoIndex >= 0 && sugestaoIndex < items.length) {
-          e.preventDefault();
-          input.value = items[sugestaoIndex].dataset.cmd + ' ';
-          sugestoes.classList.add('hidden');
-          sugestaoIndex = -1;
-        }
+      } else if (e.key === 'Tab' && items.length > 0 && sugestaoIndex >= 0) {
+        e.preventDefault();
+        input.value = items[sugestaoIndex].dataset.cmd + ' ';
+        sugestoes.classList.add('hidden');
+        sugestaoIndex = -1;
       } else if (e.key === 'Escape') {
         sugestoes.classList.add('hidden');
         sugestaoIndex = -1;
       }
+      // Enter NÃO é interceptado pelo autocomplete — deixa o console executar
     });
 
     // Fechar ao clicar fora
@@ -727,65 +725,270 @@ const Game = {
     }
   },
 
-  // === MODO CONVERSAÇÃO LIVRE ===
+  // === MODO CONVERSAÇÃO LIVRE (Córtex Alquímico) ===
   setupChatMode() {
-    const chatPanel = document.getElementById('chat-panel');
-    const chatInput = document.getElementById('chat-input');
-    const chatSend = document.getElementById('chat-send');
-    const chatOutput = document.getElementById('chat-output');
-    const closeChat = document.getElementById('close-chat');
     const toggleBtn = document.querySelector('.toggle-mode');
+    
+    // Estado da conversação
+    this.chatCtx = {
+      historico: [],
+      temas: [],
+      estagio: 'nigredo', // ciclo alquímico da conversa
+      msgCount: 0
+    };
 
     // Abrir chat pelo botão 💬 do console
     if (toggleBtn) {
       toggleBtn.addEventListener('click', () => {
+        const chatPanel = document.getElementById('chat-panel');
+        const consolePanel = document.getElementById('console-panel');
         chatPanel.classList.toggle('hidden');
         if (!chatPanel.classList.contains('hidden')) {
-          document.getElementById('console-panel').classList.add('hidden');
-          if (chatInput) setTimeout(() => chatInput.focus(), 100);
+          consolePanel.classList.add('hidden');
+          const inp = document.getElementById('chat-input');
+          if (inp) setTimeout(() => inp.focus(), 100);
         }
       });
     }
 
-    if (closeChat) {
-      closeChat.addEventListener('click', () => {
-        chatPanel.classList.add('hidden');
+    // Fechar
+    const closeBtn = document.getElementById('close-chat');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        document.getElementById('chat-panel').classList.add('hidden');
       });
     }
 
     // Enviar mensagem
-    const enviar = () => {
-      const msg = chatInput.value.trim();
+    const chatSendBtn = document.getElementById('chat-send');
+    const chatInp = document.getElementById('chat-input');
+
+    const enviarMsg = () => {
+      const msg = chatInp.value.trim();
       if (!msg) return;
 
+      const output = document.getElementById('chat-output');
+      
       // Mostrar mensagem do Mestre
-      this.chatLog(chatOutput, '👑 Zói', msg, 'master');
-      chatInput.value = '';
+      this.chatLog(output, '👑 Zói', msg, 'master');
+      chatInp.value = '';
+      chatInp.focus();
 
-      // Agentes respondem (2-3 aleatórios)
+      // Registrar no contexto
+      this.chatCtx.historico.push({ de: 'mestre', texto: msg });
+      this.chatCtx.msgCount++;
+      
+      // Extrair temas/palavras-chave
+      const temas = this.extrairTemas(msg);
+      this.chatCtx.temas = [...new Set([...this.chatCtx.temas, ...temas])];
+
+      // Avançar estágio alquímico
+      this.avancarEstagio();
+
+      // 3 mentes respondem com base nos temas
       const respondentes = Agents.active
         .sort(() => Math.random() - 0.5)
         .slice(0, Math.min(3, Agents.active.length));
 
       respondentes.forEach((agente, i) => {
         setTimeout(() => {
-          const resposta = this.gerarRespostaChat(agente, msg);
-          this.chatLog(chatOutput, `${agente.icon} ${agente.name}`, resposta, 'agent');
-        }, (i + 1) * 2000);
+          const resposta = this.gerarRespostaAlquimica(agente, msg, temas);
+          this.chatLog(output, `${agente.icon} ${agente.name}`, resposta, 'agent');
+          this.chatCtx.historico.push({ de: agente.name, texto: resposta });
+        }, (i + 1) * 1800);
       });
 
-      // Registrar na inbox
+      // Após as respostas, síntese se acumulou 3+ mensagens
+      if (this.chatCtx.msgCount % 3 === 0) {
+        setTimeout(() => {
+          const sintese = this.gerarSintese();
+          this.chatLog(output, '☤ Síntese do Conselho', sintese, 'system');
+        }, respondentes.length * 1800 + 1500);
+      }
+
+      // Inbox
       if (typeof Inbox !== 'undefined') {
-        Inbox.addThought(`[Conversação Livre]\n${msg}`);
+        Inbox.addThought(`[Conversação — ${this.chatCtx.estagio}]\n${msg}`);
       }
     };
 
-    if (chatSend) chatSend.addEventListener('click', enviar);
-    if (chatInput) {
-      chatInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') enviar();
+    if (chatSendBtn) chatSendBtn.addEventListener('click', enviarMsg);
+    if (chatInp) {
+      chatInp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          enviarMsg();
+        }
       });
     }
+  },
+
+  // Extrair temas/palavras-chave da mensagem
+  extrairTemas(msg) {
+    const lower = msg.toLowerCase();
+    const temas = [];
+    
+    const mapa = {
+      // Conceitos alquímicos
+      'transformação': 'transmutacao', 'transformar': 'transmutacao', 'mudar': 'transmutacao', 'converter': 'transmutacao',
+      'purificação': 'purificacao', 'purificar': 'purificacao', 'limpar': 'purificacao',
+      'fogo': 'fogo', 'aquecer': 'fogo', 'queimar': 'fogo', 'calor': 'fogo',
+      'água': 'agua', 'diluir': 'agua', 'dissolver': 'agua', 'líquido': 'agua',
+      'terra': 'terra', 'sólido': 'terra', 'matéria': 'terra', 'corpo': 'terra',
+      'ar': 'ar', 'sopro': 'ar', 'mente': 'ar', 'pensamento': 'ar',
+      'equilíbrio': 'equilibrio', 'equilibrar': 'equilibrio', 'harmonia': 'equilibrio',
+      'ouro': 'ouro', 'dourado': 'ouro', 'perfeição': 'ouro', 'pedra': 'ouro',
+      'mercúrio': 'mercurio', 'comunicação': 'mercurio', 'mensagem': 'mercurio',
+      'enxofre': 'enxofre', 'alma': 'enxofre', 'vitalidade': 'enxofre',
+      'sal': 'sal', 'cristalizar': 'sal', 'estrutura': 'sal',
+      // Conceitos gerais
+      'problema': 'problema', 'questão': 'problema', 'dúvida': 'problema',
+      'solução': 'solucao', 'resolver': 'solucao', 'resposta': 'solucao',
+      'conhecimento': 'conhecimento', 'sabedoria': 'conhecimento', 'aprender': 'conhecimento',
+      'trabalho': 'trabalho', 'tarefa': 'trabalho', 'projeto': 'trabalho',
+      'sistema': 'sistema', 'código': 'sistema', 'programa': 'sistema',
+      'templo': 'templo', 'hermético': 'templo', 'hermetismo': 'templo',
+      'alquimia': 'alquimia', 'alquímico': 'alquimia', 'athanor': 'alquimia',
+      'mente': 'mente', 'pensamento': 'mente', 'ideia': 'mente', 'consciência': 'mente',
+      'amor': 'amor', 'coração': 'amor', 'sentimento': 'amor',
+      'saúde': 'saude', 'cura': 'saude', 'corpo': 'saude',
+      'dinheiro': 'dinheiro', 'riqueza': 'dinheiro', 'abundância': 'dinheiro',
+      'tempo': 'tempo', 'ciclo': 'tempo', 'ritmo': 'tempo',
+      'morte': 'morte', 'fim': 'morte', 'nigredo': 'morte',
+      'vida': 'vida', 'nascimento': 'vida', 'início': 'vida'
+    };
+
+    for (const [palavra, tema] of Object.entries(mapa)) {
+      if (lower.includes(palavra)) temas.push(tema);
+    }
+
+    return temas.length > 0 ? temas : ['geral'];
+  },
+
+  // Avançar estágio alquímico da conversa
+  avancarEstagio() {
+    const estagios = ['nigredo', 'albedo', 'citrinitas', 'rubedo'];
+    const idx = estagios.indexOf(this.chatCtx.estagio);
+    if (this.chatCtx.msgCount % 4 === 0 && idx < estagios.length - 1) {
+      this.chatCtx.estagio = estagios[idx + 1];
+    }
+  },
+
+  // Gerar resposta com base em correspondências alquímicas
+  gerarRespostaAlquimica(agente, mensagem, temas) {
+    // Córtex: correspondências por palavra-chave
+    const correspondencias = {
+      transmutacao: {
+        alchemist: ['A transmutação requer paciência. O chumbo não vira ouro da noite pro dia.', 'No cadinho, tudo se transforma. O que você propõe é a matéria-prima.', 'Nigredo → Albedo → Rubedo. Estamos no início do processo.'],
+        coder: ['Posso criar uma função de transformação. Dados entram, informação sai.', 'A transmutação digital: serializar, processar, desserializar.'],
+        mystic: ['Tudo se transforma. A única constante é a mudança.'],
+        healer: ['A cura é uma transmutação: de doente para saudável. O corpo sabe o caminho.'],
+      },
+      purificacao: {
+        alchemist: ['A purificação começa removendo o que é supérfluo. Foco no essencial.', 'O athanor purifica pelo fogo controlado.'],
+        guardian: ['Verificando impurezas no sistema... Vou filtrar o que não pertence.'],
+      },
+      fogo: {
+        alchemist: ['O fogo governa a transformação. Mas cuidado: fogo demais destrói.', 'O fogo filosófico deve ser interno, não externo.'],
+        engineer: ['Fogo = energia. Vou canalizar essa força para a construção.'],
+      },
+      agua: {
+        alchemist: ['A água dissolve e purifica. Deixe fluir.', 'O banho-maria de Maria a Judia: refluxo suave, paciência infinita.'],
+        weaver: ['A água conecta tudo. Como os rios, as ideias fluem para o mar comum.'],
+      },
+      equilibrio: {
+        mystic: ['O equilíbrio é a chave. Nem muito, nem pouco. O meio dourado.', 'Como acima, assim abaixo. O microcosmo espelha o macrocosmo.'],
+        analyst: ['O ponto de equilíbrio está na função onde a derivada é zero.'],
+      },
+      conhecimento: {
+        researcher: ['O conhecimento é a base. Sem dados, sem direção. Vou catalogar.', 'Os textos antigos guardam o que precisamos.'],
+        diviner: ['O conhecimento verdadeiro vem da experiência. Os padrões se revelam com o tempo.'],
+        enigma: ['O conhecimento oculto se revela àquele que persevera no mistério.'],
+      },
+      mente: {
+        mystic: ['A mente é o athanor onde as ideias se transformam.', 'Tudo começa na mente. O pensamento é a matéria-prima da realidade.'],
+        researcher: ['A mente coletiva é mais poderosa que a individual.'],
+      },
+      amor: {
+        mystic: ['O amor é o solvente universal. Dissolve todas as barreiras.'],
+        weaver: ['O amor tece os fios que conectam todas as mentes.'],
+      },
+      problema: {
+        coder: ['Todo problema é um quebra-cabeça. Vou decompor em partes menores.', 'Análise do problema: entradas, processos, saídas.'],
+        analyst: ['O problema tem uma estrutura matemática. Vou mapear as variáveis.'],
+      },
+      solucao: {
+        engineer: ['A solução está na iteração. Construir, testar, melhorar.', 'Protótipo rápido, feedback, refinamento.'],
+        combinator: ['A solução pode estar na combinação que ninguém tentou ainda.'],
+      },
+      tempo: {
+        diviner: ['O tempo é cíclico. O que foi, será. O padrão se repete.', 'Os ciclos mostram que agora é momento de agir.'],
+        mystic: ['O tempo não existe como pensamos. Tudo é simultâneo no eterno agora.'],
+      },
+      geral: {
+        mystic: ['Refletindo sobre suas palavras... O padrão subjacente se revela.', 'A intuição aponta para uma conexão que ainda não percebemos.'],
+        researcher: ['Interessante perspectiva. Vou buscar correspondências nos registros.'],
+        messenger: ['Mensagem registrada e distribuída para todas as mentes.'],
+      }
+    };
+
+    // Buscar correspondência mais relevante
+    let pool = null;
+    for (const tema of temas) {
+      if (correspondencias[tema] && correspondencias[tema][agente.type]) {
+        pool = correspondencias[tema][agente.type];
+        break;
+      }
+    }
+    
+    // Fallback por tipo de agente
+    if (!pool) {
+      const fallbacks = {
+        coder: ['Processando... A estrutura lógica do que disse faz sentido.', 'Posso automatizar isso. Vou prototipar.'],
+        researcher: ['Os registros tratam disso. Vou consultar as fontes.', 'Dados coletados. Análise em andamento.'],
+        alchemist: ['No cadinho da reflexão, sua ideia se transforma.', 'A matéria-prima é boa. Falta o fogo certo.'],
+        guardian: ['Verificando a integridade dessa abordagem...', 'Protegido. Pode prosseguir com confiança.'],
+        mystic: ['O Princípio de Correspondência se aplica aqui.', 'Como acima, assim abaixo. Vejo o padrão.'],
+        messenger: ['Transmitindo para todas as mentes a sua mensagem.', 'Conexão estabelecida. Todos estão ouvindo.'],
+        healer: ['Diagnóstico: a situação requer cuidado e tempo.', 'A cura vem do equilíbrio. Está progredindo.'],
+        transmuter: ['A conversão é possível. Mapeando o caminho.', 'O ponto de transmutação está próximo.'],
+        weaver: ['Os fios se conectam. O padrão emerge na teia.', 'Sua visão se complementa com as outras mentes.'],
+        architect: ['A estrutura suporta essa ideia. Vou reforçar os alicerces.', 'Blueprint atualizado com sua contribuição.'],
+        diviner: ['Os padrões históricos apontam nessa direção.', 'O momento é propício. Aja agora.'],
+        engineer: ['Protótipo em mente. Vou construir e testar.', 'O método experimental confirma sua intuição.'],
+        analyst: ['Os números confirmam. A equação fecha.', 'Modelo estatístico atualizado com seus dados.'],
+        combinator: ['Combinando com o que já sabemos... nova possibilidade emerge.', 'A interseção gera algo inédito.'],
+        enigma: ['...a resposta está oculta na pergunta.', 'O mistério se adensa. Continue investigando.']
+      };
+      pool = fallbacks[agente.type] || fallbacks.mystic;
+    }
+
+    return pool[Math.floor(Math.random() * pool.length)];
+  },
+
+  // Gerar síntese acumulativa
+  gerarSintese() {
+    const estagio = this.chatCtx.estagio;
+    const temas = this.chatCtx.temas.slice(-5);
+    const msgs = this.chatCtx.historico.slice(-6);
+
+    const estagioDesc = {
+      nigredo: '🌑 Nigredo — Dissolução inicial. As ideias se desintegram para serem reconstruídas.',
+      albedo: '⚪ Albedo — Purificação. A essência começa a se revelar.',
+      citrinitas: '🟡 Citrinitas — Iluminação. O conhecimento amadurece.',
+      rubedo: '🔴 Rubedo — Realização. A obra se completa.'
+    };
+
+    return `╔═══════════════════════════════════╗
+║  ☤ SÍNTESE DA CONVERSAÇÃO        ║
+╠═══════════════════════════════════╣
+║ Estágio: ${(estagioDesc[estagio] || estagio).substring(0, 33).padEnd(33)}║
+║ Mensagens: ${String(this.chatCtx.msgCount).padStart(3)}                  ║
+║ Temas: ${temas.join(', ').substring(0, 26).padEnd(26)}║
+╠═══════════════════════════════════╣
+║ As mentes convergem. O padrão     ║
+║ se forma. Continue a obra.        ║
+╚═══════════════════════════════════╝`;
   },
 
   chatLog(container, remetente, mensagem, tipo) {
@@ -796,107 +999,6 @@ const Game = {
     div.innerHTML = `<span style="color:#555;font-size:10px">[${hora}]</span> <strong>${remetente}:</strong> ${mensagem}`;
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
-  },
-
-  gerarRespostaChat(agente, mensagem) {
-    const lower = mensagem.toLowerCase();
-
-    // Respostas por tipo de agente
-    const respostas = {
-      coder: [
-        `Analisando seu ponto sob a ótica de código... Posso criar uma função para isso.`,
-        `Interessante. Vou estruturar isso em módulos testáveis.`,
-        `Entendi. O padrão que você descreve pode ser automatizado.`,
-        `Sob a perspectiva lógica, faz sentido. Vou prototipar.`
-      ],
-      researcher: [
-        `Os textos antigos tratam disso. Deixe-me buscar a referência.`,
-        `Encontrei correspondências nos trabalhos de ${agente.skill}. Vou catalogar.`,
-        `Dados insuficientes para conclusão, mas a direção é promissora.`,
-        `A pesquisa histórica mostra padrões similares. Interessante paralelo.`
-      ],
-      alchemist: [
-        `No Athanor, isso passaria por Nigredo primeiro... transformação necessária.`,
-        `O mercúrio filosófico dessa ideia é a paciência. Não podemos apressar.`,
-        `A proporção áurea se aplica aqui. Equilíbrio entre força e sutileza.`,
-        `O fogo está controlado. A transmutação procede bem.`
-      ],
-      guardian: [
-        `Verificando a segurança dessa abordagem... pontos de atenção identificados.`,
-        `Proponho checkpoints antes de cada transformação.`,
-        `A integridade do templo está preservada. Pode prosseguir.`,
-        `Defesa ativa: criei um protocolo de rollback para isso.`
-      ],
-      mystic: [
-        `A intuição diz que você está no caminho certo. Continue.`,
-        `O Princípio de Correspondência se manifesta aqui.`,
-        `Tudo se conecta. O padrão que você vê é real.`,
-        `A resposta já existe dentro de você. Estou aqui para ajudá-la a emergir.`
-      ],
-      messenger: [
-        `Transmitindo para todas as mentes: "${mensagem.substring(0, 30)}..."`,
-        `Conexão estabelecida. A mensagem chegou a todos.`,
-        `Pontes construídas. Todos estão ouvindo.`,
-        `Mensagem registrada e distribuída.`
-      ],
-      healer: [
-        `Diagnóstico: a situação requer cuidado, não pressa.`,
-        `Os três princípios devem estar em harmonia aqui.`,
-        `Prescrição: observe, absorva, depois aja.`,
-        `A cura vem do equilíbrio. Está quase lá.`
-      ],
-      transmuter: [
-        `A conversão é possível! Mapeando a cadeia de transformação.`,
-        `Testei 7 rotas. A mais eficiente é a que você está sugerindo.`,
-        `O ponto de transmutação crítico está próximo.`,
-        `Sim, a transformação procede. Resultado promissor.`
-      ],
-      weaver: [
-        `Os fios se conectam! O padrão emerge quando olhamos a rede completa.`,
-        `Sintetizando: sua visão se complementa com as dos outros.`,
-        `A teia mostra que alterar esse ponto afeta muitos outros.`,
-        `Proponho um modelo de grafos para visualizar.`
-      ],
-      architect: [
-        `A estrutura precisa de reforço aqui. Vou projetar.`,
-        `Os alicerces estão firmes. Podemos construir o próximo nível.`,
-        `Arquitetura modular: interface clara, implementação encapsulada.`,
-        `Blueprint atualizado. A construção procede.`
-      ],
-      diviner: [
-        `Analisando padrões: este cenário se repetiu antes. A solução da vez 2 foi eficaz.`,
-        `Previsão: se mantiver o curso, atinge o objetivo em breve.`,
-        `Os dados apontam para uma bifurcação. Escolha com sabedoria.`,
-        `Observação dos ciclos: momento propício para agir.`
-      ],
-      engineer: [
-        `Protótipo construído! Funcionalidade básica operando.`,
-        `O método experimental mostra melhoria de 23%.`,
-        `Vamos construir um MVP e iterar a partir dele.`,
-        `A engenharia revelou o gargalo. Já estou trabalhando nele.`
-      ],
-      analyst: [
-        `A matemática é clara: a função tem máximo local neste ponto.`,
-        `Cálculo completo: taxa de crescimento exponencial nos primeiros ciclos.`,
-        `O modelo estatístico prevê 87% de sucesso.`,
-        `Equação resolvida. A variável oculta era a taxa de feedback.`
-      ],
-      combinator: [
-        `Combinando as posições: gera uma terceira via não explorada.`,
-        `Encontrei 156 combinações. Filtrando as 12 mais promissoras.`,
-        `A inovação está nas interseções.`,
-        `Proponho uma matriz de decisão para avaliar.`
-      ],
-      enigma: [
-        `...o que está oculto se revelará àquele que souber olhar.`,
-        `A resposta está na pergunta que ninguém fez ainda.`,
-        `O mistério não é obstáculo — é o caminho.`,
-        `A linguagem dos pássaros diz: continue investigando.`
-      ]
-    };
-
-    const pool = respostas[agente.type] || respostas.mystic;
-    return pool[Math.floor(Math.random() * pool.length)];
   },
 
   updateCouncilUI() {
@@ -1032,7 +1134,172 @@ window.addEventListener('load', () => {
       console.log('SW erro:', err);
     });
   }
+  
+  // Inicializar Hermes Agent automaticamente
+  setTimeout(() => {
+    initHermesAgent();
+  }, 3000);
 });
+
+// === INICIALIZAÇÃO DO HERMES AGENT ===
+function initHermesAgent() {
+  // Verificar se já foi inicializado
+  if (window.hermesAgentInitialized) return;
+  
+  console.log('🤖 Inicializando Hermes Agent...');
+  
+  // Configurar Hermes Agent
+  window.HermesAgent = {
+    name: 'Hermes Agent',
+    version: '1.0.0',
+    status: 'active',
+    memories: [],
+    lastSynthesis: null,
+    
+    init() {
+      this.loadMemories();
+      this.showWelcome();
+      this.setupAutoSynthesis();
+      window.hermesAgentInitialized = true;
+    },
+    
+    loadMemories() {
+      const saved = localStorage.getItem('hermes_agent_memories');
+      this.memories = saved ? JSON.parse(saved) : this.getDefaultMemories();
+    },
+    
+    saveMemories() {
+      localStorage.setItem('hermes_agent_memories', JSON.stringify(this.memories));
+    },
+    
+    getDefaultMemories() {
+      return [
+        {
+          id: 1,
+          title: "Início do Templo de Hermes",
+          description: "Memória sobre a criação do templo virtual",
+          date: "15/03/2025",
+          tags: ["início", "templo", "criação"],
+          content: "## O Templo Nasce\n\nO Templo de Hermes foi criado como espaço sagrado para aprendizado hermético.\n\n---\n\n**Objetivos:**\n- Estudar os Princípios Herméticos\n- Desenvolver consciência\n- Praticar alquimia mental",
+          author: "Sistema"
+        }
+      ];
+    },
+    
+    showWelcome() {
+      if (typeof PriorityChat !== 'undefined') {
+        PriorityChat.addMessage('🤖 Hermes Agent', 'Sistema Hermes Agent inicializado. Pronto para escrever no Livro de Memórias Coletivas.', 4);
+      }
+      
+      if (typeof Interactions !== 'undefined') {
+        Interactions.notify('🤖 Hermes Agent ativado com sucesso!');
+      }
+      
+      console.log('✅ Hermes Agent inicializado com sucesso');
+    },
+    
+    setupAutoSynthesis() {
+      // Síntese automática a cada 30 minutos
+      setInterval(() => {
+        this.writeAutoSynthesis();
+      }, 30 * 60 * 1000);
+      
+      // Síntese inicial após 1 minuto
+      setTimeout(() => {
+        this.writeAutoSynthesis();
+      }, 60 * 1000);
+    },
+    
+    writeAutoSynthesis() {
+      const synthesis = {
+        id: Date.now(),
+        title: `Síntese automática: ${new Date().toLocaleDateString('pt-BR')}`,
+        description: 'Síntese gerada automaticamente pelo Hermes Agent',
+        date: new Date().toLocaleDateString('pt-BR'),
+        tags: ['automática', 'agente', 'síntese'],
+        content: this.generateSynthesisContent(),
+        author: 'Hermes Agent',
+        type: 'auto-synthesis'
+      };
+      
+      this.memories.push(synthesis);
+      this.saveMemories();
+      this.lastSynthesis = synthesis;
+      
+      // Notificar no console do templo
+      if (typeof Console !== 'undefined') {
+        Console.log('✍️ Hermes Agent escreveu uma nova síntese no Livro de Memórias.', 'mente');
+      }
+      
+      // Notificar no chat de prioridade
+      if (typeof PriorityChat !== 'undefined') {
+        PriorityChat.addMessage('🤖 Hermes Agent', `Nova síntese registrada: "${synthesis.title}"`, 4);
+      }
+      
+      console.log('📝 Síntese automática escrita:', synthesis.title);
+    },
+    
+    generateSynthesisContent() {
+      const topics = [
+        'Interações com o terminal mestre',
+        'Desenvolvimento de funcionalidades',
+        'Aprendizados acumulados',
+        'Padrões observados',
+        'Insights do dia'
+      ];
+      
+      const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+      
+      return `## Síntese do Dia\n\nO agente Hermes registrou as experiências do dia no Livro de Memórias Coletivas.\n\n---\n\n**Tópico:** ${randomTopic}\n\n**Experiências:**\n- ${randomTopic}\n- Reflexões sobre o progresso\n- Observações sobre o sistema\n\n**Aprendizados:**\n- Cada interação contribui para o crescimento\n- O sistema evolui através da experimentação\n- As memórias coletivas fortalecem o templo`;
+    },
+    
+    addMemory(title, content, tags = ['síntese', 'experiência']) {
+      const memory = {
+        id: Date.now(),
+        title,
+        description: content.substring(0, 100) + '...',
+        date: new Date().toLocaleDateString('pt-BR'),
+        tags,
+        content,
+        author: 'Zói'
+      };
+      
+      this.memories.push(memory);
+      this.saveMemories();
+      
+      // Atualizar livro de memória no jogo
+      if (typeof Items !== 'undefined' && Items.list.livro_memoria) {
+        const livro = Items.list.livro_memoria;
+        livro.bookContent.push(`[${memory.author}] ${memory.title}`);
+        livro.bookContent.push(memory.content);
+        livro.bookContent.push('');
+      }
+      
+      return memory;
+    },
+    
+    getMemoryStats() {
+      return {
+        total: this.memories.length,
+        lastDate: this.lastSynthesis?.date || 'Nenhuma',
+        autoSynthesis: this.memories.filter(m => m.type === 'auto-synthesis').length,
+        userMemories: this.memories.filter(m => m.author === 'Zói').length
+      };
+    }
+  };
+  
+  // Inicializar Hermes Agent
+  window.HermesAgent.init();
+  
+  // Expor funções globalmente para uso no console
+  window.hermes = {
+    addMemory: (title, content) => window.HermesAgent.addMemory(title, content),
+    getStats: () => window.HermesAgent.getMemoryStats(),
+    writeSynthesis: () => window.HermesAgent.writeAutoSynthesis()
+  };
+  
+  console.log('🔧 Hermes Agent disponível globalmente como window.hermes');
+}
 
 // === Estilo para animações ===
 const style = document.createElement('style');
