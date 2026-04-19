@@ -176,6 +176,7 @@ const Game = {
     Console.init();
     this.setupConsoleUI();
     this.setupSettingsUI();
+    this.setupMobileMenu();
     
     // Configurar controles
     this.setupControls();
@@ -358,6 +359,121 @@ const Game = {
         consolePanel.classList.add('hidden');
       });
     }
+
+    // Autocomplete de comandos
+    this.setupAutocomplete();
+  },
+
+  // Autocomplete do console
+  setupAutocomplete() {
+    const input = document.getElementById('console-input');
+    const sugestoes = document.getElementById('console-suggestions');
+    if (!input || !sugestoes) return;
+
+    const comandos = [
+      { cmd: 'status', desc: 'Ver estado do templo' },
+      { cmd: 'agentes', desc: 'Listar mentes ativas' },
+      { cmd: 'agentes reserva', desc: 'Ver mentes em reserva' },
+      { cmd: 'invocar', desc: 'Chamar mente pro templo (invocar coder)' },
+      { cmd: 'invocar todos', desc: 'Chamar todas as 15 mentes' },
+      { cmd: 'dispensar', desc: 'Retirar mente do templo' },
+      { cmd: 'conselho', desc: 'Ver/convocar reunião' },
+      { cmd: 'conselho transmutacao', desc: 'Reunião sobre transmutação' },
+      { cmd: 'conselho correspondencia', desc: 'Reunião sobre correspondência' },
+      { cmd: 'conselho vibracao', desc: 'Reunião sobre vibração' },
+      { cmd: 'conselho polaridade', desc: 'Reunião sobre polaridade' },
+      { cmd: 'conselho ritmo', desc: 'Reunião sobre ritmo' },
+      { cmd: 'concluir', desc: 'Encerrar reunião atual' },
+      { cmd: 'ferramentas', desc: 'Ver utensílios MCP' },
+      { cmd: 'mensagens', desc: 'Ver caixa de entrada' },
+      { cmd: 'evoluir', desc: 'Subir nível de uma mente' },
+      { cmd: 'energia', desc: 'Ver energia MCP' },
+      { cmd: 'energia encher', desc: 'Restaurar energia ao máximo' },
+      { cmd: 'falar', desc: 'Enviar recado para o chat' },
+      { cmd: 'pensamento', desc: 'Registrar pensamento na caixa' },
+      { cmd: 'ler', desc: 'Ler arquivo do espaço MCP' },
+      { cmd: 'escrever', desc: 'Escrever arquivo' },
+      { cmd: 'runas', desc: 'Ver runas gravadas' },
+      { cmd: 'zonas', desc: 'Listar salas do templo' },
+      { cmd: 'arquivos buscar', desc: 'Buscar texto nos arquivos' },
+      { cmd: 'info', desc: 'Sobre o templo' },
+      { cmd: 'limpar', desc: 'Limpar terminal' },
+      { cmd: 'ajuda', desc: 'Ver todos os comandos' }
+    ];
+
+    let sugestaoIndex = -1;
+
+    const mostrarSugestoes = (texto) => {
+      const filtro = texto.toLowerCase().trim();
+      if (!filtro) {
+        sugestoes.classList.add('hidden');
+        sugestoes.innerHTML = '';
+        return;
+      }
+
+      const filtrados = comandos.filter(c =>
+        c.cmd.startsWith(filtro) || c.cmd.includes(filtro)
+      ).slice(0, 8);
+
+      if (filtrados.length === 0) {
+        sugestoes.classList.add('hidden');
+        return;
+      }
+
+      sugestoes.classList.remove('hidden');
+      sugestaoIndex = -1;
+      sugestoes.innerHTML = filtrados.map((s, i) =>
+        `<div class="suggestion-item" data-index="${i}" data-cmd="${s.cmd}">
+          <span class="suggestion-cmd">${s.cmd}</span>
+          <span class="suggestion-desc">${s.desc}</span>
+        </div>`
+      ).join('');
+
+      // Click nas sugestões
+      sugestoes.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', () => {
+          input.value = item.dataset.cmd + ' ';
+          sugestoes.classList.add('hidden');
+          input.focus();
+        });
+      });
+    };
+
+    input.addEventListener('input', () => {
+      mostrarSugestoes(input.value);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      const items = sugestoes.querySelectorAll('.suggestion-item');
+      if (items.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        sugestaoIndex = Math.min(sugestaoIndex + 1, items.length - 1);
+        items.forEach((it, i) => it.classList.toggle('active', i === sugestaoIndex));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        sugestaoIndex = Math.max(sugestaoIndex - 1, 0);
+        items.forEach((it, i) => it.classList.toggle('active', i === sugestaoIndex));
+      } else if (e.key === 'Tab' || (e.key === 'Enter' && sugestaoIndex >= 0)) {
+        if (sugestaoIndex >= 0 && sugestaoIndex < items.length) {
+          e.preventDefault();
+          input.value = items[sugestaoIndex].dataset.cmd + ' ';
+          sugestoes.classList.add('hidden');
+          sugestaoIndex = -1;
+        }
+      } else if (e.key === 'Escape') {
+        sugestoes.classList.add('hidden');
+        sugestaoIndex = -1;
+      }
+    });
+
+    // Fechar ao clicar fora
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#console-panel')) {
+        sugestoes.classList.add('hidden');
+      }
+    });
   },
 
   // === SETTINGS UI ===
@@ -501,6 +617,69 @@ const Game = {
     }
   },
   
+  // === MENU MOBILE ===
+  setupMobileMenu() {
+    const btnMenu = document.getElementById('btn-mobile-menu');
+    const menu = document.getElementById('mobile-menu');
+
+    if (btnMenu && menu) {
+      btnMenu.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+      });
+
+      // Itens do menu
+      menu.querySelectorAll('.mobile-menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const acao = item.dataset.action;
+          menu.classList.add('hidden');
+
+          switch (acao) {
+            case 'agents':
+              document.getElementById('agents-panel').classList.toggle('hidden');
+              if (typeof Interactions !== 'undefined') Interactions.updateAgentsList();
+              break;
+            case 'council':
+              document.getElementById('council-panel').classList.toggle('hidden');
+              this.updateCouncilUI();
+              break;
+            case 'inbox':
+              document.getElementById('inbox-panel').classList.toggle('hidden');
+              if (typeof Inbox !== 'undefined') Inbox.render();
+              break;
+            case 'console':
+              document.getElementById('console-panel').classList.toggle('hidden');
+              const inp = document.getElementById('console-input');
+              if (inp) setTimeout(() => inp.focus(), 100);
+              break;
+            case 'minimap':
+              document.getElementById('minimap').classList.toggle('hidden');
+              break;
+            case 'fullscreen':
+              if (document.fullscreenElement) document.exitFullscreen();
+              else document.documentElement.requestFullscreen();
+              break;
+            case 'settings':
+              document.getElementById('settings-panel').classList.toggle('hidden');
+              break;
+          }
+        });
+      });
+
+      // Fechar menu ao clicar fora
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#mobile-menu') && !e.target.closest('#btn-mobile-menu')) {
+          menu.classList.add('hidden');
+        }
+      });
+    }
+
+    // Botões rápidos mobile (console e inbox duplicados)
+    const mobileBtns = document.querySelectorAll('.header-buttons-mobile button[id]');
+    mobileBtns.forEach(btn => {
+      // Evitar duplicar listeners - os listeners do desktop já funcionam
+    });
+  },
+
   updateCouncilUI() {
     const statusEl = document.getElementById('council-status');
     const status = Council.getStatus();

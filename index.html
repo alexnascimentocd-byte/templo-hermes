@@ -39,15 +39,35 @@
         </div>
       </div>
       <div class="header-right">
-        <button id="btn-fullscreen" title="Tela Cheia">⛶</button>
-        <button id="btn-minimap" title="Minimapa">🗺️</button>
-        <button id="btn-agents" title="Agentes">👥</button>
-        <button id="btn-council" title="Conselho / Mesa de Reunião">☤</button>
-        <button id="btn-inbox" title="Caixa de Entrada">📬</button>
-        <button id="btn-console" title="Console do Grimório">⌨️</button>
-        <button id="btn-settings" title="Configurações">⚙️</button>
+        <!-- Desktop: botões normais -->
+        <div class="header-buttons-desktop">
+          <button id="btn-fullscreen" title="Tela Cheia">⛶</button>
+          <button id="btn-minimap" title="Minimapa">🗺️</button>
+          <button id="btn-agents" title="Mentes">👥</button>
+          <button id="btn-council" title="Reunião">☤</button>
+          <button id="btn-inbox" title="Recados">📬</button>
+          <button id="btn-console" title="Console">⌨️</button>
+          <button id="btn-settings" title="Configurações">⚙️</button>
+        </div>
+        <!-- Mobile: botão de menu + ações rápidas -->
+        <div class="header-buttons-mobile">
+          <button id="btn-console" title="Console" class="mobile-quick-btn">⌨️</button>
+          <button id="btn-inbox" title="Recados" class="mobile-quick-btn">📬</button>
+          <button id="btn-mobile-menu" title="Menu" class="mobile-menu-btn">☰</button>
+        </div>
       </div>
     </header>
+
+    <!-- Menu Mobile (dropdown) -->
+    <div id="mobile-menu" class="mobile-menu hidden">
+      <button class="mobile-menu-item" data-action="agents">👥 Mentes do Templo</button>
+      <button class="mobile-menu-item" data-action="council">☤ Mesa de Reunião</button>
+      <button class="mobile-menu-item" data-action="inbox">📬 Caixa de Entrada</button>
+      <button class="mobile-menu-item" data-action="console">⌨️ Console do Grimório</button>
+      <button class="mobile-menu-item" data-action="minimap">🗺️ Minimapa</button>
+      <button class="mobile-menu-item" data-action="fullscreen">⛶ Tela Cheia</button>
+      <button class="mobile-menu-item" data-action="settings">⚙️ Configurações</button>
+    </div>
 
     <!-- Container do Templo (Canvas) -->
     <div id="temple-container">
@@ -135,14 +155,22 @@
             ║  ⌨️ GRIMÓRIO MESTRE — TERMINAL    ║<br>
             ╠═══════════════════════════════════╣<br>
             ║  Comandos:                        ║<br>
-            ║  > status     — Status do templo  ║<br>
-            ║  > agents     — Listar agentes    ║<br>
-            ║  > summon [t] — Invocar agente    ║<br>
-            ║  > council    — Abrir conselho    ║<br>
-            ║  > tools      — Listar ferramentas║<br>
-            ║  > inbox      — Ver mensagens     ║<br>
-            ║  > evolve [id]— Evoluir agente    ║<br>
-            ║  > help       — Ajuda completa    ║<br>
+            ║  > status     — Ver o templo      ║<br>
+            ║  > agentes    — Listar mentes     ║<br>
+            ║  > invocar [t]— Chamar uma mente  ║<br>
+            ║  > dispensar  — Retirar uma mente ║<br>
+            ║  > conselho   — Abrir reunião     ║<br>
+            ║  > ferramentas— Ver utensílios    ║<br>
+            ║  > mensagens  — Ver recados       ║<br>
+            ║  > evoluir    — Subir de nível    ║<br>
+            ║  > energia    — Ver energia MCP   ║<br>
+            ║  > falar [msg]— Enviar recado     ║<br>
+            ║  > ler [arq]  — Ler um arquivo    ║<br>
+            ║  > escrever   — Escrever arquivo  ║<br>
+            ║  > runas      — Ver runas ativas  ║<br>
+            ║  > zonas      — Listar zonas      ║<br>
+            ║  > limpar     — Limpar terminal   ║<br>
+            ║  > ajuda      — Esta ajuda        ║<br>
             ╚═══════════════════════════════════╝<br>
           </div>
         </div>
@@ -150,6 +178,8 @@
           <span class="console-prompt">Zói@templo:~$</span>
           <input type="text" id="console-input" class="console-input" placeholder="Digite um comando..." autocomplete="off" spellcheck="false">
         </div>
+        <!-- Sugestões de autocomplete -->
+        <div id="console-suggestions" class="console-suggestions hidden"></div>
       </div>
     </div>
 

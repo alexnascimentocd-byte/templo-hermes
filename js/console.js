@@ -1,4 +1,5 @@
 /* ===== CONSOLE.JS - Terminal do Grimório Mestre ===== */
+/* Todos os comandos em português nativo brasileiro */
 
 const Console = {
   history: [],
@@ -13,249 +14,129 @@ const Console = {
     if (this.history.length > 50) this.history.pop();
     this.historyIndex = -1;
 
-    // Log do comando
-    this.log(`Zói@templo:~$ ${trimmed}`, 'input');
+    this.log(`Zói@templo:~$ ${trimmed}`, 'entrada');
 
-    // Parse
-    const parts = trimmed.split(/\s+/);
-    const command = parts[0].toLowerCase();
-    const args = parts.slice(1);
+    const partes = trimmed.split(/\s+/);
+    const comando = partes[0].toLowerCase();
+    const args = partes.slice(1);
 
-    // Executar
-    switch (command) {
+    switch (comando) {
       case 'status': this.cmdStatus(); break;
-      case 'agents': case 'agentes': this.cmdAgents(args); break;
-      case 'summon': case 'invocar': this.cmdSummon(args); break;
-      case 'dismiss': case 'dispensar': this.cmdDismiss(args); break;
-      case 'council': case 'conselho': this.cmdCouncil(args); break;
-      case 'tools': case 'ferramentas': this.cmdTools(); break;
-      case 'inbox': case 'mensagens': this.cmdInbox(); break;
-      case 'evolve': case 'evoluir': this.cmdEvolve(args); break;
-      case 'energy': case 'energia': this.cmdEnergy(args); break;
-      case 'clear': case 'limpar': this.clearOutput(); break;
-      case 'help': case 'ajuda': this.cmdHelp(); break;
-      case 'chat': this.cmdChat(args); break;
-      case 'read': this.cmdRead(args); break;
-      case 'write': this.cmdWrite(args); break;
-      case 'runes': case 'runas': this.cmdRunes(); break;
-      case 'zones': case 'zonas': this.cmdZones(); break;
-      case 'spawn': this.cmdSpawnAll(); break;
-      case 'fs': case 'arquivos': this.cmdFileSystem(args); break;
+      case 'agentes': case 'mentes': this.cmdAgentes(args); break;
+      case 'invocar': case 'chamar': this.cmdInvocar(args); break;
+      case 'dispensar': case 'retirar': this.cmdDispensar(args); break;
+      case 'reunir': case 'todos': this.cmdReunirTodos(); break;
+      case 'conselho': case 'reuniao': case 'reunião': this.cmdConselho(args); break;
+      case 'ferramentas': case 'utensilios': case 'utensílios': this.cmdFerramentas(); break;
+      case 'mensagens': case 'recados': case 'caixa': this.cmdMensagens(); break;
+      case 'evoluir': case 'nivel': case 'nível': this.cmdEvoluir(args); break;
+      case 'energia': this.cmdEnergia(args); break;
+      case 'falar': case 'recado': case 'dizer': this.cmdFalar(args); break;
+      case 'ler': this.cmdLer(args); break;
+      case 'escrever': case 'anotar': this.cmdEscrever(args); break;
+      case 'runas': case 'simbolos': case 'símbolos': this.cmdRunas(); break;
+      case 'zonas': case 'salas': this.cmdZonas(); break;
+      case 'arquivos': case 'arqs': this.cmdArquivos(args); break;
+      case 'limpar': case 'limpeza': this.limparTerminal(); break;
+      case 'ajuda': case 'comandos': case 'help': this.cmdAjuda(); break;
+      case 'info': case 'sobre': this.cmdSobre(); break;
+      case 'concluir': case 'encerrar': this.cmdConcluirConselho(); break;
+      case 'pensamento': case 'pensar': this.cmdPensamento(args); break;
       default:
-        this.log(`❌ Comando desconhecido: "${command}". Digite "help" para ajuda.`, 'error');
+        this.log(`❌ Comando desconhecido: "${comando}". Digite "ajuda" para ver os comandos.`, 'erro');
     }
   },
 
   // === COMANDOS ===
 
   cmdStatus() {
-    const active = Agents.active.length;
-    const roster = Agents.roster.length;
-    const councilStatus = Council.getStatus();
-    const mcpStatus = MCPTools.getStatus();
+    const ativos = Agents.active.length;
+    const total = Agents.roster.length;
+    const conselho = Council.getStatus();
+    const mcp = MCPTools.getStatus();
+    const zona = World.getZoneAt(Math.floor(Player.x), Math.floor(Player.y));
 
     this.log(`
 ╔═══════════════════════════════════════╗
-║  🏛️ STATUS DO TEMPLO                 ║
+║  🏛️ ESTADO DO TEMPLO                 ║
 ╠═══════════════════════════════════════╣
-║  Agentes Ativos: ${String(active).padStart(2)}/15              ║
-║  Total no Roster: ${String(roster).padStart(2)}              ║
-║  Conselho: ${councilStatus.active ? '🔴 EM SESSÃO' : '🟢 Livre'}            ║
-║  Decisões: ${String(councilStatus.pastDecisions).padStart(3)}                  ║
-║  Energia MCP: ${mcpStatus.energy.current}/${mcpStatus.energy.max}           ║
-║  Ferramentas: ${String(mcpStatus.totalTools).padStart(2)}                   ║
-║  Inbox: ${typeof Inbox !== 'undefined' ? Inbox.messages.length : 0} msgs                    ║
+║  Mentes Ativas: ${String(ativos).padStart(2)}/15               ║
+║  Total no Registro: ${String(total).padStart(2)}             ║
+║  Sua Zona: ${(zona?.name || 'Desconhecida').substring(0, 22).padEnd(22)}║
+║  Conselho: ${conselho.ativo ? '🔴 EM REUNIÃO' : '🟢 Livre'}           ║
+║  Reuniões feitas: ${String(conselho.reunioesPassadas).padStart(3)}               ║
+║  Energia MCP: ${mcp.energia.atual}/${mcp.energia.maxima}           ║
+║  Utensílios: ${String(mcp.totalFerramentas).padStart(2)}                    ║
+║  Recados na Caixa: ${typeof Inbox !== 'undefined' ? Inbox.messages.length : 0}              ║
 ╚═══════════════════════════════════════╝`, 'info');
   },
 
-  cmdAgents(args) {
-    if (args[0] === 'reserve' || args[0] === 'reserva') {
-      const inactive = Agents.roster.filter(a => !Agents.active.find(ac => ac.id === a.id));
-      this.log(`💤 Agentes em Reserva (${inactive.length}):`, 'info');
-      inactive.forEach(a => {
-        this.log(`  ${a.icon} ${a.name} (${a.skill}) — Nível ${a.level} — ID: ${a.id}`, 'agent');
+  cmdAgentes(args) {
+    if (args[0] === 'reserva' || args[0] === 'dormindo') {
+      const inativas = Agents.roster.filter(a => !Agents.active.find(ac => ac.id === a.id));
+      this.log(`💤 Mentes em Reserva (${inativas.length}):`, 'info');
+      inativas.forEach(a => {
+        this.log(`  ${a.icon} ${a.nome} (${a.habilidade}) — Nível ${a.nivel} — ${a.descricao.substring(0, 40)}...`, 'mente');
       });
       return;
     }
 
-    this.log(`👥 Agentes Ativos (${Agents.active.length}/15):`, 'info');
+    this.log(`👥 Mentes Ativas (${Agents.active.length}/15):`, 'info');
     Agents.active.forEach(a => {
-      const zone = World.getZoneAt(Math.floor(a.x), Math.floor(a.y));
-      this.log(`  ${a.icon} ${a.name} | ${a.skill} | Nv.${a.level} | ${a.currentAction} | ${zone?.name || '?'}`, 'agent');
+      const zona = World.getZoneAt(Math.floor(a.x), Math.floor(a.y));
+      this.log(`  ${a.icon} ${a.nome} | ${a.habilidade} | Nv.${a.nivel} | ${a.acaoAtual} | ${zona?.name || '?'}`, 'mente');
     });
-    this.log(`\n  💤 Reserva: ${Agents.roster.length - Agents.active.length} (use "agents reserva" para ver)`, 'dim');
+    this.log(`\n  💤 Reserva: ${Agents.roster.length - Agents.active.length} (use "agentes reserva" para ver)`, 'cinza');
   },
 
-  cmdSummon(args) {
+  cmdInvocar(args) {
     if (!args[0]) {
-      this.log('❌ Uso: summon [tipo] ou summon all', 'error');
-      this.log('Tipos: coder, researcher, alchemist, guardian, mystic, messenger, healer, transmuter, weaver, architect, diviner, engineer, analyst, combinator, enigma', 'dim');
+      this.log('❌ Uso: invocar [tipo] ou invocar todos', 'erro');
+      this.log('Tipos: codigo, pesquisador, alquimista, guardiao, mistico, mensageiro, curandeiro, transmutador, tecelao, arquiteto, vidente, engenheiro, analista, combinador, enigma', 'cinza');
       return;
     }
 
-    if (args[0] === 'all' || args[0] === 'todos') {
-      this.cmdSpawnAll();
+    if (args[0] === 'todos' || args[0] === 'all') {
+      this.cmdReunirTodos();
       return;
     }
 
-    const agent = Agents.roster.find(a => a.type === args[0] || a.name.toLowerCase() === args[0].toLowerCase());
-    if (!agent) {
-      this.log(`❌ Agente "${args[0]}" não encontrado.`, 'error');
+    const agente = Agents.roster.find(a =>
+      a.type === args[0] || a.name.toLowerCase() === args[0].toLowerCase()
+    );
+    if (!agente) {
+      this.log(`❌ Mente "${args[0]}" não encontrada no registro.`, 'erro');
       return;
     }
 
-    if (Agents.active.find(a => a.id === agent.id)) {
-      this.log(`⚠️ ${agent.name} já está ativo no templo.`, 'warn');
+    if (Agents.active.find(a => a.id === agente.id)) {
+      this.log(`⚠️ ${agente.name} já está ativa no templo.`, 'aviso');
       return;
     }
 
-    Agents.spawn(agent.id);
-    this.log(`✅ ${agent.icon} ${agent.name} invocado ao templo!`, 'success');
+    Agents.spawn(agente.id);
+    this.log(`✅ ${agente.icon} ${agente.name} invocada ao templo!`, 'sucesso');
   },
 
-  cmdDismiss(args) {
+  cmdDispensar(args) {
     if (!args[0]) {
-      this.log('❌ Uso: dismiss [id ou nome]', 'error');
+      this.log('❌ Uso: dispensar [nome ou parte do nome]', 'erro');
       return;
     }
 
-    const agent = Agents.active.find(a => a.id.includes(args[0]) || a.name.toLowerCase().includes(args[0].toLowerCase()));
-    if (!agent) {
-      this.log(`❌ Agente "${args[0]}" não está ativo.`, 'error');
+    const agente = Agents.active.find(a =>
+      a.id.includes(args[0]) || a.name.toLowerCase().includes(args[0].toLowerCase())
+    );
+    if (!agente) {
+      this.log(`❌ Mente "${args[0]}" não está ativa.`, 'erro');
       return;
     }
 
-    Agents.despawn(agent.id);
-    this.log(`🚪 ${agent.icon} ${agent.name} dispensado do templo.`, 'info');
+    Agents.despawn(agente.id);
+    this.log(`🚪 ${agente.icon} ${agente.name} dispensada do templo.`, 'info');
   },
 
-  cmdCouncil(args) {
-    if (!args[0]) {
-      const status = Council.getStatus();
-      this.log(`☤ Status do Conselho:`, 'info');
-      this.log(`  Ativo: ${status.active ? 'Sim' : 'Não'}`, 'info');
-      this.log(`  Tópico: ${status.topic}`, 'info');
-      this.log(`  Rodada: ${status.round}/5`, 'info');
-      this.log(`  Participantes: ${status.participants}`, 'info');
-      this.log(`\n  Use "council [tópico]" para convocar`, 'dim');
-      this.log(`  Tópicos: transmutacao, mcp_limites, correspondencia, vibracao, polaridade, ritmo, causa_efeito, ferramentas_mcp`, 'dim');
-      return;
-    }
-
-    const topicId = args[0];
-    Council.convene(topicId);
-    this.log(`☤ Conselho convocado: "${topicId}"`, 'success');
-  },
-
-  cmdTools() {
-    const status = MCPTools.getStatus();
-    this.log(`🔧 Ferramentas MCP (${status.totalTools} disponíveis):`, 'info');
-    this.log(`  Energia: ${status.energy.current}/${status.energy.max} (${status.energy.percentage})`, 'info');
-    this.log(`  Categorias: ${status.categories.join(', ')}`, 'info');
-
-    Object.entries(MCPTools.registry).forEach(([id, tool]) => {
-      this.log(`  ${tool.icon} ${tool.name} [${tool.category}] — Custo: ${tool.cost} — ${tool.description.substring(0, 50)}...`, 'dim');
-    });
-  },
-
-  cmdInbox() {
-    if (typeof Inbox === 'undefined') {
-      this.log('❌ Inbox não disponível.', 'error');
-      return;
-    }
-    const unread = Inbox.messages.filter(m => !m.read).length;
-    this.log(`📬 Inbox: ${Inbox.messages.length} mensagens (${unread} não lidas)`, 'info');
-    Inbox.messages.slice(0, 5).forEach(msg => {
-      const typeInfo = Inbox.types[msg.type] || Inbox.types.system;
-      this.log(`  ${typeInfo.icon} ${msg.title} ${msg.read ? '' : '(não lida)'}`, msg.read ? 'dim' : 'agent');
-    });
-    if (Inbox.messages.length > 5) {
-      this.log(`  ... e mais ${Inbox.messages.length - 5}`, 'dim');
-    }
-  },
-
-  cmdEvolve(args) {
-    if (!args[0]) {
-      this.log('❌ Uso: evolve [id ou nome]', 'error');
-      return;
-    }
-    const agent = Agents.active.find(a => a.id.includes(args[0]) || a.name.toLowerCase().includes(args[0].toLowerCase()));
-    if (!agent) {
-      this.log(`❌ Agente "${args[0]}" não encontrado.`, 'error');
-      return;
-    }
-    Agents.gainExperience(agent, agent.expToNext);
-    this.log(`⬆️ ${agent.icon} ${agent.name} evoluiu para Nível ${agent.level}!`, 'success');
-  },
-
-  cmdEnergy(args) {
-    if (args[0] === 'set' && args[1]) {
-      MCPTools.energy.current = parseInt(args[1]) || MCPTools.energy.current;
-      this.log(`⚡ Energia definida para ${MCPTools.energy.current}`, 'success');
-      return;
-    }
-    if (args[0] === 'fill' || args[0] === 'max') {
-      MCPTools.energy.current = MCPTools.energy.max;
-      this.log(`⚡ Energia máxima restaurada: ${MCPTools.energy.current}`, 'success');
-      return;
-    }
-    this.log(`⚡ Energia MCP: ${MCPTools.energy.current}/${MCPTools.energy.max} (${MCPTools.energy.getStatus().percentage})`, 'info');
-  },
-
-  cmdChat(args) {
-    const msg = args.join(' ');
-    if (!msg) {
-      this.log('❌ Uso: chat [mensagem] — envia para o chat de prioridade', 'error');
-      return;
-    }
-    PriorityChat.addMessage('👑 Zói', msg, 4);
-    this.log(`💬 Mensagem enviada: "${msg}"`, 'success');
-  },
-
-  cmdRead(args) {
-    if (!args[0]) {
-      const files = MCPFileSystem.list();
-      this.log(`📖 Arquivos disponíveis (${files.length}):`, 'info');
-      files.forEach(f => this.log(`  📄 ${f.name} (${f.content.length} chars) — por ${f.author}`, 'dim'));
-      return;
-    }
-    const file = MCPFileSystem.read(args[0]);
-    if (!file) {
-      this.log(`❌ Arquivo "${args[0]}" não encontrado.`, 'error');
-      return;
-    }
-    this.log(`📄 ${file.name} (por ${file.author}):`, 'info');
-    this.log(file.content, 'dim');
-  },
-
-  cmdWrite(args) {
-    if (args.length < 2) {
-      this.log('❌ Uso: write [arquivo] [conteúdo...]', 'error');
-      return;
-    }
-    const path = args[0];
-    const content = args.slice(1).join(' ');
-    MCPFileSystem.write(path, content, 'Zói');
-    this.log(`✍️ Arquivo "${path}" escrito (${content.length} chars).`, 'success');
-  },
-
-  cmdRunes() {
-    this.log(`✦ Runas no sistema:`, 'info');
-    Agents.active.forEach(a => {
-      if (a.runes.length > 0) {
-        this.log(`  ${a.icon} ${a.name}: ${a.runes.map(r => r.symbol).join(' ')}`, 'agent');
-      }
-    });
-  },
-
-  cmdZones() {
-    this.log(`🗺️ Zonas do Templo:`, 'info');
-    Object.values(World.zones).forEach(z => {
-      this.log(`  ${z.icon || '▪'} ${z.name} (Nível ${z.requiredLevel || 1})`, 'info');
-    });
-  },
-
-  cmdSpawnAll() {
+  cmdReunirTodos() {
     let count = 0;
     Agents.roster.forEach(a => {
       if (!Agents.active.find(ac => ac.id === a.id)) {
@@ -263,86 +144,266 @@ const Console = {
         count++;
       }
     });
-    this.log(`👥 ${count} agentes adicionados! Total: ${Agents.active.length}/15`, 'success');
+    this.log(`👥 ${count} mente(s) adicionada(s)! Total: ${Agents.active.length}/15`, 'sucesso');
   },
 
-  cmdFileSystem(args) {
+  cmdConselho(args) {
     if (!args[0]) {
-      this.log('Uso: fs [list|read|write|search] [args...]', 'error');
+      const estado = Council.getStatus();
+      this.log(`☤ Estado do Conselho:`, 'info');
+      this.log(`  Ativo: ${estado.ativo ? 'Sim — EM REUNIÃO' : 'Não — Livre'}`, 'info');
+      this.log(`  Tópico: ${estado.topico}`, 'info');
+      this.log(`  Rodada: ${estado.rodada}/5`, 'info');
+      this.log(`  Participantes: ${estado.participantes}`, 'info');
+      this.log(`  Reuniões passadas: ${estado.reunioesPassadas}`, 'info');
+      this.log(`\n  Use "conselho [tópico]" para convocar`, 'cinza');
+      this.log(`  Tópicos: transmutacao, limites, correspondencia, vibracao, polaridade, ritmo, causa, ferramentas, tarefas, evolucao`, 'cinza');
+      return;
+    }
+
+    const topicoId = args[0];
+    Council.convene(topicoId);
+    this.log(`☤ Conselho convocado: "${topicoId}"`, 'sucesso');
+  },
+
+  cmdConcluirConselho() {
+    if (!Council.active) {
+      this.log('⚠️ Nenhum conselho ativo para concluir.', 'aviso');
+      return;
+    }
+    Council.conclude();
+    this.log('☤ Conselho concluído pelo Mestre.', 'sucesso');
+  },
+
+  cmdFerramentas() {
+    const estado = MCPTools.getStatus();
+    this.log(`🔧 Utensílios Disponíveis (${estado.totalFerramentas}):`, 'info');
+    this.log(`  Energia: ${estado.energia.atual}/${estado.energia.maxima} (${estado.energia.porcentagem})`, 'info');
+    this.log(`  Categorias: ${estado.categorias.join(', ')}`, 'info');
+    this.log('', 'cinza');
+
+    Object.entries(MCPTools.registry).forEach(([id, ferramenta]) => {
+      this.log(`  ${ferramenta.icon} ${ferramenta.nome} [${ferramenta.categoria}] — Custo: ${ferramenta.custo}`, 'cinza');
+    });
+  },
+
+  cmdMensagens() {
+    if (typeof Inbox === 'undefined') {
+      this.log('❌ Caixa de mensagens não disponível.', 'erro');
+      return;
+    }
+    const naoLidas = Inbox.messages.filter(m => !m.read).length;
+    this.log(`📬 Caixa de Entrada: ${Inbox.messages.length} recados (${naoLidas} não lidos)`, 'info');
+    Inbox.messages.slice(0, 5).forEach(msg => {
+      const tipo = Inbox.types[msg.type] || Inbox.types.system;
+      const status = msg.read ? '' : ' (não lido)';
+      this.log(`  ${tipo.icon} ${msg.title}${status}`, msg.read ? 'cinza' : 'mente');
+    });
+    if (Inbox.messages.length > 5) {
+      this.log(`  ... e mais ${Inbox.messages.length - 5} recados`, 'cinza');
+    }
+  },
+
+  cmdEvoluir(args) {
+    if (!args[0]) {
+      this.log('❌ Uso: evoluir [nome ou parte do nome]', 'erro');
+      return;
+    }
+    const agente = Agents.active.find(a =>
+      a.id.includes(args[0]) || a.name.toLowerCase().includes(args[0].toLowerCase())
+    );
+    if (!agente) {
+      this.log(`❌ Mente "${args[0]}" não encontrada.`, 'erro');
+      return;
+    }
+    Agents.gainExperience(agente, agente.expToNext);
+    this.log(`⬆️ ${agente.icon} ${agente.name} evoluiu para Nível ${agente.nivel}!`, 'sucesso');
+  },
+
+  cmdEnergia(args) {
+    if (args[0] === 'encher' || args[0] === 'max' || args[0] === 'cheia') {
+      MCPTools.energy.current = MCPTools.energy.max;
+      this.log(`⚡ Energia restaurada ao máximo: ${MCPTools.energy.current}`, 'sucesso');
+      return;
+    }
+    if (args[0] === 'definir' && args[1]) {
+      MCPTools.energy.current = parseInt(args[1]) || MCPTools.energy.current;
+      this.log(`⚡ Energia definida para ${MCPTools.energy.current}`, 'sucesso');
+      return;
+    }
+    const pct = (MCPTools.energy.current / MCPTools.energy.max * 100).toFixed(0);
+    this.log(`⚡ Energia MCP: ${MCPTools.energy.current}/${MCPTools.energy.max} (${pct}%)`, 'info');
+    this.log(`  Use "energia encher" para restaurar`, 'cinza');
+  },
+
+  cmdFalar(args) {
+    const msg = args.join(' ');
+    if (!msg) {
+      this.log('❌ Uso: falar [sua mensagem] — envia para o chat do templo', 'erro');
+      return;
+    }
+    PriorityChat.addMessage('👑 Zói', msg, 4);
+    this.log(`💬 Mensagem enviada: "${msg}"`, 'sucesso');
+  },
+
+  cmdPensamento(args) {
+    const msg = args.join(' ');
+    if (!msg) {
+      this.log('❌ Uso: pensamento [seu pensamento] — registra na caixa de entrada', 'erro');
+      return;
+    }
+    if (typeof Inbox !== 'undefined') {
+      Inbox.addThought(msg);
+      this.log(`💭 Pensamento registrado: "${msg}"`, 'sucesso');
+    }
+  },
+
+  cmdLer(args) {
+    if (!args[0]) {
+      const arquivos = MCPFileSystem.list();
+      this.log(`📖 Arquivos disponíveis (${arquivos.length}):`, 'info');
+      arquivos.forEach(f => this.log(`  📄 ${f.name} (${f.content.length} caracteres) — por ${f.author}`, 'cinza'));
+      return;
+    }
+    const arquivo = MCPFileSystem.read(args[0]);
+    if (!arquivo) {
+      this.log(`❌ Arquivo "${args[0]}" não encontrado.`, 'erro');
+      return;
+    }
+    this.log(`📄 ${arquivo.name} (por ${arquivo.author}):`, 'info');
+    this.log(arquivo.content, 'cinza');
+  },
+
+  cmdEscrever(args) {
+    if (args.length < 2) {
+      this.log('❌ Uso: escrever [nome_arquivo] [conteúdo...]', 'erro');
+      return;
+    }
+    const caminho = args[0];
+    const conteudo = args.slice(1).join(' ');
+    MCPFileSystem.write(caminho, conteudo, 'Zói');
+    this.log(`✍️ Arquivo "${caminho}" escrito (${conteudo.length} caracteres).`, 'sucesso');
+  },
+
+  cmdRunas() {
+    let total = 0;
+    Agents.active.forEach(a => {
+      if (a.runes && a.runes.length > 0) {
+        this.log(`  ${a.icon} ${a.name}: ${a.runes.map(r => r.symbol).join(' ')}`, 'mente');
+        total += a.runes.length;
+      }
+    });
+    if (total === 0) {
+      this.log('  Nenhuma runa gravada ainda.', 'cinza');
+    }
+    this.log(`\n  Total de runas ativas: ${total}`, 'cinza');
+  },
+
+  cmdZonas() {
+    this.log(`🗺️ Zonas do Templo:`, 'info');
+    Object.values(World.zones).forEach(z => {
+      const icone = z.icon || '▪';
+      const nivel = z.requiredLevel || 1;
+      this.log(`  ${icone} ${z.name} (Nível ${nivel})`, 'info');
+    });
+  },
+
+  cmdArquivos(args) {
+    if (!args[0]) {
+      this.log('Uso: arquivos [ler|escrever|buscar] [args...]', 'erro');
       return;
     }
     switch (args[0]) {
-      case 'list': this.cmdRead([]); break;
-      case 'read': this.cmdRead(args.slice(1)); break;
-      case 'write': this.cmdWrite(args.slice(1)); break;
-      case 'search':
-        const results = MCPFileSystem.search(args.slice(1).join(' '));
-        this.log(`🔍 ${results.length} arquivo(s) encontrado(s):`, 'info');
-        results.forEach(r => this.log(`  📄 ${r.file} (${r.matches} matches)`, 'dim'));
+      case 'ler': this.cmdLer(args.slice(1)); break;
+      case 'escrever': this.cmdEscrever(args.slice(1)); break;
+      case 'buscar':
+        const resultados = MCPFileSystem.search(args.slice(1).join(' '));
+        this.log(`🔍 ${resultados.length} arquivo(s) encontrado(s):`, 'info');
+        resultados.forEach(r => this.log(`  📄 ${r.file} (${r.matches} ocorrências)`, 'cinza'));
         break;
+      default:
+        this.cmdLer([]);
     }
   },
 
-  cmdHelp() {
+  cmdAjuda() {
     this.log(`
 ╔═══════════════════════════════════════╗
 ║  📖 COMANDOS DO GRIMÓRIO MESTRE      ║
 ╠═══════════════════════════════════════╣
-║  status        — Status do templo     ║
-║  agents        — Listar agentes       ║
-║  agents reserva — Ver em reserva      ║
-║  summon [tipo] — Invocar agente       ║
-║  summon all    — Invocar todos        ║
-║  dismiss [id]  — Dispensar agente     ║
-║  council       — Status conselho      ║
-║  council [id]  — Convocar conselho    ║
-║  tools         — Listar ferramentas   ║
-║  inbox         — Ver mensagens        ║
-║  evolve [id]   — Evoluir agente       ║
-║  energy        — Ver energia MCP      ║
-║  energy fill   — Restaurar energia    ║
-║  chat [msg]    — Enviar mensagem      ║
-║  read [file]   — Ler arquivo MCP      ║
-║  write [f] [c] — Escrever arquivo     ║
-║  runes         — Ver runas ativas     ║
-║  zones         — Listar zonas         ║
-║  fs search [p] — Buscar em arquivos   ║
-║  clear         — Limpar terminal      ║
-║  help          — Esta ajuda           ║
+║  status       — Ver estado do templo  ║
+║  agentes      — Listar mentes ativas  ║
+║  agentes reserva — Ver mentes dormindo║
+║  invocar [t]  — Chamar mente pro templo║
+║  invocar todos — Chamar todas as 15   ║
+║  dispensar [n]— Retirar mente         ║
+║  conselho     — Ver estado da reunião ║
+║  conselho [t] — Convocar reunião      ║
+║  concluir     — Encerrar reunião      ║
+║  ferramentas  — Ver utensílios MCP    ║
+║  mensagens    — Ver caixa de entrada  ║
+║  evoluir [n]  — Subir nível da mente  ║
+║  energia      — Ver energia MCP       ║
+║  energia encher — Restaurar energia   ║
+║  falar [msg]  — Enviar recado geral   ║
+║  pensamento [m] — Registrar pensamento║
+║  ler [arquivo] — Conteúdo do arquivo  ║
+║  escrever [a] [c] — Salvar arquivo    ║
+║  runas        — Ver runas gravadas    ║
+║  zonas        — Listar salas do templo║
+║  arquivos buscar [t] — Buscar texto   ║
+║  info         — Sobre o templo        ║
+║  limpar       — Limpar este terminal  ║
+║  ajuda        — Esta mensagem         ║
+╚═══════════════════════════════════════╝`, 'info');
+  },
+
+  cmdSobre() {
+    this.log(`
+🏛️ TEMPLO DE HERMES — v2.0
+╔═══════════════════════════════════════╗
+║  Criado por: Zói (Mestre do Templo)  ║
+║  15 Mentalidades Herméticas          ║
+║  Mesa de Reunião com Debates         ║
+║  Espaço MCP com Ferramentas          ║
+║  Caixa de Entrada do Mestre          ║
+║                                       ║
+║  "Como acima, assim abaixo."         ║
+║  — Tábua de Esmeralda               ║
 ╚═══════════════════════════════════════╝`, 'info');
   },
 
   // === UI ===
 
-  log(text, type = 'normal') {
+  log(texto, tipo = 'normal') {
     const output = document.getElementById('console-output');
     if (!output) return;
 
-    const colors = {
+    const cores = {
       normal: '#ccc',
-      input: '#4aff4a',
-      success: '#44ff44',
-      error: '#ff4444',
-      warn: '#ffaa00',
+      entrada: '#4aff4a',
+      sucesso: '#44ff44',
+      erro: '#ff4444',
+      aviso: '#ffaa00',
       info: '#4a8aff',
-      agent: '#ffcc00',
-      dim: '#888'
+      mente: '#ffcc00',
+      cinza: '#888'
     };
 
     const div = document.createElement('div');
-    div.style.cssText = `color:${colors[type] || colors.normal};white-space:pre-wrap;line-height:1.6;font-size:8px;margin:2px 0`;
-    div.textContent = text;
+    div.style.cssText = `color:${cores[tipo] || cores.normal};white-space:pre-wrap;line-height:1.6;font-size:11px;margin:2px 0;font-family:'Courier New',monospace`;
+    div.textContent = texto;
     output.appendChild(div);
     output.scrollTop = output.scrollHeight;
   },
 
-  clearOutput() {
+  limparTerminal() {
     const output = document.getElementById('console-output');
     if (output) output.innerHTML = '';
-    this.log('🧹 Terminal limpo.', 'dim');
+    this.log('🧹 Terminal limpo.', 'cinza');
   },
 
-  // Inicializar UI
+  // Inicializar
   init() {
     const input = document.getElementById('console-input');
     if (input) {
