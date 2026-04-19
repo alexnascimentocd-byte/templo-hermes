@@ -1,9 +1,12 @@
 /* Service Worker do Templo de Hermes — PWA Offline */
-const CACHE_NAME = 'templo-hermes-v1';
+const CACHE_NAME = 'templo-hermes-v3';
 const ASSETS = [
   './',
   './index.html',
   './css/templo.css',
+  './js/persistence.js',
+  './js/knowledge-base.js',
+  './js/response-engine.js',
   './js/world.js',
   './js/items.js',
   './js/runes.js',

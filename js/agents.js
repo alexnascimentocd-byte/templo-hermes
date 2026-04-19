@@ -503,6 +503,10 @@ const Agents = {
         Interactions.notify(`${agent.icon} ${agent.name} evoluiu para Nível ${agent.level}!`);
       }
     }
+    
+    // Auto-save após ganhar XP (debounced)
+    if (typeof this._saveTimeout) clearTimeout(this._saveTimeout);
+    this._saveTimeout = setTimeout(() => this.saveAll(), 2000);
   },
   
   // Verificar se agente pode acessar zona
@@ -536,6 +540,24 @@ const Agents = {
       this.create(type);
     });
 
+    // Carregar estado salvo (XP, níveis)
+    if (typeof Persistence !== 'undefined') {
+      const saved = Persistence.loadAgents();
+      if (saved && saved.length > 0) {
+        saved.forEach(savedAgent => {
+          const agent = this.roster.find(a => a.type === savedAgent.type);
+          if (agent) {
+            agent.level = savedAgent.level || 1;
+            agent.experience = savedAgent.experience || 0;
+            agent.expToNext = savedAgent.expToNext || 100;
+            agent.currentAction = savedAgent.currentAction || 'idle';
+            agent.learnedTopics = savedAgent.learnedTopics || [];
+          }
+        });
+        console.log(`📚 ${saved.length} agentes restaurados do cache`);
+      }
+    }
+
     // Spawnar os primeiros 6 no templo
     const spawnCount = Math.min(6, this.roster.length);
     for (let i = 0; i < spawnCount; i++) {
@@ -544,5 +566,13 @@ const Agents = {
 
     // Os outros ficam no roster, disponíveis para convocação
     return this.roster.length;
+  },
+
+  // Salvar estado de todos os agentes
+  saveAll() {
+    if (typeof Persistence !== 'undefined') {
+      Persistence.saveAgents(this.roster);
+      console.log('💾 Agentes salvos');
+    }
   }
 };

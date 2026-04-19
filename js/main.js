@@ -178,6 +178,10 @@ const Game = {
     // Mostrar loading
     await this.showLoading();
     
+    // Inicializar sistemas de persistência
+    if (typeof Persistence !== 'undefined') Persistence.init();
+    if (typeof KnowledgeBase !== 'undefined') KnowledgeBase.init();
+    
     // Inicializar módulos
     World.init();
     Items.init();
@@ -950,6 +954,23 @@ const Game = {
     const chatSendBtn = document.getElementById('chat-send');
     const chatInp = document.getElementById('chat-input');
 
+    // Carregar conversação anterior
+    if (typeof Persistence !== 'undefined') {
+      const savedChat = Persistence.loadConversation();
+      if (savedChat && savedChat.length > 0) {
+        const output = document.getElementById('chat-output');
+        savedChat.forEach(msg => {
+          if (msg.type === 'master') {
+            this.chatLog(output, msg.sender, msg.text, 'master');
+          } else if (msg.type === 'agent') {
+            this.chatLog(output, msg.sender, msg.text, 'agent');
+          }
+        });
+        this.chatCtx.historico = savedChat.map(m => ({ de: m.sender, texto: m.text }));
+        this.chatCtx.msgCount = savedChat.length;
+      }
+    }
+
     const enviarMsg = () => {
       const msg = chatInp.value.trim();
       const file = this.chatCtx.pendingFile;
@@ -1023,6 +1044,23 @@ const Game = {
       // Inbox
       if (typeof Inbox !== 'undefined') {
         Inbox.addThought(`[Conversação — ${this.chatCtx.estagio}]\n${msg || `[Arquivo: ${file?.name}]`}`);
+      }
+
+      // Salvar conversação
+      if (typeof Persistence !== 'undefined') {
+        const chatMessages = [];
+        document.querySelectorAll('#chat-output > div:not(.chat-welcome)').forEach(el => {
+          const text = el.textContent.trim();
+          if (text) {
+            chatMessages.push({
+              type: el.classList.contains('chat-msg-master') ? 'master' : 'agent',
+              sender: text.split(':')[0] || 'Sistema',
+              text: text.substring(text.indexOf(':') + 1).trim(),
+              timestamp: Date.now()
+            });
+          }
+        });
+        Persistence.saveConversation(chatMessages.slice(-50));
       }
     };
 
@@ -1159,9 +1197,17 @@ const Game = {
     }
   },
 
-  // Gerar resposta com base em correspondências alquímicas
+  // Gerar resposta usando ResponseEngine (offline) + fallback alquímico
   gerarRespostaAlquimica(agente, mensagem, temas) {
-    // Córtex: correspondências por palavra-chave
+    // 1. Tentar ResponseEngine primeiro (base de conhecimento offline)
+    if (typeof ResponseEngine !== 'undefined' && typeof KnowledgeBase !== 'undefined') {
+      try {
+        const response = ResponseEngine.generate(agente, mensagem, temas);
+        if (response && response.length > 10) return response;
+      } catch(e) { /* fallback */ }
+    }
+
+    // 2. Fallback: córtex alquímico hardcoded
     const correspondencias = {
       transmutacao: {
         alchemist: ['A transmutação requer paciência. O chumbo não vira ouro da noite pro dia.', 'No cadinho, tudo se transforma. O que você propõe é a matéria-prima.', 'Nigredo → Albedo → Rubedo. Estamos no início do processo.'],
