@@ -630,14 +630,24 @@ const Interactions = {
   
   // Notificação
   notify(message) {
+    // Verificar se algum painel está aberto — não mostrar toast se estiver
+    const panels = ['console-panel', 'chat-panel', 'council-panel', 'inbox-panel', 'settings-panel', 'agents-panel'];
+    const panelOpen = panels.some(id => {
+      const el = document.getElementById(id);
+      return el && !el.classList.contains('hidden');
+    });
+
+    if (panelOpen) return; // Não mostrar notificação se painel aberto
+
     // Criar toast
     const toast = document.createElement('div');
     toast.style.cssText = `
-      position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
+      position: fixed; top: 58px; left: 50%; transform: translateX(-50%);
       background: rgba(26,26,46,0.95); border: 2px solid #d4a547;
-      color: #f4e4c1; padding: 12px 24px; z-index: 999;
-      font-family: 'MedievalSharp', cursive; font-size: 14px;
-      animation: slideUp 0.3s ease;
+      color: #f4e4c1; padding: 10px 20px; z-index: 90;
+      font-family: 'MedievalSharp', cursive; font-size: 13px;
+      border-radius: 6px; max-width: 90vw; text-align: center;
+      animation: slideDown 0.3s ease;
     `;
     toast.textContent = message;
     document.body.appendChild(toast);

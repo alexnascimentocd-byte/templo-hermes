@@ -225,6 +225,9 @@ const Game = {
     // Mensagem de boas-vindas
     Interactions.notify('☤ Bem-vindo ao Templo de Hermes, Zói!');
     PriorityChat.addMessage('Sistema', 'O Templo desperta. Os agentes aguardam.', 4);
+
+    // Corrigir scroll quando teclado mobile fecha
+    this.setupKeyboardFix();
   },
   
   async showLoading() {
@@ -271,7 +274,41 @@ const Game = {
       }
     });
   },
-  
+
+  // Corrigir scroll quando teclado mobile abre/fecha
+  setupKeyboardFix() {
+    // Detectar quando o teclado fecha (viewport volta ao normal)
+    let initialHeight = window.innerHeight;
+    
+    window.addEventListener('resize', () => {
+      const currentHeight = window.innerHeight;
+      
+      // Se a altura aumentou, o teclado fechou
+      if (currentHeight > initialHeight * 0.95) {
+        // Resetar scroll para o topo
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+        initialHeight = currentHeight;
+      } else if (currentHeight < initialHeight * 0.9) {
+        // Teclado abrou — atualizar referência
+        initialHeight = currentHeight;
+      }
+    });
+
+    // Também corrigir quando input perde foco
+    document.addEventListener('focusout', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        // Pequeno delay para depois que o teclado fecha
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          document.body.scrollTop = 0;
+          document.documentElement.scrollTop = 0;
+        }, 300);
+      }
+    });
+  },
+
   // === UI DO CONSELHO ===
   setupCouncilUI() {
     const btnCouncil = document.getElementById('btn-council');

@@ -36,6 +36,11 @@
   box-sizing: border-box;
 }
 
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
+}
+
 body {
   font-family: 'MedievalSharp', cursive;
   background: var(--obsidian);
@@ -43,6 +48,9 @@ body {
   overflow: hidden;
   width: 100vw;
   height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
   image-rendering: pixelated;
 }
 
@@ -751,6 +759,11 @@ body {
 @keyframes agent-appear {
   0% { opacity: 0; transform: scale(0.5); }
   100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideDown {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .rune-active {
