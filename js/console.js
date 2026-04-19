@@ -50,6 +50,7 @@ const Console = {
       case 'sys': case 'sysadmin': case 'sistema': this.cmdSysAdmin(args); break;
       case 'remote': case 'remoto': this.cmdRemote(args); break;
       case 'treinar': case 'train': this.cmdTreinar(args); break;
+      case 'crystal': case 'bola': case 'esfera': this.cmdCrystal(args); break;
       case 'powershell': case 'ps': this.cmdShell('powershell', args); break;
       case 'cmd': this.cmdShell('cmd', args); break;
       case 'bash': case 'sh': this.cmdShell('bash', args); break;
@@ -757,6 +758,8 @@ const Console = {
 ║  remote config — Configurar GitHub    ║
 ║  remote exec  — Executar remotamente  ║
 ║  remote cloud — Executar na nuvem     ║
+║  crystal — Bola de Cristal (comandos) ║
+║  crystal <cmd> — Executar no sistema  ║
 ║  info         — Sobre o templo        ║
 ║  limpar       — Limpar este terminal  ║
 ║  ajuda        — Esta mensagem         ║
@@ -1068,6 +1071,95 @@ const Console = {
     }
     
     this.log(`\n✅ ${resultados.length} exercícios concluídos`, 'sucesso');
+  },
+
+
+  async cmdCrystal(args) {
+    const cb = typeof CrystalBall !== 'undefined' ? CrystalBall : null;
+    if (!cb) {
+      this.log('❌ Crystal Ball não carregado', 'erro');
+      return;
+    }
+
+    // Init se necessário
+    if (!cb.ativo) cb.init();
+
+    const sub = args[0] || 'status';
+
+    switch (sub) {
+      case 'status':
+        const s = cb.status();
+        this.log('\n🔮 CRYSTAL BALL', 'info');
+        this.log(`  Ativo: ${s.ativo ? '✅' : '❌'}`, 'info');
+        this.log(`  Sessão: ${s.sessao}`, 'info');
+        this.log(`  Operações: ${s.operacoes}`, 'info');
+        
+        // Status das conexões
+        const sa = typeof SystemAdmin !== 'undefined' ? SystemAdmin : null;
+        const ra = typeof RemoteAdmin !== 'undefined' ? RemoteAdmin : null;
+        this.log(`  Local: ${sa?.connected ? '✅' : '❌'}`, 'info');
+        this.log(`  Remoto: ${ra?.connected ? '✅' : '❌'}`, 'info');
+        break;
+
+      case 'exec':
+      case 'run':
+      case 'x':
+        const entrada = args.slice(1).join(' ');
+        if (!entrada) {
+          this.log('Uso: crystal <comando em português>', 'erro');
+          this.log('Exemplos:', 'info');
+          this.log('  crystal listar processos', 'info');
+          this.log('  crystal mostrar memória', 'info');
+          this.log('  crystal verificar disco', 'info');
+          this.log('  crystal git status', 'info');
+          this.log('  crystal criar pasta teste', 'info');
+          this.log('  crystal buscar arquivo config', 'info');
+          this.log('  crystal ping google.com', 'info');
+          this.log('  crystal docker containers', 'info');
+          return;
+        }
+        
+        this.log('🔮 Consultando Crystal Ball...', 'aviso');
+        const resultado = await cb.processar(entrada);
+        this.log(resultado, 'info');
+        break;
+
+      case 'help':
+      case 'ajuda':
+        this.log('\n🔮 CRYSTAL BALL — Comandos:', 'info');
+        this.log('  crystal status       — Ver status', 'info');
+        this.log('  crystal <comando>    — Executar em linguagem natural', 'info');
+        this.log('\n📋 Exemplos de comandos:', 'info');
+        this.log('  • crystal listar processos', 'info');
+        this.log('  • crystal mostrar uso de memória', 'info');
+        this.log('  • crystal verificar espaço em disco', 'info');
+        this.log('  • crystal mostrar configuração de rede', 'info');
+        this.log('  • crystal listar arquivos na pasta X', 'info');
+        this.log('  • crystal criar pasta Y', 'info');
+        this.log('  • crystal ler arquivo Z', 'info');
+        this.log('  • crystal buscar arquivo com nome X', 'info');
+        this.log('  • crystal git status', 'info');
+        this.log('  • crystal git log', 'info');
+        this.log('  • crystal instalar npm pacote', 'info');
+        this.log('  • crystal ping google.com', 'info');
+        this.log('  • crystal verificar porta 8080', 'info');
+        this.log('  • crystal mostrar containers docker', 'info');
+        this.log('  • crystal mostrar dispositivos hardware', 'info');
+        this.log('  • crystal mostrar logs do sistema', 'info');
+        this.log('  • crystal mostrar regras de firewall', 'info');
+        this.log('\n⚡ Comandos diretos também funcionam:', 'info');
+        this.log('  • crystal ps aux', 'info');
+        this.log('  • crystal Get-Process', 'info');
+        this.log('  • crystal ls -la', 'info');
+        break;
+
+      default:
+        // Tratar como comando direto
+        const cmd = args.join(' ');
+        this.log('🔮 Crystal Ball processando...', 'aviso');
+        const res = await cb.processar(cmd);
+        this.log(res, 'info');
+    }
   },
 
 

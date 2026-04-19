@@ -496,6 +496,7 @@
 <script src="js/remote-admin.js">
 <script src="js/parallel-engine.js">
 <script src="js/agent-trainer.js">
+<script src="js/crystal-ball.js">
 
 <!-- Painel Remoto -->
 <div id="remote-panel" class="panel hidden">
@@ -608,6 +609,9 @@
       
       // Init SystemAdmin
       if (typeof SystemAdmin !== 'undefined') SystemAdmin.init();
+      
+      // Init CrystalBall
+      if (typeof CrystalBall !== 'undefined') CrystalBall.init();
       
       // Init RemoteAdmin
       if (typeof RemoteAdmin !== 'undefined') {
