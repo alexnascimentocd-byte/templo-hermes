@@ -1438,6 +1438,39 @@ body {
   color: #2a4a2a;
 }
 
+/* ===== BARRA DE AÇÕES RÁPIDAS DO CONSOLE ===== */
+.console-quickbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 8px;
+  border-top: 1px solid #1a3a1a;
+  background: rgba(0,0,0,0.4);
+  justify-content: center;
+}
+
+.quick-action {
+  padding: 6px 8px;
+  background: rgba(74, 255, 74, 0.05);
+  border: 1px solid #1a3a1a;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 36px;
+  text-align: center;
+}
+
+.quick-action:hover {
+  background: rgba(74, 255, 74, 0.15);
+  border-color: #4aff4a;
+  transform: scale(1.1);
+}
+
+.quick-action:active {
+  transform: scale(0.95);
+}
+
 /* ===== AUTOCOMPLETE DO CONSOLE ===== */
 .console-suggestions {
   position: absolute;

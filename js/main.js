@@ -362,6 +362,16 @@ const Game = {
 
     // Autocomplete de comandos
     this.setupAutocomplete();
+
+    // Botões de ação rápida (emojis)
+    document.querySelectorAll('.quick-action').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cmd = btn.dataset.cmd;
+        if (cmd) {
+          Console.execute(cmd);
+        }
+      });
+    });
   },
 
   // Autocomplete do console

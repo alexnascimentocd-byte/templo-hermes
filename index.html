@@ -148,38 +148,38 @@
         <h2>⌨️ Console do Grimório</h2>
         <button id="close-console">✕</button>
       </div>
-      <div class="console-body">
+      <div class="console-body" style="position:relative">
         <div id="console-output" class="console-output">
           <div class="console-welcome">
-            ╔═══════════════════════════════════╗<br>
-            ║  ⌨️ GRIMÓRIO MESTRE — TERMINAL    ║<br>
-            ╠═══════════════════════════════════╣<br>
-            ║  Comandos:                        ║<br>
-            ║  > status     — Ver o templo      ║<br>
-            ║  > agentes    — Listar mentes     ║<br>
-            ║  > invocar [t]— Chamar uma mente  ║<br>
-            ║  > dispensar  — Retirar uma mente ║<br>
-            ║  > conselho   — Abrir reunião     ║<br>
-            ║  > ferramentas— Ver utensílios    ║<br>
-            ║  > mensagens  — Ver recados       ║<br>
-            ║  > evoluir    — Subir de nível    ║<br>
-            ║  > energia    — Ver energia MCP   ║<br>
-            ║  > falar [msg]— Enviar recado     ║<br>
-            ║  > ler [arq]  — Ler um arquivo    ║<br>
-            ║  > escrever   — Escrever arquivo  ║<br>
-            ║  > runas      — Ver runas ativas  ║<br>
-            ║  > zonas      — Listar zonas      ║<br>
-            ║  > limpar     — Limpar terminal   ║<br>
-            ║  > ajuda      — Esta ajuda        ║<br>
-            ╚═══════════════════════════════════╝<br>
+╔═══════════════════════════════════╗
+║  ⌨️ GRIMÓRIO MESTRE — TERMINAL    ║
+╠═══════════════════════════════════╣
+║  Digite "ajuda" para ver comandos ║
+║  Digite algo e veja sugestões...  ║
+╚═══════════════════════════════════╝
           </div>
         </div>
+        <!-- Sugestões de autocomplete -->
+        <div id="console-suggestions" class="console-suggestions hidden"></div>
         <div class="console-input-row">
           <span class="console-prompt">Zói@templo:~$</span>
           <input type="text" id="console-input" class="console-input" placeholder="Digite um comando..." autocomplete="off" spellcheck="false">
         </div>
-        <!-- Sugestões de autocomplete -->
-        <div id="console-suggestions" class="console-suggestions hidden"></div>
+      </div>
+      <!-- Barra de ações rápidas -->
+      <div class="console-quickbar">
+        <button class="quick-action" data-cmd="status" title="Status">🌡️</button>
+        <button class="quick-action" data-cmd="agentes" title="Mentes">🧬</button>
+        <button class="quick-action" data-cmd="conselho" title="Reunião">☯️</button>
+        <button class="quick-action" data-cmd="ferramentas" title="Ferramentas">🔬</button>
+        <button class="quick-action" data-cmd="mensagens" title="Mensagens">🪬</button>
+        <button class="quick-action" data-cmd="energia" title="Energia">🧿</button>
+        <button class="quick-action" data-cmd="runas" title="Runas">🔯</button>
+        <button class="quick-action" data-cmd="zonas" title="Zonas">🕍</button>
+        <button class="quick-action" data-cmd="invocar todos" title="Invocar Todos">🔼</button>
+        <button class="quick-action" data-cmd="energia encher" title="Encher Energia">💊</button>
+        <button class="quick-action" data-cmd="limpar" title="Limpar">🔃</button>
+        <button class="quick-action" data-cmd="ajuda" title="Ajuda">📲</button>
       </div>
     </div>
 
