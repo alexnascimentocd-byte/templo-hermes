@@ -6,7 +6,7 @@ const http = require('http');
 const { exec } = require('child_process');
 const os = require('os');
 
-const PORT = process.env.PORT || 8888;
+const PORT = process.env.PORT || 8081;
 const AUTH_KEY = process.env.AUTH_KEY || 'templo-hermes-2026';
 
 // Whitelist de comandos bloqueados (segurança)

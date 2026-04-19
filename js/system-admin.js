@@ -16,7 +16,7 @@ const SystemAdmin = {
   
   // Auto-conectar na API local
   async autoConnect() {
-    const ports = [8888, 9999, 3000, 5000];
+    const ports = [8081, 8888, 9999, 3000, 5000];
     for (const port of ports) {
       try {
         const resp = await fetch(`http://localhost:${port}/health`, { 
@@ -50,7 +50,7 @@ const SystemAdmin = {
   // Executar comando
   async execute(command, options = {}) {
     if (!this.connected) {
-      return { success: false, output: '⚠️ Não conectado ao sistema local. Use: sysadmin connect http://localhost:8888' };
+      return { success: false, output: '⚠️ Não conectado ao sistema local. Use: sysadmin connect http://localhost:8081' };
     }
     
     const shell = options.shell || this.shell;

@@ -16,9 +16,9 @@ if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
 }
 
 # Verificar se já está rodando
-$portInUse = Get-NetTCPConnection -LocalPort 8888 -ErrorAction SilentlyContinue
+$portInUse = Get-NetTCPConnection -LocalPort 8081 -ErrorAction SilentlyContinue
 if ($portInUse) {
-    Write-Host "[INFO] Servidor já está rodando na porta 8888" -ForegroundColor Yellow
+    Write-Host "[INFO] Servidor já está rodando na porta 8081" -ForegroundColor Yellow
     Read-Host "Pressione Enter para sair"
     exit 0
 }
@@ -32,7 +32,7 @@ if ($isAdmin) {
 }
 
 # Iniciar servidor
-Write-Host "[OK] Iniciando servidor na porta 8888..." -ForegroundColor Green
+Write-Host "[OK] Iniciando servidor na porta 8081..." -ForegroundColor Green
 Write-Host ""
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path

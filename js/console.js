@@ -849,7 +849,7 @@ const Console = {
         const url = args[1];
         if (!url) {
           this.log('Uso: sysadmin connect <url>', 'erro');
-          this.log('Exemplo: sysadmin connect http://localhost:8888', 'info');
+          this.log('Exemplo: sysadmin connect http://localhost:8081', 'info');
           return;
         }
         this.log('🔌 Conectando...', 'info');
@@ -903,7 +903,7 @@ const Console = {
   async cmdShell(shell, args) {
     const sa = typeof SystemAdmin !== 'undefined' ? SystemAdmin : null;
     if (!sa || !sa.connected) {
-      this.log('⚠️ Não conectado. Use: sysadmin connect http://localhost:8888', 'erro');
+      this.log('⚠️ Não conectado. Use: sysadmin connect http://localhost:8081', 'erro');
       return;
     }
     
