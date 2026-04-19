@@ -43,7 +43,7 @@ const Council = {
     this.participants = Agents.active.filter(a => a.level >= 2);
     if (this.participants.length < 2) {
       // Se poucos agentes ativos, usar todos do roster
-      this.participants = Agents.roster.slice(0, Math.min(8, Agents.roster.length));
+      this.participants = Agents.roster.slice(0, Math.min(15, Agents.roster.length));
     }
 
     // Mover participantes para a Mesa
@@ -333,7 +333,7 @@ const Council = {
     // Agentes respondem à intervenção do Mestre
     const responders = this.participants
       .sort(() => Math.random() - 0.5)
-      .slice(0, Math.min(4, this.participants.length));
+      .slice(0, Math.min(15, this.participants.length));
 
     responders.forEach((agent, i) => {
       setTimeout(() => {
@@ -351,7 +351,7 @@ const Council = {
 
         // XP por responder ao Mestre
         Agents.gainExperience(agent, 20);
-      }, (i + 1) * 2500); // 2.5s entre respostas (era 1.2s)
+      }, (i + 1) * 1200); // 2.5s entre respostas (era 1.2s)
     });
 
     // Enviar pro Inbox também

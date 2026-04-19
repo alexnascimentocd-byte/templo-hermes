@@ -1059,23 +1059,21 @@ const Game = {
       // 3 mentes respondem com base nos temas
       const respondentes = Agents.active
         .sort(() => Math.random() - 0.5)
-        .slice(0, Math.min(3, Agents.active.length));
+        .slice(0, Math.min(15, Agents.active.length));
 
       respondentes.forEach((agente, i) => {
         setTimeout(() => {
           const resposta = this.gerarRespostaAlquimica(agente, msg || `[arquivo: ${file?.name || 'enviado'}]`, temas);
           this.chatLog(output, `${agente.icon} ${agente.name}`, resposta, 'agent');
           this.chatCtx.historico.push({ de: agente.name, texto: resposta });
-        }, (i + 1) * 1800);
+        }, (i + 1) * 1000);
       });
 
-      // Após as respostas, síntese se acumulou 3+ mensagens
-      if (this.chatCtx.msgCount % 3 === 0) {
-        setTimeout(() => {
-          const sintese = this.gerarSintese();
-          this.chatLog(output, '☤ Síntese do Conselho', sintese, 'system');
-        }, respondentes.length * 1800 + 1500);
-      }
+      // Síntese após TODAS as respostas (modo persistente)
+      setTimeout(() => {
+        const sintese = this.gerarSintese();
+        this.chatLog(output, '☤ Síntese do Conselho', sintese, 'system');
+      }, respondentes.length * 1800 + 800);
 
       // Inbox
       if (typeof Inbox !== 'undefined') {
