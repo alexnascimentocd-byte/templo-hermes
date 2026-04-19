@@ -1,0 +1,44 @@
+# ===== SETUP — Cria labels necessários no repo =====
+
+name: "🏷️ Setup Labels"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-labels:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Criar labels
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const labels = [
+              { name: 'execute', color: 'fbca04', description: 'Comando para execução remota' },
+              { name: 'done', color: '0e8a16', description: 'Execução concluída' },
+              { name: 'local-agent', color: '1d76db', description: 'Executado pelo agente local' },
+              { name: 'status', color: 'd93f0b', description: 'Verificação de status' },
+              { name: 'cloud', color: '5319e7', description: 'Executado no GitHub Actions' }
+            ];
+            
+            for (const label of labels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                console.log(`✅ Label '${label.name}' criado`);
+              } catch (e) {
+                if (e.status === 422) {
+                  console.log(`ℹ️ Label '${label.name}' já existe`);
+                } else {
+                  console.error(`❌ Erro: ${e.message}`);
+                }
+              }
+            }
