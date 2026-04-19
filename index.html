@@ -491,6 +491,7 @@
   <script src="js/interactions.js"></script>
   <script src="js/initiation.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/system-admin.js"></script>
 
   <!-- Bootstrap: persistência e KB (cache-proof) -->
   <script>
@@ -537,6 +538,9 @@
       
       // Init KnowledgeBase
       if (typeof KnowledgeBase !== 'undefined') KnowledgeBase.init();
+      
+      // Init SystemAdmin
+      if (typeof SystemAdmin !== 'undefined') SystemAdmin.init();
       
       // Patch response engine into conversation
       if (typeof ResponseEngine !== 'undefined' && typeof Game !== 'undefined') {

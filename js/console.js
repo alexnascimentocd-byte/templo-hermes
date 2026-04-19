@@ -47,6 +47,12 @@ const Console = {
       case 'github': case 'git': this.cmdGithub(args); break;
       case 'deploy': this.cmdDeploy(args); break;
       case 'agente': case 'agent': case 'hermes': this.cmdAgente(args); break;
+      case 'sys': case 'sysadmin': case 'sistema': this.cmdSysAdmin(args); break;
+      case 'powershell': case 'ps': this.cmdShell('powershell', args); break;
+      case 'cmd': this.cmdShell('cmd', args); break;
+      case 'bash': case 'sh': this.cmdShell('bash', args); break;
+      case 'root': this.cmdRoot(args); break;
+      case 'user': this.cmdUser(args); break;
       default:
         this.log(`❌ Comando desconhecido: "${comando}". Digite "ajuda" para ver os comandos.`, 'erro');
     }
@@ -811,5 +817,153 @@ const Console = {
         }
       });
     }
+  },
+
+  // === COMANDOS DE SISTEMA (SystemAdmin) ===
+
+  async cmdSysAdmin(args) {
+    const sa = typeof SystemAdmin !== 'undefined' ? SystemAdmin : null;
+    if (!sa) {
+      this.log('❌ SystemAdmin não disponível', 'erro');
+      return;
+    }
+
+    const action = (args[0] || 'status').toLowerCase();
+    
+    switch (action) {
+      case 'status': {
+        const st = sa.status();
+        this.log(`
+╔═══════════════════════════════════════╗
+║  🖥️  SYSTEM ADMIN STATUS              ║
+╠═══════════════════════════════════════╣
+║  Conectado: ${st.connected ? '✅ Sim' : '❌ Não'}${''.padEnd(22)}║
+║  API URL: ${(st.apiUrl || 'N/A').padEnd(28)}║
+║  Modo: ${st.mode.toUpperCase().padEnd(31)}║
+║  Shell: ${st.shell.padEnd(30)}║
+║  Histórico: ${String(st.historyCount).padEnd(26)}║
+╚═══════════════════════════════════════╝`, 'info');
+        break;
+      }
+      case 'connect': {
+        const url = args[1];
+        if (!url) {
+          this.log('Uso: sysadmin connect <url>', 'erro');
+          this.log('Exemplo: sysadmin connect http://localhost:8888', 'info');
+          return;
+        }
+        this.log('🔌 Conectando...', 'info');
+        const result = await sa.connect(url);
+        this.log(result.message, result.success ? 'sucesso' : 'erro');
+        break;
+      }
+      case 'mode': {
+        const newMode = args[1];
+        if (newMode === 'root' || newMode === 'user') {
+          sa.mode = newMode;
+          this.log(`🔧 Modo alterado para: ${newMode.toUpperCase()}`, 'sucesso');
+        } else {
+          this.log(`Modo atual: ${sa.mode.toUpperCase()}`, 'info');
+          this.log('Uso: sysadmin mode <root|user>', 'info');
+        }
+        break;
+      }
+      case 'shell': {
+        const newShell = args[1];
+        if (['powershell', 'cmd', 'bash'].includes(newShell)) {
+          sa.shell = newShell;
+          this.log(`🐚 Shell alterado para: ${newShell}`, 'sucesso');
+        } else {
+          this.log(`Shell atual: ${sa.shell}`, 'info');
+          this.log('Uso: sysadmin shell <powershell|cmd|bash>', 'info');
+        }
+        break;
+      }
+      case 'history': {
+        if (sa.history.length === 0) {
+          this.log('Sem histórico de comandos.', 'info');
+        } else {
+          sa.history.slice(-10).forEach((h, i) => {
+            this.log(`[${i+1}] ${h.shell}> ${h.command}`, 'info');
+            if (h.output) this.log(`    ${h.output.substring(0, 100)}`, 'info');
+          });
+        }
+        break;
+      }
+      default:
+        this.log('Comandos sysadmin:', 'info');
+        this.log('  status     - Ver estado da conexão', 'info');
+        this.log('  connect    - Conectar ao servidor local', 'info');
+        this.log('  mode       - Alternar root/user', 'info');
+        this.log('  shell      - Alternar shell', 'info');
+        this.log('  history    - Ver histórico', 'info');
+    }
+  },
+
+  async cmdShell(shell, args) {
+    const sa = typeof SystemAdmin !== 'undefined' ? SystemAdmin : null;
+    if (!sa || !sa.connected) {
+      this.log('⚠️ Não conectado. Use: sysadmin connect http://localhost:8888', 'erro');
+      return;
+    }
+    
+    const command = args.join(' ');
+    if (!command) {
+      this.log(`Uso: ${shell} <comando>`, 'erro');
+      this.log(`Shell atual: ${sa.shell}`, 'info');
+      return;
+    }
+    
+    this.log(`⏳ Executando (${shell}/${sa.mode})...`, 'info');
+    const result = await sa.execute(command, { shell });
+    
+    if (result.success) {
+      if (result.output) {
+        this.log(result.output, 'info');
+      }
+      this.log(`✅ Exit code: ${result.exitCode} (${result.elapsed})`, 'sucesso');
+    } else {
+      if (result.output) this.log(result.output, 'erro');
+      this.log(`❌ Exit code: ${result.exitCode}`, 'erro');
+    }
+  },
+
+  cmdRoot(args) {
+    const sa = typeof SystemAdmin !== 'undefined' ? SystemAdmin : null;
+    if (!sa) {
+      this.log('❌ SystemAdmin não disponível', 'erro');
+      return;
+    }
+    
+    if (args.length > 0) {
+      // Executar comando como root
+      this.cmdShell(sa.shell, args);
+      return;
+    }
+    
+    sa.mode = 'root';
+    this.log('🔑 Modo ROOT ativado!', 'sucesso');
+    this.log('⚠️  Comandos serão executados com privilégios elevados', 'aviso');
+  },
+
+  cmdUser(args) {
+    const sa = typeof SystemAdmin !== 'undefined' ? SystemAdmin : null;
+    if (!sa) {
+      this.log('❌ SystemAdmin não disponível', 'erro');
+      return;
+    }
+    
+    if (args.length > 0) {
+      // Executar comando como usuário
+      const origMode = sa.mode;
+      sa.mode = 'user';
+      this.cmdShell(sa.shell, args);
+      sa.mode = origMode;
+      return;
+    }
+    
+    sa.mode = 'user';
+    this.log('👤 Modo USER ativado', 'sucesso');
+    this.log('Comandos serão executados com privilégios normais', 'info');
   }
 };
