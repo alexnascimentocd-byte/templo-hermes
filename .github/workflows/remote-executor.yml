@@ -85,7 +85,7 @@ jobs:
           echo "elapsed=${ELAPSED}ms" >> $GITHUB_OUTPUT
 
       - name: Postar resultado
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@v5
         with:
           issue-number: ${{ steps.parse.outputs.issue }}
           body: |
@@ -106,7 +106,7 @@ jobs:
             🤖 *Executado pelo Templo de Hermes Remote Executor*
 
       - name: Fechar issue
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@v5
         with:
           issue-number: ${{ steps.parse.outputs.issue }}
           body: |
