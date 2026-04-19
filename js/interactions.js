@@ -453,6 +453,14 @@ const Interactions = {
     const list = document.getElementById('agents-list');
     list.innerHTML = '';
     
+    // Seção: Agentes Ativos
+    if (Agents.active.length > 0) {
+      const activeHeader = document.createElement('div');
+      activeHeader.style.cssText = 'color:#ffcc00;font-size:10px;padding:8px;border-bottom:1px solid #4a1a6b;margin-bottom:4px';
+      activeHeader.textContent = `🔴 ATIVOS (${Agents.active.length}/15)`;
+      list.appendChild(activeHeader);
+    }
+    
     Agents.active.forEach(agent => {
       const card = document.createElement('div');
       card.className = 'agent-card';
@@ -462,6 +470,7 @@ const Interactions = {
           <div>
             <div class="agent-name">${agent.name}</div>
             <div class="agent-level">Nível ${agent.level} • ${agent.skill}</div>
+            <div style="color:#8a7a5a;font-size:7px;margin-top:2px">${agent.hermetic || ''}</div>
           </div>
         </div>
         <div class="agent-status">Status: ${agent.currentAction}</div>
@@ -472,6 +481,40 @@ const Interactions = {
       `;
       list.appendChild(card);
     });
+
+    // Seção: Em Reserva (roster mas não ativos)
+    const inactive = Agents.roster.filter(a => !Agents.active.find(ac => ac.id === a.id));
+    if (inactive.length > 0) {
+      const reserveHeader = document.createElement('div');
+      reserveHeader.style.cssText = 'color:#888;font-size:10px;padding:8px;border-bottom:1px solid #2a2a4a;margin:8px 0 4px';
+      reserveHeader.textContent = `💤 EM RESERVA (${inactive.length})`;
+      list.appendChild(reserveHeader);
+
+      inactive.forEach(agent => {
+        const card = document.createElement('div');
+        card.className = 'agent-card';
+        card.style.opacity = '0.5';
+        card.innerHTML = `
+          <div class="agent-header">
+            <div class="agent-avatar">${agent.icon}</div>
+            <div>
+              <div class="agent-name">${agent.name}</div>
+              <div class="agent-level">${agent.skill} • Nível ${agent.level}</div>
+              <div style="color:#8a7a5a;font-size:7px;margin-top:2px">${agent.hermetic || ''}</div>
+            </div>
+          </div>
+          <div class="agent-description" style="color:#8a8a8a;font-size:7px;margin-top:4px">${agent.description}</div>
+        `;
+        // Click to spawn
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => {
+          Agents.spawn(agent.id);
+          this.updateAgentsList();
+          PriorityChat.addMessage('Sistema', `${agent.icon} ${agent.name} invocado ao templo!`, 3);
+        });
+        list.appendChild(card);
+      });
+    }
     
     // Adicionar jogador
     if (Player) {

@@ -37,6 +37,7 @@
         <button id="btn-fullscreen" title="Tela Cheia">⛶</button>
         <button id="btn-minimap" title="Minimapa">🗺️</button>
         <button id="btn-agents" title="Agentes">👥</button>
+        <button id="btn-council" title="Conselho / Mesa de Reunião">☤</button>
       </div>
     </header>
 
@@ -85,6 +86,37 @@
         <button id="close-agents">✕</button>
       </div>
       <div class="agents-list" id="agents-list"></div>
+    </div>
+
+    <!-- Painel do Conselho (Mesa de Reunião) -->
+    <div id="council-panel" class="hidden">
+      <div class="panel-header">
+        <h2>☤ Mesa de Reunião — Conselho</h2>
+        <button id="close-council">✕</button>
+      </div>
+      <div class="council-content">
+        <div id="council-status" class="council-status"></div>
+        <div id="council-topics" class="council-topics"></div>
+        <div id="council-debates" class="council-debates"></div>
+        <div class="council-actions">
+          <button id="btn-convene" class="council-btn">☤ Convocar Conselho</button>
+          <button id="btn-council-history" class="council-btn-secondary">📜 Histórico</button>
+          <button id="btn-spawn-all" class="council-btn-secondary">👥 Reunir Todas as 15 Mentes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel MCP Tools -->
+    <div id="mcp-panel" class="hidden">
+      <div class="panel-header">
+        <h2>🔧 Ferramentas MCP</h2>
+        <button id="close-mcp">✕</button>
+      </div>
+      <div class="mcp-content">
+        <div id="mcp-energy" class="mcp-energy"></div>
+        <div id="mcp-tools-list" class="mcp-tools-list"></div>
+        <div id="mcp-filesystem" class="mcp-filesystem"></div>
+      </div>
     </div>
 
     <!-- Modal de Livro -->
@@ -142,7 +174,9 @@
   <script src="js/world.js"></script>
   <script src="js/items.js"></script>
   <script src="js/runes.js"></script>
+  <script src="js/mcp_tools.js"></script>
   <script src="js/agents.js"></script>
+  <script src="js/council.js"></script>
   <script src="js/player.js"></script>
   <script src="js/renderer.js"></script>
   <script src="js/bookmodal.js"></script>

@@ -745,3 +745,231 @@ body {
 .agent-spawn {
   animation: agent-appear 0.5s ease forwards;
 }
+
+/* ===== CONSELHO / MESA DE REUNIÃO ===== */
+#council-panel {
+  position: fixed;
+  top: 60px;
+  right: 10px;
+  width: 380px;
+  max-height: calc(100vh - 120px);
+  background: rgba(26, 26, 46, 0.97);
+  border: 2px solid var(--gold-dark);
+  border-radius: 8px;
+  overflow-y: auto;
+  z-index: 100;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  box-shadow: 0 0 30px rgba(212, 165, 71, 0.3);
+}
+
+.council-content {
+  padding: 12px;
+}
+
+.council-status {
+  margin-bottom: 12px;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid #2a2a4a;
+  color: var(--parchment-dark);
+}
+
+.status-active { color: #ff4444; font-weight: bold; }
+.status-idle { color: #44ff44; }
+
+.council-topics {
+  margin-bottom: 12px;
+}
+
+.topic-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  margin: 4px 0;
+  background: var(--obsidian-light);
+  border: 1px solid var(--gold-dark);
+  color: var(--parchment);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.topic-btn:hover {
+  background: var(--purple-dark);
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(212, 165, 71, 0.3);
+}
+
+.council-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.council-btn {
+  padding: 12px;
+  background: linear-gradient(135deg, var(--purple-dark), var(--gold-dark));
+  border: 2px solid var(--gold);
+  color: var(--parchment);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s;
+  text-shadow: 0 0 5px rgba(212, 165, 71, 0.5);
+}
+
+.council-btn:hover {
+  background: linear-gradient(135deg, var(--gold-dark), var(--purple));
+  box-shadow: 0 0 20px rgba(212, 165, 71, 0.5);
+  transform: scale(1.02);
+}
+
+.council-btn-secondary {
+  padding: 10px;
+  background: var(--obsidian-light);
+  border: 1px solid var(--purple-light);
+  color: var(--parchment-dark);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.council-btn-secondary:hover {
+  border-color: var(--gold);
+  color: var(--parchment);
+}
+
+.council-debates {
+  margin-top: 12px;
+}
+
+.decision-card {
+  background: var(--obsidian-light);
+  border: 1px solid var(--purple-dark);
+  border-radius: 6px;
+  padding: 10px;
+  margin: 8px 0;
+}
+
+.decision-topic {
+  color: var(--gold);
+  font-size: 9px;
+  margin-bottom: 6px;
+}
+
+.decision-meta {
+  color: #888;
+  font-size: 7px;
+  margin-bottom: 8px;
+}
+
+.decision-synthesis {
+  color: var(--parchment-dark);
+  font-size: 8px;
+  line-height: 1.6;
+}
+
+/* ===== MCP TOOLS PANEL ===== */
+#mcp-panel {
+  position: fixed;
+  top: 60px;
+  left: 10px;
+  width: 350px;
+  max-height: calc(100vh - 120px);
+  background: rgba(26, 26, 46, 0.97);
+  border: 2px solid #2d5a27;
+  border-radius: 8px;
+  overflow-y: auto;
+  z-index: 100;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  box-shadow: 0 0 30px rgba(45, 90, 39, 0.3);
+}
+
+.mcp-content {
+  padding: 12px;
+}
+
+.mcp-energy {
+  margin-bottom: 12px;
+}
+
+.energy-bar {
+  width: 100%;
+  height: 16px;
+  background: #1a1a2e;
+  border: 1px solid #2d5a27;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.energy-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2d5a27, #4aff8a);
+  transition: width 0.5s;
+}
+
+.energy-text {
+  color: #4aff8a;
+  margin-top: 4px;
+  font-size: 8px;
+}
+
+.mcp-tools-list {
+  margin-bottom: 12px;
+}
+
+.tool-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  margin: 3px 0;
+  background: rgba(45, 90, 39, 0.15);
+  border: 1px solid #2d5a27;
+  border-radius: 4px;
+  color: var(--parchment-dark);
+  font-size: 8px;
+}
+
+.tool-icon { font-size: 14px; }
+.tool-cost { color: #4aff8a; margin-left: auto; }
+
+.mcp-filesystem {
+  margin-top: 12px;
+}
+
+.fs-file {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  color: #888;
+  font-size: 8px;
+  border-bottom: 1px solid #1a2a1a;
+}
+
+.fs-file:hover { color: #4aff8a; }
+
+/* ===== RESPONSIVO CONSELHO/MCP ===== */
+@media (max-width: 768px) {
+  #council-panel, #mcp-panel {
+    width: calc(100% - 20px);
+    left: 10px;
+    right: 10px;
+    top: 50px;
+    bottom: 60px;
+  }
+}

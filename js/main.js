@@ -163,10 +163,14 @@ const Game = {
     World.init();
     Items.init();
     Agents.initDefaults();
+    MCPTools.init();
     Renderer.init();
     Interactions.init();
     PriorityChat.init();
     Initiation.updateBadge();
+    
+    // Configurar botão do Conselho
+    this.setupCouncilUI();
     
     // Configurar controles
     this.setupControls();
@@ -240,6 +244,144 @@ const Game = {
         Player.moveTo(Player.x, Player.y + (dy > 0 ? 2 : -2));
       }
     });
+  },
+  
+  // === UI DO CONSELHO ===
+  setupCouncilUI() {
+    const btnCouncil = document.getElementById('btn-council');
+    const councilPanel = document.getElementById('council-panel');
+    const closeCouncil = document.getElementById('close-council');
+    const btnConvene = document.getElementById('btn-convene');
+    const btnHistory = document.getElementById('btn-council-history');
+    const btnSpawnAll = document.getElementById('btn-spawn-all');
+    
+    if (btnCouncil) {
+      btnCouncil.addEventListener('click', () => {
+        councilPanel.classList.toggle('hidden');
+        if (!councilPanel.classList.contains('hidden')) {
+          this.updateCouncilUI();
+        }
+      });
+    }
+    
+    if (closeCouncil) {
+      closeCouncil.addEventListener('click', () => {
+        councilPanel.classList.add('hidden');
+      });
+    }
+    
+    if (btnConvene) {
+      btnConvene.addEventListener('click', () => {
+        this.showTopicSelector();
+      });
+    }
+    
+    if (btnHistory) {
+      btnHistory.addEventListener('click', () => {
+        this.showCouncilHistory();
+      });
+    }
+    
+    if (btnSpawnAll) {
+      btnSpawnAll.addEventListener('click', () => {
+        this.spawnAllAgents();
+      });
+    }
+  },
+  
+  updateCouncilUI() {
+    const statusEl = document.getElementById('council-status');
+    const status = Council.getStatus();
+    
+    if (statusEl) {
+      statusEl.innerHTML = `
+        <div class="status-row">
+          <span>Estado:</span>
+          <span class="${status.active ? 'status-active' : 'status-idle'}">
+            ${status.active ? '🔴 EM SESSÃO' : '🟢 Disponível'}
+          </span>
+        </div>
+        <div class="status-row">
+          <span>Tópico:</span>
+          <span>${status.topic}</span>
+        </div>
+        <div class="status-row">
+          <span>Rodada:</span>
+          <span>${status.round}/${5}</span>
+        </div>
+        <div class="status-row">
+          <span>Agentes Ativos:</span>
+          <span>${Agents.active.length}/15</span>
+        </div>
+        <div class="status-row">
+          <span>Decisões Passadas:</span>
+          <span>${status.pastDecisions}</span>
+        </div>
+        <div class="status-row">
+          <span>Energia MCP:</span>
+          <span>${MCPTools.energy.current}/${MCPTools.energy.max}</span>
+        </div>
+      `;
+    }
+  },
+  
+  showTopicSelector() {
+    const topicsEl = document.getElementById('council-topics');
+    if (!topicsEl) return;
+    
+    topicsEl.innerHTML = '<h3 style="margin:8px 0;color:#ffcc00">Selecione um Tópico:</h3>';
+    
+    Council.topics.forEach(topic => {
+      const btn = document.createElement('button');
+      btn.className = 'topic-btn';
+      btn.innerHTML = `${topic.icon} ${topic.title}`;
+      btn.title = topic.description;
+      btn.addEventListener('click', () => {
+        Council.convene(topic.id);
+        topicsEl.innerHTML = '';
+        this.updateCouncilUI();
+      });
+      topicsEl.appendChild(btn);
+    });
+  },
+  
+  showCouncilHistory() {
+    const debatesEl = document.getElementById('council-debates');
+    if (!debatesEl) return;
+    
+    const history = Council.getHistory();
+    if (history.length === 0) {
+      debatesEl.innerHTML = '<p style="color:#888;padding:10px">Nenhuma decisão registrada ainda.</p>';
+      return;
+    }
+    
+    debatesEl.innerHTML = '<h3 style="margin:8px 0;color:#ffcc00">📜 Decisões do Conselho:</h3>';
+    history.forEach(decision => {
+      const div = document.createElement('div');
+      div.className = 'decision-card';
+      div.innerHTML = `
+        <div class="decision-topic">${decision.topic}</div>
+        <div class="decision-meta">
+          ${decision.rounds} rodadas · ${decision.debates} debates · ${decision.participants.length} participantes
+        </div>
+        <div class="decision-synthesis">${decision.synthesis}</div>
+      `;
+      debatesEl.appendChild(div);
+    });
+  },
+  
+  spawnAllAgents() {
+    let spawned = 0;
+    Agents.roster.forEach(agent => {
+      if (!Agents.active.find(a => a.id === agent.id)) {
+        Agents.spawn(agent.id);
+        spawned++;
+      }
+    });
+    
+    Interactions.notify(`☤ ${spawned} agentes adicionados ao templo! Total: ${Agents.active.length}/15`);
+    PriorityChat.addMessage('Sistema', `Todas as 15 mentalidades reunidas! ${Agents.active.map(a => a.icon).join(' ')}`, 5);
+    this.updateCouncilUI();
   },
   
   loop() {

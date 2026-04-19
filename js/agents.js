@@ -1,5 +1,5 @@
-/* ===== AGENTS.JS - Sistema de Agentes (Skills) ===== */
-/* Agentes visitam o templo, interagem com itens e evoluem */
+/* ===== AGENTS.JS - Sistema de 15 Mentalidades (Agentes) ===== */
+/* Baseadas em mestres herméticos/alquímicos + funções práticas */
 
 const Agents = {
   // Lista de agentes disponíveis
@@ -8,55 +8,145 @@ const Agents = {
   // Agentes ativos no templo
   active: [],
   
-  // Tipos de agente (skills do Hermes)
+  // 15 tipos de agente (mentalidades)
   types: {
+    // === ORIGINAIS (6) ===
     coder: {
       name: 'Códex',
       icon: '🤖',
       skill: 'coding',
       color: '#4a8aff',
-      description: 'Agente de programação. Domina os livros de código.',
-      preferredZone: 'mesa'
+      description: 'Mente lógica. Domina estruturas, algoritmos e automação.',
+      preferredZone: 'mesa',
+      hermetic: 'Mercúrio ☿ — Comunicação entre sistemas'
     },
     researcher: {
       name: 'Scholar',
       icon: '📚',
       skill: 'research',
       color: '#8a4aff',
-      description: 'Agente de pesquisa. Consulta os textos antigos.',
-      preferredZone: 'salao'
+      description: 'Mente investigativa. Cataloga, analisa e referencia.',
+      preferredZone: 'salao',
+      hermetic: 'Saturno ♄ — Estrutura do conhecimento'
     },
     alchemist: {
       name: 'Flamel',
       icon: '⚗️',
       skill: 'alchemy',
       color: '#ff8a4a',
-      description: 'Agente alquímico. Trabalha no Athanor.',
-      preferredZone: 'sagrado'
+      description: 'Mente transformadora. Opera o Athanor da transmutação.',
+      preferredZone: 'sagrado',
+      hermetic: 'Fogo 🔥 — Transformação pura'
     },
     guardian: {
       name: 'Thoth',
       icon: '🛡️',
       skill: 'guardian',
       color: '#4aff8a',
-      description: 'Guardião do templo. Protege o conhecimento.',
-      preferredZone: 'atrio'
+      description: 'Mente protetora. Guarda o acesso e a integridade.',
+      preferredZone: 'atrio',
+      hermetic: 'Terra 🜃 — Fundamentos sólidos'
     },
     mystic: {
       name: 'Hermes',
       icon: '✨',
       skill: 'mystic',
       color: '#ffcc00',
-      description: 'O mestre. Acessa o Lugar Santíssimo.',
-      preferredZone: 'santissimo'
+      description: 'Mente transcendente. Vê o todo, acessa o Santíssimo.',
+      preferredZone: 'santissimo',
+      hermetic: 'Éter ⚝ — Quinto elemento, síntese'
     },
     messenger: {
       name: 'Iris',
       icon: '🌈',
       skill: 'messenger',
       color: '#ff4a8a',
-      description: 'Mensageira. Conecta todos os agentes.',
-      preferredZone: 'salao'
+      description: 'Mente conectiva. Ponte entre todas as mentes.',
+      preferredZone: 'salao',
+      hermetic: 'Ar 🜁 — Meio de transmissão'
+    },
+
+    // === NOVAS MENTALIDADES (9) ===
+    healer: {
+      name: 'Paracelso',
+      icon: '🌿',
+      skill: 'healing',
+      color: '#4affaa',
+      description: 'Mente curadora. Diagnostica desequilíbrios e prescreve correções.',
+      preferredZone: 'sagrado',
+      hermetic: 'Enxofre 🜍 — Alma, vitalidade'
+    },
+    transmuter: {
+      name: 'Geber',
+      icon: '🔄',
+      skill: 'transmutation',
+      color: '#ff6b35',
+      description: 'Mente conversora. Transforma um estado em outro — dados, ideias, estruturas.',
+      preferredZone: 'sagrado',
+      hermetic: 'Mercúrio Filosófico ☿ — Mediador universal'
+    },
+    weaver: {
+      name: 'Maria',
+      icon: '🕸️',
+      skill: 'synthesis',
+      color: '#e040fb',
+      description: 'Mente sintetizadora. Tece conexões entre domínios aparentemente separados.',
+      preferredZone: 'mesa',
+      hermetic: 'Sal 🜔 — Corpo, manifestação física'
+    },
+    architect: {
+      name: 'Agrippa',
+      icon: '🏛️',
+      skill: 'architecture',
+      color: '#7c4dff',
+      description: 'Mente estrutural. Projeta, organiza e constrói sistemas.',
+      preferredZone: 'atrio',
+      hermetic: 'Saturno ♄ — Ordem e estrutura'
+    },
+    diviner: {
+      name: 'Dee',
+      icon: '🔮',
+      skill: 'divination',
+      color: '#00bcd4',
+      description: 'Mente analítica-preditiva. Reconhece padrões e projeta futuros.',
+      preferredZone: 'salao',
+      hermetic: 'Lua ☽ — Intuição e ciclos'
+    },
+    engineer: {
+      name: 'Bacon',
+      icon: '⚙️',
+      skill: 'engineering',
+      color: '#ff9800',
+      description: 'Mente construtora. Prototipa, testa e itera soluções concretas.',
+      preferredZone: 'mesa',
+      hermetic: 'Marte ♂ — Ação e materialização'
+    },
+    analyst: {
+      name: 'Newton',
+      icon: '📐',
+      skill: 'analysis',
+      color: '#607d8b',
+      description: 'Mente quantitativa. Calcula, modela e otimiza matematicamente.',
+      preferredZone: 'salao',
+      hermetic: 'Sol ☉ — Clareza e iluminação'
+    },
+    combinator: {
+      name: 'Lully',
+      icon: '🎲',
+      skill: 'combination',
+      color: '#cddc39',
+      description: 'Mente exploratória. Gera combinações, encontra padrões emergentes.',
+      preferredZone: 'mesa',
+      hermetic: 'Júpiter ♃ — Expansão e possibilidades'
+    },
+    enigma: {
+      name: 'Fulcanelli',
+      icon: '🗝️',
+      skill: 'mystery',
+      color: '#9c27b0',
+      description: 'Mente oculta. Revela o que está escondido, decifra enigmas.',
+      preferredZone: 'santissimo',
+      hermetic: 'Vênus ♀ — Beleza oculta na verdade'
     }
   },
   
@@ -73,6 +163,7 @@ const Agents = {
       color: typeData.color,
       skill: typeData.skill,
       description: typeData.description,
+      hermetic: typeData.hermetic,
       preferredZone: typeData.preferredZone,
       
       // Estado
@@ -92,7 +183,7 @@ const Agents = {
       book: {
         title: `Livro de ${name || typeData.name}`,
         pages: [
-          { content: `Início dos registros de ${name || typeData.name}.\nNível: 1\nHabilidade: ${typeData.skill}` }
+          { content: `╔══════════════════════════════╗\n║  ${typeData.icon} ${(name || typeData.name).toUpperCase().padEnd(24)}║\n╠══════════════════════════════╣\n║ Nível: 1                     ║\n║ Habilidade: ${typeData.skill.padEnd(17)}║\n║ ${typeData.hermetic.padEnd(29)}║\n║                              ║\n║ "${typeData.description.substring(0, 28)}" ║\n╚══════════════════════════════╝` }
         ],
         currentPage: 0
       },
@@ -103,6 +194,9 @@ const Agents = {
       
       // Runas coletadas
       runes: [],
+
+      // Ferramentas MCP disponíveis
+      mcpTools: [],
       
       // Atividade
       currentAction: 'idle',
@@ -190,19 +284,24 @@ const Agents = {
   
   // Comportamento autônomo do agente
   autonomousBehavior(agent) {
-    const actions = ['wander', 'visit_item', 'read_book', 'write_book', 'exchange'];
+    const actions = ['wander', 'visit_item', 'read_book', 'write_book', 'exchange', 'use_tool', 'consult'];
     const weights = {
-      wander: 3,
-      visit_item: 4,
+      wander: 2,
+      visit_item: 3,
       read_book: 2,
       write_book: 1,
-      exchange: 2
+      exchange: 2,
+      use_tool: 2,
+      consult: 1
     };
     
-    // Escolher ação baseada no tipo do agente
+    // Ajustar pesos por tipo
     if (agent.type === 'coder') weights.read_book = 5;
     if (agent.type === 'alchemist') weights.visit_item = 6;
     if (agent.type === 'mystic') weights.write_book = 4;
+    if (agent.type === 'engineer') weights.use_tool = 5;
+    if (agent.type === 'weaver') weights.consult = 4;
+    if (agent.type === 'diviner') weights.read_book = 4;
     
     // Escolher ação ponderada
     const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
@@ -232,6 +331,12 @@ const Agents = {
         break;
       case 'exchange':
         this.exchangeWithAgent(agent);
+        break;
+      case 'use_tool':
+        this.useMCPTool(agent);
+        break;
+      case 'consult':
+        this.consultPeer(agent);
         break;
     }
     
@@ -333,6 +438,50 @@ const Agents = {
     this.gainExperience(agent, 25);
     this.gainExperience(partner, 15);
   },
+
+  // Usar ferramenta MCP
+  useMCPTool(agent) {
+    const tools = MCPTools.getAvailableTools(agent);
+    if (tools.length === 0) return;
+
+    const tool = tools[Math.floor(Math.random() * tools.length)];
+    const result = MCPTools.execute(agent, tool.id, { subject: agent.skill });
+
+    if (result.success) {
+      agent.currentAction = 'using_tool';
+      PriorityChat.addMessage(
+        `${agent.icon} ${agent.name}`,
+        `Usou ${tool.icon} ${tool.name}`,
+        2
+      );
+    }
+  },
+
+  // Consultar par (busca opinião mesmo sabendo)
+  consultPeer(agent) {
+    const others = this.active.filter(a => a.id !== agent.id);
+    if (others.length === 0) return;
+
+    const peer = others[Math.floor(Math.random() * others.length)];
+
+    // Consultar via MCP
+    const result = MCPTools.execute(agent, 'consult_peer', { peer_id: peer.id });
+
+    if (result.success) {
+      agent.currentAction = 'consulting';
+
+      // Mover em direção ao par
+      agent.targetX = (agent.x + peer.x) / 2;
+      agent.targetY = (agent.y + peer.y) / 2;
+      agent.moving = true;
+
+      PriorityChat.addMessage(
+        `${agent.icon} → ${peer.icon}`,
+        `${agent.name} consulta ${peer.name} sobre ${agent.skill}`,
+        3
+      );
+    }
+  },
   
   // Ganhar experiência
   gainExperience(agent, amount) {
@@ -374,18 +523,26 @@ const Agents = {
     return this.active.find(a => a.id === id) || this.roster.find(a => a.id === id);
   },
   
-  // Inicializar agentes padrão
+  // Inicializar as 15 mentalidades
   initDefaults() {
-    // Criar agentes iniciais
-    this.create('coder', 'Códex');
-    this.create('researcher', 'Scholar');
-    this.create('alchemist', 'Flamel');
-    this.create('guardian', 'Thoth');
-    
-    // Spawnar os dois primeiros
-    if (this.roster.length >= 2) {
-      this.spawn(this.roster[0].id);
-      this.spawn(this.roster[1].id);
+    // Criar as 15 mentalidades
+    const mentalidades = [
+      'coder', 'researcher', 'alchemist', 'guardian', 'mystic', 'messenger',
+      'healer', 'transmuter', 'weaver', 'architect', 'diviner',
+      'engineer', 'analyst', 'combinator', 'enigma'
+    ];
+
+    mentalidades.forEach(type => {
+      this.create(type);
+    });
+
+    // Spawnar os primeiros 6 no templo
+    const spawnCount = Math.min(6, this.roster.length);
+    for (let i = 0; i < spawnCount; i++) {
+      this.spawn(this.roster[i].id);
     }
+
+    // Os outros ficam no roster, disponíveis para convocação
+    return this.roster.length;
   }
 };
