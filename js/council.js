@@ -123,6 +123,13 @@ const Council = {
       perspectives,
       3
     );
+
+    // Enviar para Caixa de Entrada do Mestre
+    if (typeof Inbox !== 'undefined') {
+      Inbox.addAgentMessage(agent.name, agent.icon,
+        `[Conselho — Rodada ${this.round}]\nTópico: ${this.topic.title}\n\n${perspectives}`
+      );
+    }
   },
 
   // Gerar perspectiva baseada no tipo do agente
@@ -333,6 +340,19 @@ ${synthesis.split('\n').map(l => '║ ' + l.padEnd(35) + '║').join('\n')}
     // Notificar
     PriorityChat.addMessage('Conselho', `═══ CONSELHO CONCLUÍDO ═══\n${synthesis}`, 5);
     Interactions.notify(`☤ Conselho concluído: "${this.topic.title}"`);
+
+    // Enviar conclusão completa para a Caixa de Entrada
+    if (typeof Inbox !== 'undefined') {
+      Inbox.addCouncilConclusion({
+        topic: this.topic.title,
+        rounds: this.maxRounds,
+        participants: this.participants.map(a => `${a.icon} ${a.name}`),
+        debates: this.debates.length,
+        synthesis: synthesis,
+        debateLog: this.debates,
+        timestamp: Date.now()
+      });
+    }
 
     // Reset
     this.participants = [];

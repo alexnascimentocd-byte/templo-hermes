@@ -164,13 +164,15 @@ const Game = {
     Items.init();
     Agents.initDefaults();
     MCPTools.init();
+    Inbox.init();
     Renderer.init();
     Interactions.init();
     PriorityChat.init();
     Initiation.updateBadge();
     
-    // Configurar botão do Conselho
+    // Configurar UIs
     this.setupCouncilUI();
+    Inbox.setupUI();
     
     // Configurar controles
     this.setupControls();

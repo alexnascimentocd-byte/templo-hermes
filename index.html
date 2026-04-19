@@ -38,6 +38,7 @@
         <button id="btn-minimap" title="Minimapa">🗺️</button>
         <button id="btn-agents" title="Agentes">👥</button>
         <button id="btn-council" title="Conselho / Mesa de Reunião">☤</button>
+        <button id="btn-inbox" title="Caixa de Entrada">📬</button>
       </div>
     </header>
 
@@ -86,6 +87,32 @@
         <button id="close-agents">✕</button>
       </div>
       <div class="agents-list" id="agents-list"></div>
+    </div>
+
+    <!-- Caixa de Entrada do Mestre (Zói) -->
+    <div id="inbox-panel" class="hidden">
+      <div class="panel-header">
+        <h2>📬 Caixa de Entrada</h2>
+        <span id="inbox-badge" class="inbox-badge hidden">0</span>
+        <button id="close-inbox">✕</button>
+      </div>
+      <div class="inbox-toolbar">
+        <button class="inbox-filter active" data-filter="all">Todos</button>
+        <button class="inbox-filter" data-filter="council">☤ Conselho</button>
+        <button class="inbox-filter" data-filter="thought">💭 Pensamentos</button>
+        <button class="inbox-filter" data-filter="agent_msg">📨 Agentes</button>
+        <button class="inbox-filter" data-filter="system">⚙ Sistema</button>
+        <button id="inbox-mark-read" class="inbox-action">✓ Marcar todos lidos</button>
+        <button id="inbox-clear" class="inbox-action danger">🗑 Limpar</button>
+      </div>
+      <div class="inbox-list" id="inbox-list">
+        <div class="inbox-empty">📬 Nenhuma mensagem ainda.</div>
+      </div>
+      <!-- Compositor de pensamento rápido -->
+      <div class="inbox-compose">
+        <input type="text" id="inbox-input" placeholder="💭 Registrar um pensamento..." class="inbox-input">
+        <button id="inbox-send" class="inbox-send-btn">+</button>
+      </div>
     </div>
 
     <!-- Painel do Conselho (Mesa de Reunião) -->
@@ -175,6 +202,7 @@
   <script src="js/items.js"></script>
   <script src="js/runes.js"></script>
   <script src="js/mcp_tools.js"></script>
+  <script src="js/inbox.js"></script>
   <script src="js/agents.js"></script>
   <script src="js/council.js"></script>
   <script src="js/player.js"></script>
