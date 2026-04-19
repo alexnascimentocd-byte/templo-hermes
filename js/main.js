@@ -459,6 +459,14 @@ const Game = {
 // === INICIAR ===
 window.addEventListener('load', () => {
   Game.init();
+  // Registrar Service Worker (PWA)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      console.log('PWA Service Worker registrado:', reg.scope);
+    }).catch((err) => {
+      console.log('SW erro:', err);
+    });
+  }
 });
 
 // === Estilo para animações ===
