@@ -491,5 +491,70 @@
   <script src="js/interactions.js"></script>
   <script src="js/initiation.js"></script>
   <script src="js/main.js"></script>
+
+  <!-- Bootstrap: persistência e KB (cache-proof) -->
+  <script>
+  (function bootstrap() {
+    // Wait for all modules to load
+    const check = setInterval(() => {
+      if (typeof Agents === 'undefined' || typeof Interactions === 'undefined') return;
+      clearInterval(check);
+      
+      // Init persistence
+      if (typeof Persistence !== 'undefined') {
+        Persistence.init();
+        // Patch Agents.saveAll
+        if (!Agents.saveAll) {
+          Agents.saveAll = function() {
+            if (typeof Persistence !== 'undefined') {
+              Persistence.saveAgents(this.roster);
+            }
+          };
+        }
+        // Load saved state
+        const saved = Persistence.loadAgents();
+        if (saved && saved.length > 0) {
+          saved.forEach(s => {
+            const a = Agents.roster.find(r => r.type === s.type);
+            if (a && s.level > 1) {
+              a.level = s.level;
+              a.experience = s.experience || 0;
+              a.expToNext = s.expToNext || 100;
+            }
+          });
+        }
+        // Auto-save every 30s
+        setInterval(() => Agents.saveAll(), 30000);
+        // Patch gainExperience for auto-save
+        const orig = Agents.gainExperience.bind(Agents);
+        let st = null;
+        Agents.gainExperience = function(agent, xp) {
+          orig(agent, xp);
+          if (st) clearTimeout(st);
+          st = setTimeout(() => this.saveAll(), 3000);
+        };
+      }
+      
+      // Init KnowledgeBase
+      if (typeof KnowledgeBase !== 'undefined') KnowledgeBase.init();
+      
+      // Patch response engine into conversation
+      if (typeof ResponseEngine !== 'undefined' && typeof Game !== 'undefined') {
+        const origResp = Game.gerarRespostaAlquimica?.bind(Game);
+        if (origResp) {
+          Game.gerarRespostaAlquimica = function(agent, msg, temas) {
+            try {
+              const r = ResponseEngine.generate(agent, msg, temas);
+              if (r && r.length > 10) return r;
+            } catch(e) {}
+            return origResp(agent, msg, temas);
+          };
+        }
+      }
+      
+      console.log('🔧 Bootstrap: persistência + KB + response engine carregados');
+    }, 500);
+  })();
+  </script>
 </body>
 </html>
