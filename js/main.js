@@ -1235,7 +1235,21 @@ const Game = {
 
   // Gerar resposta usando ResponseEngine (offline) + fallback alquímico
   gerarRespostaAlquimica(agente, mensagem, temas) {
-    // 1. Tentar ResponseEngine primeiro (base de conhecimento offline)
+    // 0. Tentar ParallelEngine primeiro (respostas criativas e variadas)
+    if (typeof ParallelEngine !== 'undefined') {
+      try {
+        const tipoAgente = Object.keys(Agents.types).find(k => 
+          Agents.types[k].name === agente.name || Agents.types[k].icon === agente.icon
+        ) || 'mystic';
+        
+        const resultado = ParallelEngine.gerarRespostaUnica(tipoAgente, mensagem, temas?.join(','));
+        if (resultado && resultado.resposta && resultado.resposta.length > 15) {
+          return resultado.resposta;
+        }
+      } catch(e) { /* fallback */ }
+    }
+
+    // 1. Tentar ResponseEngine (base de conhecimento offline)
     if (typeof ResponseEngine !== 'undefined' && typeof KnowledgeBase !== 'undefined') {
       try {
         const response = ResponseEngine.generate(agente, mensagem, temas);
