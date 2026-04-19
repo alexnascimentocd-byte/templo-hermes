@@ -1,0 +1,4 @@
+
+# Sensitive configs (tokens)
+agent-config.json
+config.local.js

@@ -1,0 +1,40 @@
+# ===== DEPLOY PAGES — Injeta config via GitHub Secret =====
+# Token NUNCA aparece no código — fica como secret
+
+name: "🚀 Deploy Pages"
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Injetar config local
+        run: |
+          cat > config.local.js << 'EOF'
+          // Auto-gerado pelo deploy — token via GitHub Secret
+          // NÃO é commitado no repositório
+          window.TEMPLO_REMOTE_CONFIG = {
+            token: '${{ secrets.TEMPLO_REMOTE_TOKEN }}',
+            owner: '${{ github.repository_owner }}',
+            repo: '${{ github.event.repository.name }}',
+            autoConnect: true
+          };
+          EOF
+          echo "✅ config.local.js criado (token mascarado no log)"
+
+      - name: Deploy para gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages
+          exclude_assets: '.github,node_modules,remote/agent-config.json,.gitignore'
