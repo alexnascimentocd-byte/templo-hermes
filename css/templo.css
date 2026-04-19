@@ -1,0 +1,747 @@
+/* ===== TEMPLO DE HERMES - Estilo Minecraft Hermético ===== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=MedievalSharp&family=Press+Start+2P&display=swap');
+
+:root {
+  /* Cores Herméticas */
+  --gold: #d4a547;
+  --gold-dark: #8b6914;
+  --gold-light: #f0d68a;
+  --purple: #4a1a6b;
+  --purple-dark: #2d0f42;
+  --purple-light: #7b3fa0;
+  --obsidian: #1a1a2e;
+  --obsidian-light: #2d2d4a;
+  --parchment: #f4e4c1;
+  --parchment-dark: #d4c4a1;
+  --crimson: #8b0000;
+  --emerald: #2d5a27;
+  --sapphire: #1a3a6b;
+  
+  /* Cores de Zona */
+  --atrio-color: #3a3a5c;
+  --salao-color: #5a4a3a;
+  --mesa-color: #4a3a2a;
+  --sagrado-color: #2a1a4a;
+  --santissimo-color: #1a0a3a;
+  
+  /* Tamanhos Pixel */
+  --pixel: 4px;
+  --block: 32px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'MedievalSharp', cursive;
+  background: var(--obsidian);
+  color: var(--parchment);
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  image-rendering: pixelated;
+}
+
+.hidden { display: none !important; }
+
+/* ===== TELA DE CARREGAMENTO ===== */
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, var(--obsidian) 0%, var(--purple-dark) 50%, var(--obsidian) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 1s ease;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.caduceus {
+  font-size: 80px;
+  animation: pulse-glow 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px var(--gold));
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.loading-content h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 2.5rem;
+  color: var(--gold);
+  margin: 20px 0 10px;
+  text-shadow: 0 0 20px var(--gold-dark);
+  letter-spacing: 4px;
+}
+
+.loading-content p {
+  color: var(--parchment-dark);
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+}
+
+.loading-bar {
+  width: 300px;
+  height: 8px;
+  background: var(--obsidian-light);
+  border: 2px solid var(--gold-dark);
+  margin: 0 auto;
+  image-rendering: pixelated;
+}
+
+.loading-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light));
+  transition: width 0.3s;
+  animation: loading-progress 3s ease forwards;
+}
+
+@keyframes loading-progress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* ===== HEADER ===== */
+#header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(180deg, var(--obsidian-light) 0%, var(--obsidian) 100%);
+  border-bottom: 3px solid var(--gold-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.caduceus-small {
+  font-size: 28px;
+  filter: drop-shadow(0 0 8px var(--gold));
+}
+
+.header-left h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.3rem;
+  color: var(--gold);
+  letter-spacing: 2px;
+}
+
+.initiation-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--purple-dark);
+  border: 2px solid var(--purple-light);
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.initiation-badge:hover {
+  background: var(--purple);
+  border-color: var(--gold);
+}
+
+.badge-icon { font-size: 20px; }
+.badge-text {
+  font-family: 'Cinzel', serif;
+  color: var(--gold-light);
+  font-weight: 700;
+}
+.badge-level {
+  color: var(--parchment-dark);
+  font-size: 0.8rem;
+}
+
+.header-right {
+  display: flex;
+  gap: 8px;
+}
+
+.header-right button {
+  background: var(--obsidian-light);
+  border: 2px solid var(--gold-dark);
+  color: var(--gold);
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  image-rendering: pixelated;
+}
+
+.header-right button:hover {
+  background: var(--gold-dark);
+  color: var(--obsidian);
+  border-color: var(--gold);
+}
+
+/* ===== CONTAINER DO TEMPLO ===== */
+#temple-container {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 60px;
+  background: #0a0a1a;
+  overflow: hidden;
+}
+
+#temple-canvas {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* ===== MINIMAPA ===== */
+#minimap {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(26, 26, 46, 0.9);
+  border: 3px solid var(--gold-dark);
+  padding: 4px;
+  z-index: 50;
+}
+
+#minimap-canvas {
+  image-rendering: pixelated;
+  display: block;
+}
+
+.minimap-label {
+  text-align: center;
+  color: var(--gold);
+  font-size: 10px;
+  margin-top: 4px;
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* ===== HUD ===== */
+#hud {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 50;
+}
+
+.hud-item {
+  background: rgba(26, 26, 46, 0.85);
+  border: 2px solid var(--gold-dark);
+  padding: 6px 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+}
+
+.hud-label { color: var(--gold); }
+.hud-value { color: var(--parchment); }
+
+/* ===== PAINEL DE INTERAÇÃO ===== */
+#interaction-panel {
+  position: fixed;
+  top: 60px;
+  right: 0;
+  width: 350px;
+  bottom: 60px;
+  background: linear-gradient(180deg, var(--obsidian-light) 0%, var(--obsidian) 100%);
+  border-left: 3px solid var(--gold-dark);
+  z-index: 80;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+#interaction-panel:not(.hidden) {
+  transform: translateX(0);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 2px solid var(--gold-dark);
+  background: var(--purple-dark);
+}
+
+.panel-header h2 {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 1.1rem;
+}
+
+.panel-header button {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.panel-content {
+  padding: 20px;
+}
+
+.panel-icon {
+  text-align: center;
+  font-size: 64px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 12px var(--gold));
+}
+
+#panel-description {
+  color: var(--parchment);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.runes-container {
+  margin-bottom: 20px;
+}
+
+.runes-container h3 {
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.rune-entry {
+  background: var(--obsidian);
+  border: 1px solid var(--purple-light);
+  padding: 10px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.rune-symbol {
+  color: var(--gold-light);
+  font-size: 1.2rem;
+  margin-right: 8px;
+}
+
+.rune-agent {
+  color: var(--purple-light);
+  font-style: italic;
+}
+
+.rune-text {
+  color: var(--parchment-dark);
+  margin-top: 4px;
+}
+
+.history-container h3 {
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.history-entry {
+  border-left: 3px solid var(--gold-dark);
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: rgba(74, 26, 107, 0.2);
+  font-size: 0.85rem;
+}
+
+.history-time {
+  color: var(--parchment-dark);
+  font-size: 0.75rem;
+}
+
+.history-action {
+  color: var(--parchment);
+  margin-top: 4px;
+}
+
+.panel-actions {
+  padding: 16px 20px;
+  border-top: 2px solid var(--gold-dark);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.panel-actions button {
+  background: var(--purple-dark);
+  border: 2px solid var(--gold-dark);
+  color: var(--gold);
+  padding: 10px 16px;
+  font-family: 'MedievalSharp', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.panel-actions button:hover {
+  background: var(--gold-dark);
+  color: var(--obsidian);
+}
+
+/* ===== PAINEL DE AGENTES ===== */
+#agents-panel {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 320px;
+  bottom: 60px;
+  background: linear-gradient(180deg, var(--obsidian-light) 0%, var(--obsidian) 100%);
+  border-right: 3px solid var(--gold-dark);
+  z-index: 80;
+  overflow-y: auto;
+}
+
+.agents-list {
+  padding: 16px;
+}
+
+.agent-card {
+  background: var(--obsidian);
+  border: 2px solid var(--purple-light);
+  padding: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.agent-card:hover {
+  border-color: var(--gold);
+  background: var(--purple-dark);
+}
+
+.agent-card.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(212, 165, 71, 0.3);
+}
+
+.agent-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.agent-avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  image-rendering: pixelated;
+}
+
+.agent-name {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 0.9rem;
+}
+
+.agent-level {
+  color: var(--parchment-dark);
+  font-size: 0.75rem;
+}
+
+.agent-status {
+  font-size: 0.8rem;
+  color: var(--parchment);
+}
+
+.agent-location {
+  color: var(--purple-light);
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+/* ===== MODAL DE LIVRO ===== */
+#book-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.book-container {
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+}
+
+.book-cover {
+  background: linear-gradient(135deg, #5a3a1a, #3a2a0a);
+  border: 4px solid var(--gold-dark);
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+
+.book-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 1.5rem;
+  text-shadow: 0 0 10px var(--gold-dark);
+}
+
+.book-pages {
+  display: flex;
+  background: var(--parchment);
+  min-height: 400px;
+}
+
+.book-page {
+  flex: 1;
+  padding: 24px;
+  position: relative;
+  background: linear-gradient(135deg, var(--parchment), var(--parchment-dark));
+}
+
+.left-page {
+  border-right: 1px solid #c4b491;
+  box-shadow: inset -10px 0 20px rgba(0,0,0,0.1);
+}
+
+.right-page {
+  box-shadow: inset 10px 0 20px rgba(0,0,0,0.1);
+}
+
+.book-spine {
+  width: 8px;
+  background: linear-gradient(180deg, #5a3a1a, #3a2a0a);
+}
+
+.page-content {
+  font-family: 'MedievalSharp', cursive;
+  color: #2a1a0a;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  height: 320px;
+  overflow-y: auto;
+}
+
+.page-content .console-line {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #1a4a1a;
+  margin-bottom: 4px;
+}
+
+.page-content .console-prompt {
+  color: #8b0000;
+}
+
+.page-number {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #8a7a5a;
+  font-style: italic;
+}
+
+.book-controls {
+  background: #3a2a0a;
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.book-controls button {
+  background: var(--gold-dark);
+  border: none;
+  color: var(--obsidian);
+  padding: 8px 16px;
+  font-family: 'MedievalSharp', cursive;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.book-controls button:hover {
+  background: var(--gold);
+}
+
+#book-page-indicator {
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+}
+
+.book-close {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  background: var(--crimson);
+  border: 2px solid var(--gold-dark);
+  color: var(--parchment);
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* ===== BARRA DE NAVEGAÇÃO ===== */
+#bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(0deg, var(--obsidian) 0%, var(--obsidian-light) 100%);
+  border-top: 3px solid var(--gold-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  z-index: 100;
+}
+
+.nav-btn {
+  background: var(--obsidian);
+  border: 2px solid var(--gold-dark);
+  color: var(--gold);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 70px;
+}
+
+.nav-btn:hover {
+  background: var(--purple-dark);
+  border-color: var(--gold);
+}
+
+.nav-btn.active {
+  background: var(--gold-dark);
+  color: var(--obsidian);
+  border-color: var(--gold);
+}
+
+.nav-icon { font-size: 18px; }
+
+.nav-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  letter-spacing: 0.5px;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px) {
+  #header {
+    height: 50px;
+    padding: 0 10px;
+  }
+  
+  .header-left h1 {
+    font-size: 1rem;
+  }
+  
+  .initiation-badge {
+    padding: 4px 10px;
+  }
+  
+  .badge-text { font-size: 0.8rem; }
+  
+  #temple-container {
+    top: 50px;
+    bottom: 50px;
+  }
+  
+  #bottom-nav {
+    height: 50px;
+  }
+  
+  .nav-btn {
+    padding: 6px 10px;
+    min-width: 55px;
+  }
+  
+  .nav-text { font-size: 6px; }
+  
+  #interaction-panel {
+    width: 100%;
+    top: 50px;
+    bottom: 50px;
+  }
+  
+  #agents-panel {
+    width: 100%;
+    top: 50px;
+    bottom: 50px;
+  }
+  
+  .book-pages {
+    flex-direction: column;
+    min-height: 300px;
+  }
+  
+  .book-spine {
+    width: 100%;
+    height: 4px;
+  }
+  
+  .book-container {
+    width: 95%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-left h1 { display: none; }
+  .badge-level { display: none; }
+}
+
+/* ===== ANIMAÇÕES ===== */
+@keyframes rune-glow {
+  0%, 100% { text-shadow: 0 0 5px var(--gold-dark); }
+  50% { text-shadow: 0 0 15px var(--gold), 0 0 25px var(--gold-light); }
+}
+
+@keyframes agent-appear {
+  0% { opacity: 0; transform: scale(0.5); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.rune-active {
+  animation: rune-glow 2s ease-in-out infinite;
+}
+
+.agent-spawn {
+  animation: agent-appear 0.5s ease forwards;
+}

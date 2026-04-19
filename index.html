@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏛️ Templo de Hermes</title>
+  <link rel="stylesheet" href="css/templo.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>">
+</head>
+<body>
+  <!-- Tela de Carregamento -->
+  <div id="loading-screen">
+    <div class="loading-content">
+      <div class="caduceus">☤</div>
+      <h1>Templo de Hermes</h1>
+      <p>Preparando o Santuário...</p>
+      <div class="loading-bar"><div class="loading-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Dashboard Principal -->
+  <div id="dashboard" class="hidden">
+    <!-- Header -->
+    <header id="header">
+      <div class="header-left">
+        <span class="caduceus-small">☤</span>
+        <h1>Templo de Hermes</h1>
+      </div>
+      <div class="header-center">
+        <div class="initiation-badge" id="initiation-badge">
+          <span class="badge-icon">⚗️</span>
+          <span class="badge-text">Iniciante</span>
+          <span class="badge-level">Nível 1</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button id="btn-fullscreen" title="Tela Cheia">⛶</button>
+        <button id="btn-minimap" title="Minimapa">🗺️</button>
+        <button id="btn-agents" title="Agentes">👥</button>
+      </div>
+    </header>
+
+    <!-- Container do Templo (Canvas) -->
+    <div id="temple-container">
+      <canvas id="temple-canvas"></canvas>
+      
+      <!-- Minimapa -->
+      <div id="minimap" class="hidden">
+        <canvas id="minimap-canvas" width="200" height="200"></canvas>
+        <div class="minimap-label">Minimapa</div>
+      </div>
+
+      <!-- HUD de Informações -->
+      <div id="hud">
+        <div class="hud-item" id="hud-zone">
+          <span class="hud-label">Zona:</span>
+          <span class="hud-value" id="current-zone">Átrio Exterior</span>
+        </div>
+        <div class="hud-item" id="hud-agents">
+          <span class="hud-label">Agentes Ativos:</span>
+          <span class="hud-value" id="agent-count">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel Lateral de Interação -->
+    <div id="interaction-panel" class="hidden">
+      <div class="panel-header">
+        <h2 id="panel-title">Item</h2>
+        <button id="close-panel">✕</button>
+      </div>
+      <div class="panel-content">
+        <div id="panel-icon" class="panel-icon"></div>
+        <div id="panel-description"></div>
+        <div id="panel-runes" class="runes-container"></div>
+        <div id="panel-history" class="history-container"></div>
+      </div>
+      <div class="panel-actions" id="panel-actions"></div>
+    </div>
+
+    <!-- Painel de Agentes -->
+    <div id="agents-panel" class="hidden">
+      <div class="panel-header">
+        <h2>Agentes no Templo</h2>
+        <button id="close-agents">✕</button>
+      </div>
+      <div class="agents-list" id="agents-list"></div>
+    </div>
+
+    <!-- Modal de Livro -->
+    <div id="book-modal" class="hidden">
+      <div class="book-container">
+        <div class="book-cover">
+          <div class="book-title" id="book-title">Livro</div>
+        </div>
+        <div class="book-pages">
+          <div class="book-page left-page">
+            <div class="page-content" id="left-page-content"></div>
+            <div class="page-number" id="left-page-num">1</div>
+          </div>
+          <div class="book-spine"></div>
+          <div class="book-page right-page">
+            <div class="page-content" id="right-page-content"></div>
+            <div class="page-number" id="right-page-num">2</div>
+          </div>
+        </div>
+        <div class="book-controls">
+          <button id="book-prev">◀ Anterior</button>
+          <span id="book-page-indicator">Página 1-2</span>
+          <button id="book-next">Próxima ▶</button>
+        </div>
+        <button class="book-close" id="book-close">✕ Fechar</button>
+      </div>
+    </div>
+
+    <!-- Barra de Navegação Inferior -->
+    <nav id="bottom-nav">
+      <button class="nav-btn active" data-zone="atrio">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-text">Átrio</span>
+      </button>
+      <button class="nav-btn" data-zone="salao">
+        <span class="nav-icon">🏛️</span>
+        <span class="nav-text">Salão</span>
+      </button>
+      <button class="nav-btn" data-zone="mesa">
+        <span class="nav-icon">📜</span>
+        <span class="nav-text">Mesa</span>
+      </button>
+      <button class="nav-btn" data-zone="sagrado">
+        <span class="nav-icon">⚗️</span>
+        <span class="nav-text">Sagrado</span>
+      </button>
+      <button class="nav-btn" data-zone="santissimo">
+        <span class="nav-icon">✨</span>
+        <span class="nav-text">Santíssimo</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/world.js"></script>
+  <script src="js/items.js"></script>
+  <script src="js/runes.js"></script>
+  <script src="js/agents.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/bookmodal.js"></script>
+  <script src="js/interactions.js"></script>
+  <script src="js/initiation.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
