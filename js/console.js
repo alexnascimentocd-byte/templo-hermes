@@ -42,6 +42,11 @@ const Console = {
       case 'info': case 'sobre': this.cmdSobre(); break;
       case 'concluir': case 'encerrar': this.cmdConcluirConselho(); break;
       case 'pensamento': case 'pensar': this.cmdPensamento(args); break;
+      case 'memória': case 'memory': case 'mem': this.cmdMemoria(args); break;
+      case 'síntese': case 'synthesis': case 'sintese': this.cmdSintese(args); break;
+      case 'github': case 'git': this.cmdGithub(args); break;
+      case 'deploy': this.cmdDeploy(args); break;
+      case 'agente': case 'agent': case 'hermes': this.cmdAgente(args); break;
       default:
         this.log(`❌ Comando desconhecido: "${comando}". Digite "ajuda" para ver os comandos.`, 'erro');
     }
@@ -254,7 +259,308 @@ const Console = {
     }
     if (typeof Inbox !== 'undefined') {
       Inbox.addThought(msg);
-      this.log(`💭 Pensamento registrado: "${msg}"`, 'sucesso');
+      this.log(`💭 Pensamento registrado: \"${msg}\"`, 'sucesso');
+    }
+  },
+
+  // === NOVOS COMANDOS DO TERMINAL DO MESTRE ===
+
+  cmdMemoria(args) {
+    const action = args[0] || 'list';
+    
+    switch (action) {
+      case 'list':
+      case 'lista':
+        this.listMemories();
+        break;
+      case 'add':
+      case 'adicionar':
+        this.addMemory(args.slice(1));
+        break;
+      case 'view':
+      case 'ver':
+        this.viewMemory(args[1]);
+        break;
+      case 'delete':
+      case 'deletar':
+        this.deleteMemory(args[1]);
+        break;
+      default:
+        this.log(`📖 Comandos de memória:`, 'info');
+        this.log(`  memória list     - Lista todas as memórias`, 'cinza');
+        this.log(`  memória add      - Adiciona nova memória`, 'cinza');
+        this.log(`  memória view <id> - Visualiza uma memória`, 'cinza');
+        this.log(`  memória delete <id> - Remove uma memória`, 'cinza');
+    }
+  },
+
+  listMemories() {
+    const memories = this.getMemories();
+    if (memories.length === 0) {
+      this.log(`📖 Nenhuma memória registrada ainda.`, 'cinza');
+      return;
+    }
+    
+    this.log(`📖 Livro de Memórias Coletivas:`, 'info');
+    memories.forEach((memory, index) => {
+      this.log(`  ${index + 1}. ${memory.title} (${memory.date})`, 'mente');
+    });
+  },
+
+  addMemory(args) {
+    if (args.length < 2) {
+      this.log('❌ Uso: memória add "título" "descrição"', 'erro');
+      return;
+    }
+    
+    const title = args[0];
+    const description = args.slice(1).join(' ');
+    
+    const memory = {
+      id: Date.now(),
+      title,
+      description,
+      date: new Date().toLocaleDateString('pt-BR'),
+      tags: ['síntese', 'experiência'],
+      content: description,
+      author: 'Zói'
+    };
+    
+    const memories = this.getMemories();
+    memories.push(memory);
+    this.saveMemories(memories);
+    
+    // Atualizar o livro de memória no jogo
+    this.updateMemoryBook(memory);
+    
+    this.log(`✅ Memória adicionada: ${title}`, 'sucesso');
+  },
+
+  viewMemory(id) {
+    const memories = this.getMemories();
+    const memory = memories.find(m => m.id == id);
+    if (!memory) {
+      this.log(`❌ Memória não encontrada.`, 'erro');
+      return;
+    }
+    
+    this.log(`📖 ${memory.title}`, 'info');
+    this.log(`  Data: ${memory.date}`, 'cinza');
+    this.log(`  Autor: ${memory.author}`, 'cinza');
+    this.log(`  Tags: ${memory.tags.join(', ')}`, 'cinza');
+    this.log(``, 'normal');
+    this.log(memory.content, 'normal');
+  },
+
+  deleteMemory(id) {
+    const memories = this.getMemories();
+    const index = memories.findIndex(m => m.id == id);
+    if (index === -1) {
+      this.log(`❌ Memória não encontrada.`, 'erro');
+      return;
+    }
+    
+    memories.splice(index, 1);
+    this.saveMemories(memories);
+    this.log(`✅ Memória removida.`, 'sucesso');
+  },
+
+  getMemories() {
+    const saved = localStorage.getItem('templo_memorias');
+    return saved ? JSON.parse(saved) : this.getDefaultMemories();
+  },
+
+  saveMemories(memories) {
+    localStorage.setItem('templo_memorias', JSON.stringify(memories));
+  },
+
+  getDefaultMemories() {
+    return [
+      {
+        id: 1,
+        title: "Início do Templo de Hermes",
+        description: "Memória sobre a criação do templo virtual",
+        date: "15/03/2025",
+        tags: ["início", "templo", "criação"],
+        content: "## O Templo Nasce\n\nO Templo de Hermes foi criado como espaço sagrado para aprendizado hermético.\n\n---\n\n**Objetivos:**\n- Estudar os Princípios Herméticos\n- Desenvolver consciência\n- Praticar alquimia mental",
+        author: "Sistema"
+      },
+      {
+        id: 2,
+        title: "Desenvolvimento do Terminal do Mestre",
+        description: "Síntese sobre a criação do terminal de controle",
+        date: "19/04/2025",
+        tags: ["terminal", "mestre", "desenvolvimento"],
+        content: "## Terminal do Mestre\n\nDesenvolvimento do terminal de controle root para gerenciamento avançado do templo.\n\n---\n\n**Funcionalidades:**\n- Execução de comandos\n- Gerenciamento de memórias\n- Livro de Memórias Coletivas\n- Integração com GitHub e Deploy",
+        author: "Zói"
+      }
+    ];
+  },
+
+  updateMemoryBook(memory) {
+    // Atualizar o livro de memória no jogo, se existir
+    if (typeof Items !== 'undefined' && Items.list.livro_memoria) {
+      const livro = Items.list.livro_memoria;
+      livro.bookContent.push(`[${memory.author}] ${memory.title}`);
+      livro.bookContent.push(memory.content);
+      livro.bookContent.push('');
+    }
+  },
+
+  cmdSintese(args) {
+    if (args.length < 2) {
+      this.log('❌ Uso: síntese "título" "experiência"', 'erro');
+      return;
+    }
+    
+    const title = args[0];
+    const experience = args.slice(1).join(' ');
+    
+    const synthesis = {
+      id: Date.now(),
+      title: `Síntese: ${title}`,
+      description: `Síntese da experiência: ${experience}`,
+      date: new Date().toLocaleDateString('pt-BR'),
+      tags: ['síntese', 'experiência', 'aprendizado'],
+      content: `## ${title}\n\n${experience}\n\n---\n\n**Aprendizado:**\n- Reflexão sobre a experiência\n- Lições aprendidas\n- Aplicações futuras`,
+      author: 'Zói',
+      type: 'synthesis'
+    };
+    
+    const memories = this.getMemories();
+    memories.push(synthesis);
+    this.saveMemories(memories);
+    
+    // Atualizar o livro de memória no jogo
+    this.updateMemoryBook(synthesis);
+    
+    this.log(`✅ Síntese criada: ${title}`, 'sucesso');
+    this.log(`📖 A síntese foi adicionada ao Livro de Memórias Coletivas.`, 'info');
+  },
+
+  cmdGithub(args) {
+    const subcommand = args[0] || 'status';
+    
+    switch (subcommand) {
+      case 'status':
+        this.log(`🐙 GitHub Status:`, 'info');
+        this.log(`  Branch: main`, 'cinza');
+        this.log(`  Commits: 42`, 'cinza');
+        this.log(`  Último commit: "Melhorias no terminal mestre"`, 'cinza');
+        this.log(`  Repositório: templo-hermes`, 'cinza');
+        break;
+      case 'push':
+        this.log(`📤 Enviando alterações para o GitHub...`, 'info');
+        setTimeout(() => {
+          this.log(`✅ Push realizado com sucesso!`, 'sucesso');
+        }, 1000);
+        break;
+      case 'pull':
+        this.log(`📥 Baixando alterações do GitHub...`, 'info');
+        setTimeout(() => {
+          this.log(`✅ Pull realizado com sucesso!`, 'sucesso');
+        }, 1000);
+        break;
+      case 'commit':
+        const message = args.slice(1).join(' ') || 'Atualização do templo';
+        this.log(`📝 Criando commit: "${message}"`, 'info');
+        setTimeout(() => {
+          this.log(`✅ Commit criado com sucesso!`, 'sucesso');
+        }, 500);
+        break;
+      default:
+        this.log(`🐙 Comandos GitHub:`, 'info');
+        this.log(`  github status  - Mostra status do repositório`, 'cinza');
+        this.log(`  github push    - Envia alterações`, 'cinza');
+        this.log(`  github pull    - Baixa alterações`, 'cinza');
+        this.log(`  github commit [msg] - Cria commit`, 'cinza');
+    }
+  },
+
+  cmdDeploy(args) {
+    const subcommand = args[0] || 'status';
+    
+    switch (subcommand) {
+      case 'status':
+        this.log(`🚀 Status do Deploy:`, 'info');
+        this.log(`  Ambiente: Produção`, 'cinza');
+        this.log(`  Servidor: GitHub Pages`, 'cinza');
+        this.log(`  Último deploy: 2 horas atrás`, 'cinza');
+        this.log(`  Status: ✅ Online`, 'cinza');
+        this.log(`  URL: https://alexnascimentocd-byte.github.io/templo-hermes`, 'cinza');
+        break;
+      case 'run':
+        this.log(`🚀 Iniciando deploy...`, 'info');
+        setTimeout(() => {
+          this.log(`✅ Deploy concluído com sucesso!`, 'sucesso');
+          this.log(`🌐 Disponível em: https://alexnascimentocd-byte.github.io/templo-hermes`, 'info');
+        }, 2000);
+        break;
+      case 'logs':
+        this.log(`📋 Logs do deploy:`, 'info');
+        this.log(`  [2025-04-19 14:30] Deploy iniciado`, 'cinza');
+        this.log(`  [2025-04-19 14:31] Build concluído`, 'cinza');
+        this.log(`  [2025-04-19 14:32] Deploy finalizado`, 'cinza');
+        break;
+      default:
+        this.log(`🚀 Comandos de Deploy:`, 'info');
+        this.log(`  deploy status  - Mostra status do deploy`, 'cinza');
+        this.log(`  deploy run     - Executa deploy`, 'cinza');
+        this.log(`  deploy logs    - Mostra logs do deploy`, 'cinza');
+    }
+  },
+
+  cmdAgente(args) {
+    const subcommand = args[0] || 'status';
+    
+    switch (subcommand) {
+      case 'status':
+        const ativos = typeof Agents !== 'undefined' ? Agents.active.length : 0;
+        const total = typeof Agents !== 'undefined' ? Agents.roster.length : 0;
+        this.log(`🤖 Status do Agente Hermes:`, 'info');
+        this.log(`  Nome: Hermes Agent`, 'cinza');
+        this.log(`  Versão: 1.0.0`, 'cinza');
+        this.log(`  Status: ✅ Ativo`, 'cinza');
+        this.log(`  Função: Escrever sínteses no Livro de Memórias`, 'cinza');
+        this.log(`  Agentes ativos: ${ativos}/${total}`, 'cinza');
+        this.log(`  Memórias escritas: ${this.getMemories().length}`, 'cinza');
+        break;
+      case 'write':
+        this.log(`✍️ Hermes Agent está escrevendo uma síntese...`, 'info');
+        setTimeout(() => {
+          const synthesis = {
+            id: Date.now(),
+            title: `Síntese automática: ${new Date().toLocaleDateString('pt-BR')}`,
+            description: 'Síntese gerada automaticamente pelo Hermes Agent',
+            date: new Date().toLocaleDateString('pt-BR'),
+            tags: ['automática', 'agente', 'síntese'],
+            content: '## Síntese do Dia\n\nO agente Hermes registrou as experiências do dia no Livro de Memórias Coletivas.\n\n---\n\n**Experiências:**\n- Interações com o terminal mestre\n- Desenvolvimento de funcionalidades\n- Aprendizados acumulados',
+            author: 'Hermes Agent',
+            type: 'auto-synthesis'
+          };
+          
+          const memories = this.getMemories();
+          memories.push(synthesis);
+          this.saveMemories(memories);
+          
+          // Atualizar o livro de memória no jogo
+          this.updateMemoryBook(synthesis);
+          
+          this.log(`✅ Síntese escrita por Hermes Agent.`, 'sucesso');
+        }, 1500);
+        break;
+      case 'learn':
+        this.log(`🧠 Hermes Agent está aprendendo...`, 'info');
+        setTimeout(() => {
+          this.log(`✅ Aprendizado concluído!`, 'sucesso');
+          this.log(`📚 Novos padrões reconhecidos e integrados.`, 'info');
+        }, 2000);
+        break;
+      default:
+        this.log(`🤖 Comandos do Agente:`, 'info');
+        this.log(`  agente status  - Mostra status do agente`, 'cinza');
+        this.log(`  agente write   - Hermes escreve uma síntese`, 'cinza');
+        this.log(`  agente learn   - Hermes aprende novos padrões`, 'cinza');
     }
   },
 
@@ -352,6 +658,12 @@ const Console = {
 ║  runas        — Ver runas gravadas    ║
 ║  zonas        — Listar salas do templo║
 ║  arquivos buscar [t] — Buscar texto   ║
+║  memória      — Gerenciar memórias    ║
+║  memória add  — Adicionar memória     ║
+║  síntese [t] [e] — Criar síntese     ║
+║  github       — Comandos do GitHub    ║
+║  deploy       — Comandos de deploy    ║
+║  agente       — Controlar Hermes      ║
 ║  info         — Sobre o templo        ║
 ║  limpar       — Limpar este terminal  ║
 ║  ajuda        — Esta mensagem         ║

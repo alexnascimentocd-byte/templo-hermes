@@ -673,11 +673,31 @@ const Game = {
       });
     }
 
-    // Botões rápidos mobile (console e inbox duplicados)
-    const mobileBtns = document.querySelectorAll('.header-buttons-mobile button[id]');
-    mobileBtns.forEach(btn => {
-      // Evitar duplicar listeners - os listeners do desktop já funcionam
-    });
+    // Botões rápidos mobile (console e inbox)
+    const mobileConsole = document.getElementById('btn-mobile-console');
+    const mobileInbox = document.getElementById('btn-mobile-inbox');
+
+    if (mobileConsole) {
+      mobileConsole.addEventListener('click', () => {
+        const panel = document.getElementById('console-panel');
+        panel.classList.toggle('hidden');
+        if (!panel.classList.contains('hidden')) {
+          const inp = document.getElementById('console-input');
+          if (inp) setTimeout(() => inp.focus(), 100);
+        }
+      });
+    }
+
+    if (mobileInbox) {
+      mobileInbox.addEventListener('click', () => {
+        const panel = document.getElementById('inbox-panel');
+        panel.classList.toggle('hidden');
+        if (!panel.classList.contains('hidden') && typeof Inbox !== 'undefined') {
+          Inbox.render();
+          Inbox.markAllRead();
+        }
+      });
+    }
   },
 
   updateCouncilUI() {
