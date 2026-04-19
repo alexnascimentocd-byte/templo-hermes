@@ -2049,3 +2049,182 @@ body {
     font-size: 18px;
   }
 }
+
+/* ===== REMOTE ADMIN PANEL ===== */
+#remote-panel {
+  width: 380px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.remote-status-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.status-indicator {
+  font-size: 16px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.remote-section {
+  margin-bottom: 14px;
+}
+
+.remote-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: var(--gold);
+}
+
+.remote-modes {
+  display: flex;
+  gap: 6px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 8px 4px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn:hover {
+  background: rgba(212,175,55,0.1);
+}
+
+.mode-btn.active {
+  background: rgba(212,175,55,0.2);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.config-field {
+  margin-bottom: 8px;
+}
+
+.config-field label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 3px;
+}
+
+.config-input {
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  box-sizing: border-box;
+}
+
+.config-input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.btn-action {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1));
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  color: var(--gold);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-action:hover {
+  background: linear-gradient(135deg, rgba(212,175,55,0.3), rgba(212,175,55,0.2));
+}
+
+.quick-commands {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.quick-cmd {
+  padding: 8px 4px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-cmd:hover {
+  background: rgba(212,175,55,0.15);
+  border-color: rgba(212,175,55,0.3);
+}
+
+.remote-history {
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+}
+
+.history-entry {
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+  border-left: 3px solid rgba(212,175,55,0.3);
+}
+
+.history-cmd {
+  color: var(--gold);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.history-result {
+  color: var(--text-dim);
+  word-break: break-all;
+}
+
+.history-result.pending {
+  color: #fbbf24;
+}
+
+.history-result.done {
+  color: #4ade80;
+}
+
+.history-result.error {
+  color: #f87171;
+}
+
+@media (max-width: 768px) {
+  #remote-panel {
+    width: 100%;
+    max-height: 70vh;
+  }
+  
+  .quick-commands {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -1,0 +1,67 @@
+# ===== TEMPLO REMOTE STATUS — Verificação de sistema via GitHub =====
+# Dispara quando Issue é criada com label "status"
+
+name: "📊 Templo Remote Status"
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  status:
+    if: github.event.label.name == 'status'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Coletar info do sistema
+        id: info
+        run: |
+          HOSTNAME=$(hostname)
+          PLATFORM=$(uname -a)
+          USER=$(whoami)
+          CPUS=$(nproc)
+          MEMORY=$(free -m | awk '/Mem:/ {printf "%d/%dMB (%.1f%%)", $3, $2, $3/$2*100}')
+          DISK=$(df -h / | awk 'NR==2 {printf "%s/%s (%s)", $3, $2, $5}')
+          UPTIME=$(uptime -p)
+          DATE=$(date '+%Y-%m-%d %H:%M:%S')
+          
+          echo "status<<EOF" >> $GITHUB_OUTPUT
+          echo "🖥️ **Hostname:** $HOSTNAME" >> $GITHUB_OUTPUT
+          echo "👤 **User:** $USER" >> $GITHUB_OUTPUT
+          echo "⚙️ **Platform:** $PLATFORM" >> $GITHUB_OUTPUT
+          echo "🧠 **CPUs:** $CPUS" >> $GITHUB_OUTPUT
+          echo "💾 **Memory:** $MEMORY" >> $GITHUB_OUTPUT
+          echo "💿 **Disk:** $DISK" >> $GITHUB_OUTPUT
+          echo "⏱️ **Uptime:** $UPTIME" >> $GITHUB_OUTPUT
+          echo "📅 **Date:** $DATE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Postar status
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            ## 🏛️ Status do Sistema Remoto
+            
+            ${{ steps.info.outputs.status }}
+            
+            ---
+            🤖 *Templo de Hermes — Remote Status*
+
+      - name: Fechar issue
+        uses: actions/github-script@v6
+        with: |
+          await github.rest.issues.addLabels({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            labels: ['done']
+          });
+          await github.rest.issues.update({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            state: 'closed'
+          });

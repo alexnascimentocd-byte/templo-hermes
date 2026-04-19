@@ -1,0 +1,130 @@
+# ===== TEMPLO REMOTE EXECUTOR — Execução remota via GitHub Actions =====
+# Dispara quando uma Issue é criada com label "execute"
+# Executa o comando no runner e posta resultado como comentário
+
+name: "🏛️ Templo Remote Executor"
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  execute:
+    if: github.event.label.name == 'execute'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+      - name: Extrair comando
+        id: parse
+        run: |
+          BODY="${{ github.event.issue.body }}"
+          # Extrair comando entre ```exec e ```
+          COMMAND=$(echo "$BODY" | sed -n '/```exec/,/```/p' | grep -v '```')
+          SHELL_TYPE=$(echo "$BODY" | grep -oP '(?<=shell: )\w+' || echo "bash")
+          MODE=$(echo "$BODY" | grep -oP '(?<=mode: )\w+' || echo "user")
+          ISSUE_NUM=${{ github.event.issue.number }}
+          
+          echo "command=$COMMAND" >> $GITHUB_OUTPUT
+          echo "shell=$SHELL_TYPE" >> $GITHUB_OUTPUT
+          echo "mode=$MODE" >> $GITHUB_OUTPUT
+          echo "issue=$ISSUE_NUM" >> $GITHUB_OUTPUT
+          echo "📋 Comando: $COMMAND"
+          echo "🔧 Shell: $SHELL_TYPE"
+
+      - name: Executar comando
+        id: exec
+        run: |
+          COMMAND="${{ steps.parse.outputs.command }}"
+          SHELL_TYPE="${{ steps.parse.outputs.shell }}"
+          MODE="${{ steps.parse.outputs.mode }}"
+          START=$(date +%s%3N)
+          
+          if [ -z "$COMMAND" ]; then
+            echo "output=⚠️ Nenhum comando encontrado no body da issue" >> $GITHUB_OUTPUT
+            echo "exit_code=1" >> $GITHUB_OUTPUT
+            echo "elapsed=0ms" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Bloquear comandos perigosos
+          BLOCKED="rm -rf / format del /f mkfs dd if= :(){:|:&};: shutdown"
+          for b in $BLOCKED; do
+            if echo "$COMMAND" | grep -qi "$b"; then
+              echo "output=🚫 Comando bloqueado por segurança: $b" >> $GITHUB_OUTPUT
+              echo "exit_code=1" >> $GITHUB_OUTPUT
+              echo "elapsed=0ms" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          done
+          
+          # Executar
+          if [ "$MODE" = "root" ]; then
+            OUTPUT=$(sudo bash -c "$COMMAND" 2>&1) || true
+          else
+            OUTPUT=$(bash -c "$COMMAND" 2>&1) || true
+          fi
+          
+          EXIT_CODE=$?
+          END=$(date +%s%3N)
+          ELAPSED=$((END - START))
+          
+          # Limitar output a 60k chars (limite do GitHub comment)
+          if [ ${#OUTPUT} -gt 60000 ]; then
+            OUTPUT="${OUTPUT:0:60000}\n\n... [output truncado]"
+          fi
+          
+          # Escape para JSON
+          OUTPUT_ESCAPED=$(echo "$OUTPUT" | jq -Rs .)
+          echo "output<<EOF" >> $GITHUB_OUTPUT
+          echo "$OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          echo "elapsed=${ELAPSED}ms" >> $GITHUB_OUTPUT
+
+      - name: Postar resultado
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ steps.parse.outputs.issue }}
+          body: |
+            ## 🏛️ Resultado da Execução
+            
+            **Comando:** `${{ steps.parse.outputs.command }}`
+            **Shell:** `${{ steps.parse.outputs.shell }}`
+            **Modo:** `${{ steps.parse.outputs.mode }}`
+            **Exit Code:** `${{ steps.exec.outputs.exit_code }}`
+            **Tempo:** `${{ steps.exec.outputs.elapsed }}`
+            
+            ### 📤 Output:
+            ```
+            ${{ steps.exec.outputs.output }}
+            ```
+            
+            ---
+            🤖 *Executado pelo Templo de Hermes Remote Executor*
+
+      - name: Fechar issue
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ steps.parse.outputs.issue }}
+          body: |
+            ✅ Execução concluída. Issue será fechada automaticamente.
+        
+      - name: Adicionar label done
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['done']
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            });

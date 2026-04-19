@@ -48,6 +48,7 @@ const Console = {
       case 'deploy': this.cmdDeploy(args); break;
       case 'agente': case 'agent': case 'hermes': this.cmdAgente(args); break;
       case 'sys': case 'sysadmin': case 'sistema': this.cmdSysAdmin(args); break;
+      case 'remote': case 'remoto': this.cmdRemote(args); break;
       case 'powershell': case 'ps': this.cmdShell('powershell', args); break;
       case 'cmd': this.cmdShell('cmd', args); break;
       case 'bash': case 'sh': this.cmdShell('bash', args); break;
@@ -749,6 +750,12 @@ const Console = {
 ║  agente memory — Ver memórias         ║
 ║  agente add   — Adicionar memória     ║
 ║  agente stats — Estatísticas          ║
+║  sysadmin     — Controle do sistema   ║
+║  sysadmin connect — Conectar servidor ║
+║  remote       — Admin remoto (GitHub) ║
+║  remote config — Configurar GitHub    ║
+║  remote exec  — Executar remotamente  ║
+║  remote cloud — Executar na nuvem     ║
 ║  info         — Sobre o templo        ║
 ║  limpar       — Limpar este terminal  ║
 ║  ajuda        — Esta mensagem         ║
@@ -897,6 +904,124 @@ const Console = {
         this.log('  mode       - Alternar root/user', 'info');
         this.log('  shell      - Alternar shell', 'info');
         this.log('  history    - Ver histórico', 'info');
+    }
+  },
+
+  async cmdRemote(args) {
+    const ra = typeof RemoteAdmin !== 'undefined' ? RemoteAdmin : null;
+    if (!ra) {
+      this.log('❌ RemoteAdmin não carregado', 'erro');
+      return;
+    }
+    
+    const sub = args[0] || 'status';
+    
+    switch(sub) {
+      case 'status':
+        const s = ra.status();
+        this.log(`\n🌍 REMOTE ADMIN STATUS`, 'info');
+        this.log(`  Conectado: ${s.connected ? '✅' : '❌'}`, 'info');
+        this.log(`  Modo: ${s.mode}`, 'info');
+        this.log(`  Local: ${s.localUrl || 'N/A'}`, 'info');
+        this.log(`  GitHub: ${s.github}`, 'info');
+        this.log(`  Histórico: ${s.historyCount} | Pendentes: ${s.pendingCount}`, 'info');
+        break;
+        
+      case 'connect':
+        const url = args[1];
+        if (!url) {
+          this.log('Uso: remote connect <url>', 'erro');
+          this.log('  Local: remote connect http://localhost:8081', 'info');
+          this.log('  GitHub: remote config <token> <owner> <repo>', 'info');
+          return;
+        }
+        ra.autoConnectLocal().then(ok => {
+          if (ok) this.log('✅ Conectado localmente!', 'sucesso');
+          else this.log('❌ Não foi possível conectar', 'erro');
+        });
+        break;
+        
+      case 'config':
+        const token = args[1];
+        const owner = args[2];
+        const repo = args[3];
+        if (!token || !owner || !repo) {
+          this.log('Uso: remote config <token> <owner> <repo>', 'erro');
+          this.log('  Exemplo: remote config ghp_xxxxx alexnascimentocd-byte templo-hermes', 'info');
+          return;
+        }
+        ra.connectRemote(token, owner, repo).then(r => {
+          this.log(r.message, r.success ? 'sucesso' : 'erro');
+        });
+        break;
+        
+      case 'mode':
+        const mode = args[1];
+        if (!mode) {
+          this.log(`Modo atual: ${ra.mode}`, 'info');
+          this.log('Modos: local, remote, github-cloud', 'info');
+          return;
+        }
+        this.log(ra.setMode(mode), 'info');
+        break;
+        
+      case 'exec':
+      case 'run':
+        const cmd = args.slice(1).join(' ');
+        if (!cmd) {
+          this.log('Uso: remote exec <comando>', 'erro');
+          return;
+        }
+        this.log(`⚡ Executando: ${cmd}`, 'info');
+        ra.execute(cmd).then(r => {
+          if (r.pending) {
+            this.log(r.output, 'aviso');
+          } else {
+            this.log(r.output, r.success ? 'sucesso' : 'erro');
+          }
+        });
+        break;
+        
+      case 'cloud':
+        const cloudCmd = args.slice(1).join(' ');
+        if (!cloudCmd) {
+          this.log('Uso: remote cloud <comando>', 'erro');
+          return;
+        }
+        this.log(`☁️ Executando na cloud: ${cloudCmd}`, 'info');
+        ra.executeCloud(cloudCmd).then(r => {
+          this.log(r.output, r.success ? 'sucesso' : 'erro');
+        });
+        break;
+        
+      case 'poll':
+        const interval = parseInt(args[1]) || 15;
+        ra.startPolling(interval * 1000);
+        this.log(`🔄 Polling iniciado (${interval}s)`, 'sucesso');
+        break;
+        
+      case 'history':
+        if (ra.history.length === 0) {
+          this.log('📜 Histórico vazio', 'info');
+          return;
+        }
+        this.log(`📜 Últimas ${Math.min(10, ra.history.length)} execuções:`, 'info');
+        ra.history.slice(-10).forEach((h, i) => {
+          const status = h.status === 'pending' ? '⏳' : h.result?.success ? '✅' : '❌';
+          this.log(`  ${i+1}. ${status} ${h.command.substring(0, 50)}`, 'info');
+        });
+        break;
+        
+      default:
+        this.log(`\n🌍 REMOTE ADMIN — Comandos:`, 'info');
+        this.log('  remote status         — Ver status', 'info');
+        this.log('  remote connect <url>  — Conectar local', 'info');
+        this.log('  remote config <t> <o> <r> — Config GitHub', 'info');
+        this.log('  remote mode <modo>    — Trocar modo', 'info');
+        this.log('  remote exec <cmd>     — Executar comando', 'info');
+        this.log('  remote cloud <cmd>    — Executar no GitHub', 'info');
+        this.log('  remote poll [seg]     — Iniciar polling', 'info');
+        this.log('  remote history        — Ver histórico', 'info');
     }
   },
 

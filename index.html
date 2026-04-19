@@ -65,6 +65,7 @@
       <button class="mobile-menu-item" data-action="council">☤ Mesa de Reunião</button>
       <button class="mobile-menu-item" data-action="agents">👥 Mentes do Templo</button>
       <button class="mobile-menu-item" data-action="chat">💬 Conversação Livre</button>
+      <button class="mobile-menu-item" data-action="remote">🌍 Admin Remoto</button>
       <button class="mobile-menu-item" data-action="minimap">🗺️ Minimapa</button>
       <button class="mobile-menu-item" data-action="fullscreen">⛶ Tela Cheia</button>
       <button class="mobile-menu-item" data-action="settings">⚙️ Configurações</button>
@@ -491,9 +492,73 @@
   <script src="js/interactions.js"></script>
   <script src="js/initiation.js"></script>
   <script src="js/main.js"></script>
-  <script src="js/system-admin.js"></script>
+<script src="js/system-admin.js">
+<script src="js/remote-admin.js">
 
-  <!-- Bootstrap: persistência e KB (cache-proof) -->
+<!-- Painel Remoto -->
+<div id="remote-panel" class="panel hidden">
+  <div class="panel-header">
+    <span>🌍 Admin Remoto</span>
+    <button onclick="togglePanel('remote-panel')" class="btn-close">✕</button>
+  </div>
+  <div class="panel-body">
+    <div id="remote-status" class="remote-status-box">
+      <div class="status-indicator" id="remote-indicator">●</div>
+      <span id="remote-status-text">Verificando...</span>
+    </div>
+    
+    <div class="remote-section">
+      <h4>🔧 Modo de Conexão</h4>
+      <div class="remote-modes">
+        <button class="mode-btn active" onclick="setRemoteMode('local')" id="mode-local">
+          📡 Local
+        </button>
+        <button class="mode-btn" onclick="setRemoteMode('remote')" id="mode-remote">
+          🌐 Remoto (GitHub)
+        </button>
+        <button class="mode-btn" onclick="setRemoteMode('github-cloud')" id="mode-cloud">
+          ☁️ Cloud
+        </button>
+      </div>
+    </div>
+    
+    <div class="remote-section" id="remote-config-section">
+      <h4>⚙️ Configuração GitHub</h4>
+      <div class="config-field">
+        <label>Token:</label>
+        <input type="password" id="remote-token" placeholder="ghp_xxxxx" class="config-input">
+      </div>
+      <div class="config-field">
+        <label>Owner:</label>
+        <input type="text" id="remote-owner" placeholder="alexnascimentocd-byte" class="config-input">
+      </div>
+      <div class="config-field">
+        <label>Repo:</label>
+        <input type="text" id="remote-repo" placeholder="templo-hermes" class="config-input">
+      </div>
+      <button class="btn-action" onclick="saveRemoteConfig()">💾 Salvar Conexão</button>
+    </div>
+    
+    <div class="remote-section">
+      <h4>⚡ Execução Rápida</h4>
+      <div class="quick-commands">
+        <button onclick="remoteQuickCmd('whoami')" class="quick-cmd">👤 Who</button>
+        <button onclick="remoteQuickCmd('pwd')" class="quick-cmd">📁 Dir</button>
+        <button onclick="remoteQuickCmd('df -h')" class="quick-cmd">💿 Disco</button>
+        <button onclick="remoteQuickCmd('free -m')" class="quick-cmd">🧠 RAM</button>
+        <button onclick="remoteQuickCmd('uptime')" class="quick-cmd">⏱️ Up</button>
+        <button onclick="remoteQuickCmd('ps aux | head -20')" class="quick-cmd">📋 Proc</button>
+      </div>
+    </div>
+    
+    <div class="remote-section">
+      <h4>📜 Histórico</h4>
+      <div id="remote-history" class="remote-history"></div>
+    </div>
+  </div>
+</div>
+
+</body>
   <script>
   (function bootstrap() {
     // Wait for all modules to load
@@ -542,6 +607,14 @@
       // Init SystemAdmin
       if (typeof SystemAdmin !== 'undefined') SystemAdmin.init();
       
+      // Init RemoteAdmin
+      if (typeof RemoteAdmin !== 'undefined') {
+        RemoteAdmin.init().then(() => {
+          updateRemoteStatus();
+          RemoteAdmin.startPolling(15000);
+        });
+      }
+      
       // Patch response engine into conversation
       if (typeof ResponseEngine !== 'undefined' && typeof Game !== 'undefined') {
         const origResp = Game.gerarRespostaAlquimica?.bind(Game);
@@ -559,6 +632,109 @@
       console.log('🔧 Bootstrap: persistência + KB + response engine carregados');
     }, 500);
   })();
+  
+  // ===== REMOTE PANEL FUNCTIONS =====
+  function updateRemoteStatus() {
+    const indicator = document.getElementById('remote-indicator');
+    const text = document.getElementById('remote-status-text');
+    if (!RemoteAdmin) return;
+    
+    const status = RemoteAdmin.status();
+    if (status.connected) {
+      indicator.style.color = '#4ade80';
+      text.textContent = `Conectado (${status.mode})`;
+      if (status.mode === 'remote') {
+        text.textContent += ` — ${status.github}`;
+      }
+    } else {
+      indicator.style.color = '#f87171';
+      text.textContent = 'Desconectado';
+    }
+    
+    // Update mode buttons
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(`mode-${status.mode === 'github-cloud' ? 'cloud' : status.mode}`);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    // Load config into fields
+    if (RemoteAdmin.config.token) {
+      document.getElementById('remote-token').placeholder = '••••••••';
+    }
+    if (RemoteAdmin.config.owner) {
+      document.getElementById('remote-owner').value = RemoteAdmin.config.owner;
+    }
+    if (RemoteAdmin.config.repo) {
+      document.getElementById('remote-repo').value = RemoteAdmin.config.repo;
+    }
+  }
+  
+  function setRemoteMode(mode) {
+    if (!RemoteAdmin) return;
+    const msg = RemoteAdmin.setMode(mode);
+    updateRemoteStatus();
+    if (typeof notify === 'function') notify(msg);
+  }
+  
+  async function saveRemoteConfig() {
+    const token = document.getElementById('remote-token').value;
+    const owner = document.getElementById('remote-owner').value;
+    const repo = document.getElementById('remote-repo').value;
+    
+    if (!token || !owner || !repo) {
+      if (typeof notify === 'function') notify('⚠️ Preencha todos os campos');
+      return;
+    }
+    
+    const result = await RemoteAdmin.connectRemote(token, owner, repo);
+    if (typeof notify === 'function') notify(result.message);
+    updateRemoteStatus();
+  }
+  
+  async function remoteQuickCmd(cmd) {
+    if (!RemoteAdmin || !RemoteAdmin.connected) {
+      if (typeof notify === 'function') notify('⚠️ Não conectado');
+      return;
+    }
+    
+    const historyDiv = document.getElementById('remote-history');
+    const entry = document.createElement('div');
+    entry.className = 'history-entry';
+    entry.innerHTML = `<span class="history-cmd">$ ${cmd}</span><span class="history-result">⏳ Executando...</span>`;
+    historyDiv.prepend(entry);
+    
+    const result = await RemoteAdmin.execute(cmd);
+    const resultSpan = entry.querySelector('.history-result');
+    
+    if (result.pending) {
+      resultSpan.textContent = '📤 Enviado! Aguardando resultado...';
+      resultSpan.className = 'history-result pending';
+      
+      // Listen for result
+      const handler = (e) => {
+        resultSpan.textContent = e.detail.output.substring(0, 200);
+        resultSpan.className = 'history-result done';
+        window.removeEventListener('remote-result', handler);
+      };
+      window.addEventListener('remote-result', handler);
+    } else {
+      resultSpan.textContent = result.output.substring(0, 200);
+      resultSpan.className = result.success ? 'history-result done' : 'history-result error';
+    }
+  }
+  
+  // Mobile menu handler for remote
+  document.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-action="remote"]');
+    if (item) {
+      document.querySelectorAll('.panel').forEach(p => {
+        if (p.id !== 'remote-panel') p.classList.add('hidden');
+      });
+      document.getElementById('remote-panel').classList.toggle('hidden');
+      updateRemoteStatus();
+      document.getElementById('mobile-menu').classList.add('hidden');
+      document.getElementById('mobile-menu-overlay').classList.add('hidden');
+    }
+  });
   </script>
 </body>
 </html>
