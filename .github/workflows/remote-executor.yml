@@ -113,7 +113,7 @@ jobs:
             ✅ Execução concluída. Issue será fechada automaticamente.
         
       - name: Adicionar label done
-        uses: actions/github-script@v6
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.issues.addLabels({
