@@ -236,12 +236,20 @@
             ╠═══════════════════════════════════╣
             ║  Fale livremente com o Templo.    ║
             ║  As 15 mentes responderão.         ║
-            ║  Digite sua mensagem abaixo...     ║
+            ║  Envie textos, imagens ou links.   ║
             ╚═══════════════════════════════════╝
           </div>
         </div>
+        <!-- Preview de arquivo/imagem -->
+        <div id="chat-preview" class="chat-preview hidden">
+          <div id="chat-preview-content" class="chat-preview-content"></div>
+          <button id="chat-preview-close" class="chat-preview-close">✕</button>
+        </div>
         <div class="chat-input-row">
-          <input type="text" id="chat-input" class="chat-input" placeholder="Digite sua mensagem livre..." autocomplete="off" spellcheck="false">
+          <input type="file" id="chat-file-input" accept="image/*,.txt,.pdf,.json,.md,.py,.js,.html,.css,.csv" style="display:none">
+          <button id="chat-file-btn" class="chat-btn-icon" title="Enviar arquivo/imagem">📎</button>
+          <button id="chat-link-btn" class="chat-btn-icon" title="Enviar link">🔗</button>
+          <input type="text" id="chat-input" class="chat-input" placeholder="Digite sua mensagem..." autocomplete="off" spellcheck="false">
           <button id="chat-send" class="chat-send">⬆️</button>
         </div>
       </div>

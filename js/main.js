@@ -772,7 +772,8 @@ const Game = {
       historico: [],
       temas: [],
       estagio: 'nigredo', // ciclo alquímico da conversa
-      msgCount: 0
+      msgCount: 0,
+      pendingFile: null // arquivo aguardando envio
     };
 
     // Abrir chat pelo botão 💬 do console
@@ -797,27 +798,126 @@ const Game = {
       });
     }
 
+    // === FILE UPLOAD ===
+    const fileBtn = document.getElementById('chat-file-btn');
+    const fileInput = document.getElementById('chat-file-input');
+    const preview = document.getElementById('chat-preview');
+    const previewContent = document.getElementById('chat-preview-content');
+    const previewClose = document.getElementById('chat-preview-close');
+
+    if (fileBtn && fileInput) {
+      fileBtn.addEventListener('click', () => fileInput.click());
+      
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        // Limite: 5MB para imagens, 1MB para outros
+        const maxImg = 5 * 1024 * 1024;
+        const maxFile = 1 * 1024 * 1024;
+        const isImage = file.type.startsWith('image/');
+        const limit = isImage ? maxImg : maxFile;
+
+        if (file.size > limit) {
+          this.chatLog(document.getElementById('chat-output'), '⚠️ Sistema',
+            `Arquivo muito grande! Limite: ${isImage ? '5MB (imagem)' : '1MB (arquivo)'}. Seu arquivo: ${(file.size / 1024 / 1024).toFixed(1)}MB`, 'system');
+          fileInput.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.chatCtx.pendingFile = {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            data: e.target.result,
+            isImage: isImage
+          };
+
+          // Mostrar preview
+          preview.classList.remove('hidden');
+          if (isImage) {
+            previewContent.innerHTML = `<img src="${e.target.result}" alt="${file.name}"><span class="preview-file">${file.name} (${(file.size/1024).toFixed(0)}KB)</span>`;
+          } else {
+            previewContent.innerHTML = `<span class="preview-file">📄 ${file.name} (${(file.size/1024).toFixed(0)}KB)</span>`;
+          }
+        };
+        reader.readAsDataURL(file);
+        fileInput.value = '';
+      });
+    }
+
+    // Fechar preview
+    if (previewClose) {
+      previewClose.addEventListener('click', () => {
+        preview.classList.add('hidden');
+        previewContent.innerHTML = '';
+        this.chatCtx.pendingFile = null;
+      });
+    }
+
+    // === LINK BUTTON ===
+    const linkBtn = document.getElementById('chat-link-btn');
+    if (linkBtn) {
+      linkBtn.addEventListener('click', () => {
+        const url = prompt('Cole o link aqui:');
+        if (url && url.trim()) {
+          const chatInp = document.getElementById('chat-input');
+          chatInp.value = url.trim();
+          chatInp.focus();
+        }
+      });
+    }
+
     // Enviar mensagem
     const chatSendBtn = document.getElementById('chat-send');
     const chatInp = document.getElementById('chat-input');
 
     const enviarMsg = () => {
       const msg = chatInp.value.trim();
-      if (!msg) return;
+      const file = this.chatCtx.pendingFile;
+      if (!msg && !file) return;
 
       const output = document.getElementById('chat-output');
-      
-      // Mostrar mensagem do Mestre
-      this.chatLog(output, '👑 Zói', msg, 'master');
+
+      // Se tem arquivo pendente
+      if (file) {
+        if (file.isImage) {
+          // Mostrar imagem no chat
+          this.chatLogImage(output, '👑 Zói', file.data, file.name, msg);
+        } else {
+          // Mostrar arquivo no chat
+          this.chatLogFile(output, '👑 Zói', file.name, file.size);
+        }
+        this.chatCtx.historico.push({ de: 'mestre', texto: msg || `[Arquivo: ${file.name}]`, arquivo: file.name });
+        
+        // Limpar preview
+        document.getElementById('chat-preview').classList.add('hidden');
+        document.getElementById('chat-preview-content').innerHTML = '';
+        this.chatCtx.pendingFile = null;
+      }
+
+      // Se tem mensagem de texto
+      if (msg) {
+        // Detectar links na mensagem
+        if (this.isLink(msg)) {
+          this.chatLogLink(output, '👑 Zói', msg);
+        } else if (msg.length > 300) {
+          // Texto longo
+          this.chatLogLong(output, '👑 Zói', msg);
+        } else {
+          this.chatLog(output, '👑 Zói', msg, 'master');
+        }
+        this.chatCtx.historico.push({ de: 'mestre', texto: msg });
+      }
+
       chatInp.value = '';
       chatInp.focus();
-
-      // Registrar no contexto
-      this.chatCtx.historico.push({ de: 'mestre', texto: msg });
       this.chatCtx.msgCount++;
       
       // Extrair temas/palavras-chave
-      const temas = this.extrairTemas(msg);
+      const temas = this.extrairTemas(msg || file?.name || '');
       this.chatCtx.temas = [...new Set([...this.chatCtx.temas, ...temas])];
 
       // Avançar estágio alquímico
@@ -830,7 +930,7 @@ const Game = {
 
       respondentes.forEach((agente, i) => {
         setTimeout(() => {
-          const resposta = this.gerarRespostaAlquimica(agente, msg, temas);
+          const resposta = this.gerarRespostaAlquimica(agente, msg || `[arquivo: ${file?.name || 'enviado'}]`, temas);
           this.chatLog(output, `${agente.icon} ${agente.name}`, resposta, 'agent');
           this.chatCtx.historico.push({ de: agente.name, texto: resposta });
         }, (i + 1) * 1800);
@@ -846,7 +946,7 @@ const Game = {
 
       // Inbox
       if (typeof Inbox !== 'undefined') {
-        Inbox.addThought(`[Conversação — ${this.chatCtx.estagio}]\n${msg}`);
+        Inbox.addThought(`[Conversação — ${this.chatCtx.estagio}]\n${msg || `[Arquivo: ${file?.name}]`}`);
       }
     };
 
@@ -859,6 +959,77 @@ const Game = {
         }
       });
     }
+  },
+
+  // Detectar se é link
+  isLink(text) {
+    return /^https?:\/\/\S+$/i.test(text.trim());
+  },
+
+  // Log de mensagem com imagem
+  chatLogImage(container, sender, dataUrl, fileName, caption) {
+    const div = document.createElement('div');
+    div.className = 'chat-msg-image';
+    div.innerHTML = `
+      <div style="color:#ffcc00;margin-bottom:4px;font-size:11px">${sender}:</div>
+      <img src="${dataUrl}" alt="${fileName}" onclick="this.style.maxHeight=this.style.maxHeight==='none'?'200px':'none'" title="Clique para expandir/recolher">
+      ${caption ? `<div class="img-caption">${caption}</div>` : `<div class="img-caption">${fileName}</div>`}
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  },
+
+  // Log de mensagem com arquivo
+  chatLogFile(container, sender, fileName, fileSize) {
+    const div = document.createElement('div');
+    const ext = fileName.split('.').pop().toLowerCase();
+    const icons = { pdf: '📕', txt: '📄', py: '🐍', js: '📜', json: '📋', md: '📝', html: '🌐', css: '🎨', csv: '📊' };
+    const icon = icons[ext] || '📎';
+    div.innerHTML = `
+      <div style="color:#ffcc00;margin-bottom:4px;font-size:11px">${sender}:</div>
+      <div class="chat-msg-file" title="Arquivo enviado">
+        <span>${icon}</span>
+        <span>${fileName}</span>
+        <span style="color:#666">(${(fileSize/1024).toFixed(0)}KB)</span>
+      </div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  },
+
+  // Log de mensagem com link
+  chatLogLink(container, sender, url) {
+    const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const div = document.createElement('div');
+    div.className = 'chat-msg-master';
+    // Extrair domínio para preview
+    let domain = '';
+    try { domain = new URL(url).hostname; } catch(e) { domain = url; }
+    div.innerHTML = `
+      <span style="color:#666;font-size:10px">[${time}]</span>
+      <span style="color:#ffcc00">${sender}:</span>
+      <div style="margin-top:4px">
+        <a href="${url}" target="_blank" rel="noopener" class="chat-msg-link">🔗 ${domain}</a>
+        <div style="color:#666;font-size:9px;margin-top:2px">${url}</div>
+      </div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  },
+
+  // Log de texto longo
+  chatLogLong(container, sender, text) {
+    const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const div = document.createElement('div');
+    const id = 'long-' + Date.now();
+    div.innerHTML = `
+      <span style="color:#666;font-size:10px">[${time}]</span>
+      <span style="color:#ffcc00">${sender}:</span>
+      <div class="chat-msg-long" id="${id}">${text.substring(0, 300)}${text.length > 300 ? '...' : ''}</div>
+      ${text.length > 300 ? `<button class="chat-expand-btn" onclick="document.getElementById('${id}').classList.toggle('expanded');document.getElementById('${id}').innerHTML=document.getElementById('${id}').classList.contains('expanded')?'${text.replace(/'/g, "\\'").replace(/\n/g, '\\n')}':'${text.substring(0, 300).replace(/'/g, "\\'").replace(/\n/g, '\\n')}...'">▼ Expandir texto completo</button>` : ''}
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
   },
 
   // Extrair temas/palavras-chave da mensagem
