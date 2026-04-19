@@ -130,6 +130,27 @@
           <button id="btn-council-history" class="council-btn-secondary">📜 Histórico</button>
           <button id="btn-spawn-all" class="council-btn-secondary">👥 Reunir Todas as 15 Mentes</button>
         </div>
+        <!-- Terminal do Mestre para influenciar o debate -->
+        <div id="council-terminal" class="council-terminal hidden">
+          <div class="terminal-header">
+            <span class="terminal-prompt">👑 Terminal do Mestre</span>
+            <span id="terminal-status" class="terminal-status">● CONECTADO</span>
+          </div>
+          <div id="terminal-log" class="terminal-log"></div>
+          <div class="terminal-input-row">
+            <span class="terminal-prefix">Zói &gt;</span>
+            <input type="text" id="terminal-input" class="terminal-input" placeholder="Digite sua opinião, direcionamento ou pergunta...">
+            <button id="terminal-send" class="terminal-send">⬆</button>
+          </div>
+          <div class="terminal-shortcuts">
+            <button class="shortcut-btn" data-msg="Concordo com essa linha. Continuem.">👍 Concordo</button>
+            <button class="shortcut-btn" data-msg="Discordo. Pensem de novo sobre isso.">👎 Discordo</button>
+            <button class="shortcut-btn" data-msg="Explorem mais essa perspectiva.">🔍 Aprofundem</button>
+            <button class="shortcut-btn" data-msg="Mudem o foco. Isso já foi resolvido.">🔄 Mudem foco</button>
+            <button class="shortcut-btn" data-msg="Cheguem a um consenso agora.">⚖️ Consenso</button>
+            <button class="shortcut-btn" data-msg="Busquem a opinião de quem ainda não falou.">🗣️ Chamem outros</button>
+          </div>
+        </div>
       </div>
     </div>
 

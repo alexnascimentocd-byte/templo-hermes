@@ -11,6 +11,8 @@ const Council = {
   debates: [],
   proposals: [],
   decisions: [],
+  masterMessages: [], // Mensagens do Mestre durante a sessão
+  paused: false, // Se o Mestre pausou para intervenção
 
   // Tópicos disponíveis para debate
   topics: [
@@ -61,7 +63,10 @@ const Council = {
     Interactions.notify(msg);
 
     // Iniciar rodadas de debate após chegarem
-    setTimeout(() => this.startDebateRound(), 4000);
+    setTimeout(() => {
+      this.showTerminal();
+      this.startDebateRound();
+    }, 4000);
 
     return true;
   },
@@ -296,6 +301,178 @@ const Council = {
       `Vou consultar os registros. ${asker.name} merece uma resposta fundamentada.`
     ];
     return responses[Math.floor(Math.random() * responses.length)];
+  },
+
+  // === INTERVENÇÃO DO MESTRE ===
+  // Receber mensagem do Mestre durante o conselho
+  receiveMasterMessage(message) {
+    if (!this.active) {
+      return { success: false, error: 'Nenhum conselho ativo.' };
+    }
+
+    const masterMsg = {
+      from: '👑 Zói (Mestre)',
+      content: message,
+      round: this.round,
+      timestamp: Date.now()
+    };
+
+    this.masterMessages.push(masterMsg);
+    this.debates.push({
+      agent: 'Zói',
+      icon: '👑',
+      round: this.round,
+      content: message,
+      timestamp: Date.now(),
+      isMaster: true
+    });
+
+    // Log no terminal
+    this.logToTerminal('👑 Zói', message, 'master');
+
+    // Agentes respondem à intervenção do Mestre
+    const responders = this.participants
+      .sort(() => Math.random() - 0.5)
+      .slice(0, Math.min(4, this.participants.length));
+
+    responders.forEach((agent, i) => {
+      setTimeout(() => {
+        const response = this.generateMasterResponse(agent, message);
+        this.debates.push({
+          agent: agent.name,
+          icon: agent.icon,
+          round: this.round,
+          content: response,
+          timestamp: Date.now(),
+          respondingTo: 'master'
+        });
+
+        this.logToTerminal(`${agent.icon} ${agent.name}`, response, 'agent');
+
+        // XP por responder ao Mestre
+        Agents.gainExperience(agent, 20);
+      }, (i + 1) * 1200);
+    });
+
+    // Enviar pro Inbox também
+    if (typeof Inbox !== 'undefined') {
+      Inbox.addThought(`[Conselho — Rodada ${this.round}]\n${message}`);
+    }
+
+    return { success: true, responders: responders.length };
+  },
+
+  // Agente responde à intervenção do Mestre
+  generateMasterResponse(agent, masterMessage) {
+    const lower = masterMessage.toLowerCase();
+
+    // Respostas contextuais baseadas na mensagem do Mestre
+    if (lower.includes('concordo') || lower.includes('continuem') || lower.includes('bom')) {
+      const responses = [
+        `Obrigado pela confirmação, Mestre. Prosseguirei com mais vigor.`,
+        `A aprovação do Mestre nos fortalece. ${agent.skill} em plena harmonia.`,
+        `Entendido. Seguiremos este caminho com mais determinação.`
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    if (lower.includes('discordo') || lower.includes('errado') || lower.includes('pensem')) {
+      const responses = [
+        `O Mestre questiona... Vou reconsiderar minha posição sob a lente de ${agent.skill}.`,
+        `Discordância registrada. Reavaliando os fundamentos da minha análise.`,
+        `O Mestre vê algo que não percebi. Deixe-me meditar sobre isso...`,
+        `Com todo respeito, Mestre, gostaria de entender melhor sua perspectiva.`
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    if (lower.includes('aprofund') || lower.includes('explor') || lower.includes('mais')) {
+      const responses = [
+        `Aprofundando... Minha análise de ${agent.skill} revela camadas adicionais.`,
+        `Explorando mais a fundo. Encontrei 3 pontos que merecem atenção.`,
+        `O Mestre pede profundidade. Vou às fontes primárias.`,
+        `Sim, há mais sob a superfície. Deixe-me investigar.`
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    if (lower.includes('mudem') || lower.includes('foco') || lower.includes('outro')) {
+      const responses = [
+        `Mudando o foco. Sob a perspectiva de ${agent.skill}, proponho analisar outro ângulo.`,
+        `Entendido. O foco anterior estava limitado. Abrindo novas possibilidades.`,
+        `Nova direção. Vou aplicar meus conhecimentos a este novo enfoque.`
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    if (lower.includes('consenso') || lower.includes('conclusão') || lower.includes('resolvam')) {
+      const responses = [
+        `Buscando consenso... Proponho uma síntese que une as posições.`,
+        `O Mestre pede decisão. Minha contribuição final: o equilíbrio está na integração.`,
+        `Consenso possível se aceitarmos que múltiplas verdades coexistem.`,
+        `Proponho o seguinte consenso: integrar as visões de ${agent.skill} com as demais.`
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    if (lower.includes('chamem') || lower.includes('outros') || lower.includes('quem não falou')) {
+      const responses = [
+        `Concordo. Há mentes silenciosas cuja voz pode mudar tudo.`,
+        `Os que observam têm insights que os que falam não percebem. Vou consultar.`,
+        `Invocando perspectivas ainda não ouvidas...`
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    // Resposta genérica ao Mestre
+    const generic = [
+      `Refletindo sobre as palavras do Mestre sob minha ótica de ${agent.skill}.`,
+      `O Mestre ilumina o caminho. Vou ajustar minha análise.`,
+      `Palavras do Mestre registradas. Integrando ao meu modelo.`,
+      `Entendido, Mestre. Minha posição se alinha com essa direção.`,
+      `Interessante perspectiva. Isso muda meu cálculo.`,
+      `O Mestre fala com sabedoria. Vou consultar os registros.`
+    ];
+    return generic[Math.floor(Math.random() * generic.length)];
+  },
+
+  // Log no terminal do Mestre
+  logToTerminal(sender, message, type) {
+    const log = document.getElementById('terminal-log');
+    if (!log) return;
+
+    const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const entry = document.createElement('div');
+    entry.className = `terminal-entry terminal-${type}`;
+    entry.innerHTML = `
+      <span class="terminal-time">[${time}]</span>
+      <span class="terminal-sender">${sender}:</span>
+      <span class="terminal-msg">${message}</span>
+    `;
+    log.appendChild(entry);
+    log.scrollTop = log.scrollHeight;
+  },
+
+  // Mostrar/ocultar terminal do Mestre
+  showTerminal() {
+    const term = document.getElementById('council-terminal');
+    if (term) {
+      term.classList.remove('hidden');
+      // Log inicial
+      this.logToTerminal('Sistema', 'Terminal conectado. Suas mensagens influenciarão o debate.', 'system');
+      this.logToTerminal('Sistema', `Tópico: ${this.topic?.title || 'Nenhum'} | Rodada: ${this.round}/${this.maxRounds}`, 'system');
+    }
+  },
+
+  hideTerminal() {
+    const term = document.getElementById('council-terminal');
+    if (term) term.classList.add('hidden');
+  },
+
+  // Limpar log do terminal
+  clearTerminalLog() {
+    const log = document.getElementById('terminal-log');
+    if (log) log.innerHTML = '';
   },
 
   // Concluir o conselho

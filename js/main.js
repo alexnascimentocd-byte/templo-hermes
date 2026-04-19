@@ -289,6 +289,49 @@ const Game = {
         this.spawnAllAgents();
       });
     }
+
+    // Terminal do Mestre
+    this.setupCouncilTerminal();
+  },
+
+  setupCouncilTerminal() {
+    const input = document.getElementById('terminal-input');
+    const sendBtn = document.getElementById('terminal-send');
+
+    const sendMessage = () => {
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const result = Council.receiveMasterMessage(msg);
+      if (result.success) {
+        input.value = '';
+      } else {
+        Council.logToTerminal('Sistema', result.error || 'Erro ao enviar mensagem.', 'system');
+      }
+    };
+
+    if (input) {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+    }
+
+    if (sendBtn) {
+      sendBtn.addEventListener('click', sendMessage);
+    }
+
+    // Botões de atalho
+    document.querySelectorAll('.shortcut-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const msg = btn.dataset.msg;
+        if (msg) {
+          const result = Council.receiveMasterMessage(msg);
+          if (!result.success) {
+            Council.logToTerminal('Sistema', result.error || 'Erro ao enviar.', 'system');
+          }
+        }
+      });
+    });
   },
   
   updateCouncilUI() {
