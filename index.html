@@ -44,6 +44,8 @@
         <button id="btn-agents" title="Agentes">👥</button>
         <button id="btn-council" title="Conselho / Mesa de Reunião">☤</button>
         <button id="btn-inbox" title="Caixa de Entrada">📬</button>
+        <button id="btn-console" title="Console do Grimório">⌨️</button>
+        <button id="btn-settings" title="Configurações">⚙️</button>
       </div>
     </header>
 
@@ -117,6 +119,151 @@
       <div class="inbox-compose">
         <input type="text" id="inbox-input" placeholder="💭 Registrar um pensamento..." class="inbox-input">
         <button id="inbox-send" class="inbox-send-btn">+</button>
+      </div>
+    </div>
+
+    <!-- Console do Grimório (acesso rápido) -->
+    <div id="console-panel" class="hidden">
+      <div class="panel-header console-header">
+        <h2>⌨️ Console do Grimório</h2>
+        <button id="close-console">✕</button>
+      </div>
+      <div class="console-body">
+        <div id="console-output" class="console-output">
+          <div class="console-welcome">
+            ╔═══════════════════════════════════╗<br>
+            ║  ⌨️ GRIMÓRIO MESTRE — TERMINAL    ║<br>
+            ╠═══════════════════════════════════╣<br>
+            ║  Comandos:                        ║<br>
+            ║  > status     — Status do templo  ║<br>
+            ║  > agents     — Listar agentes    ║<br>
+            ║  > summon [t] — Invocar agente    ║<br>
+            ║  > council    — Abrir conselho    ║<br>
+            ║  > tools      — Listar ferramentas║<br>
+            ║  > inbox      — Ver mensagens     ║<br>
+            ║  > evolve [id]— Evoluir agente    ║<br>
+            ║  > help       — Ajuda completa    ║<br>
+            ╚═══════════════════════════════════╝<br>
+          </div>
+        </div>
+        <div class="console-input-row">
+          <span class="console-prompt">Zói@templo:~$</span>
+          <input type="text" id="console-input" class="console-input" placeholder="Digite um comando..." autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu de Configurações -->
+    <div id="settings-panel" class="hidden">
+      <div class="panel-header">
+        <h2>⚙️ Configurações do Templo</h2>
+        <button id="close-settings">✕</button>
+      </div>
+      <div class="settings-body">
+        <!-- Seção: Aparência -->
+        <div class="settings-section">
+          <div class="settings-title">🎨 Aparência</div>
+          <div class="setting-item">
+            <label>Brilho das Runas</label>
+            <input type="range" id="rune-glow" min="0" max="100" value="70" class="setting-slider">
+            <span id="rune-glow-val">70%</span>
+          </div>
+          <div class="setting-item">
+            <label>Velocidade dos Agentes</label>
+            <input type="range" id="agent-speed" min="1" max="20" value="5" class="setting-slider">
+            <span id="agent-speed-val">5</span>
+          </div>
+          <div class="setting-item">
+            <label>Partículas</label>
+            <button class="setting-toggle active" id="toggle-particles">ON</button>
+          </div>
+        </div>
+
+        <!-- Seção: Agentes -->
+        <div class="settings-section">
+          <div class="settings-title">👥 Agentes</div>
+          <div class="setting-item">
+            <label>Máximo no Templo</label>
+            <select id="max-agents" class="setting-select">
+              <option value="3">3 agentes</option>
+              <option value="6" selected>6 agentes</option>
+              <option value="10">10 agentes</option>
+              <option value="15">15 agentes (todos)</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label>Comportamento Autônomo</label>
+            <button class="setting-toggle active" id="toggle-autonomous">ON</button>
+          </div>
+          <div class="setting-item">
+            <label>Chat entre Agentes</label>
+            <button class="setting-toggle active" id="toggle-agent-chat">ON</button>
+          </div>
+          <div class="setting-item">
+            <button class="settings-action-btn" id="btn-reset-agents">🔄 Resetar Agentes</button>
+            <button class="settings-action-btn" id="btn-max-level">⬆️ Todos Nível 10</button>
+          </div>
+        </div>
+
+        <!-- Seção: Conselho -->
+        <div class="settings-section">
+          <div class="settings-title">☤ Conselho</div>
+          <div class="setting-item">
+            <label>Rodadas por Sessão</label>
+            <select id="council-rounds" class="setting-select">
+              <option value="3">3 rodadas</option>
+              <option value="5" selected>5 rodadas</option>
+              <option value="7">7 rodadas</option>
+              <option value="10">10 rodadas</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label>Auto-Conselho (diário)</label>
+            <button class="setting-toggle" id="toggle-auto-council">OFF</button>
+          </div>
+        </div>
+
+        <!-- Seção: MCP -->
+        <div class="settings-section">
+          <div class="settings-title">🔧 Espaço MCP</div>
+          <div class="setting-item">
+            <label>Energia Máxima</label>
+            <input type="range" id="mcp-energy" min="50" max="500" value="100" class="setting-slider">
+            <span id="mcp-energy-val">100</span>
+          </div>
+          <div class="setting-item">
+            <label>Regeneração (por ciclo)</label>
+            <input type="range" id="mcp-regen" min="1" max="20" value="2" class="setting-slider">
+            <span id="mcp-regen-val">2</span>
+          </div>
+        </div>
+
+        <!-- Seção: Sistema -->
+        <div class="settings-section">
+          <div class="settings-title">💾 Sistema</div>
+          <div class="setting-item">
+            <button class="settings-action-btn" id="btn-export-state">📤 Exportar Estado</button>
+            <button class="settings-action-btn" id="btn-import-state">📥 Importar Estado</button>
+          </div>
+          <div class="setting-item">
+            <button class="settings-action-btn danger" id="btn-clear-all">🗑 Limpar Tudo</button>
+            <button class="settings-action-btn" id="btn-reset-default">↩️ Padrão</button>
+          </div>
+          <div class="setting-item">
+            <label>Salvar Automaticamente</label>
+            <button class="setting-toggle active" id="toggle-autosave">ON</button>
+          </div>
+        </div>
+
+        <!-- Seção: Sobre -->
+        <div class="settings-section">
+          <div class="settings-title">ℹ️ Sobre</div>
+          <div class="settings-about">
+            <div>🏛️ Templo de Hermes v2.0</div>
+            <div>15 Mentalidades • Mesa de Reunião • MCP</div>
+            <div style="color:#888;margin-top:4px">☤ "Como acima, assim abaixo" ☤</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -229,6 +376,7 @@
   <script src="js/runes.js"></script>
   <script src="js/mcp_tools.js"></script>
   <script src="js/inbox.js"></script>
+  <script src="js/console.js"></script>
   <script src="js/agents.js"></script>
   <script src="js/council.js"></script>
   <script src="js/player.js"></script>

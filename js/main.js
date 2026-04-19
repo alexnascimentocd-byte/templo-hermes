@@ -173,6 +173,9 @@ const Game = {
     // Configurar UIs
     this.setupCouncilUI();
     Inbox.setupUI();
+    Console.init();
+    this.setupConsoleUI();
+    this.setupSettingsUI();
     
     // Configurar controles
     this.setupControls();
@@ -332,6 +335,170 @@ const Game = {
         }
       });
     });
+  },
+
+  // === CONSOLE UI ===
+  setupConsoleUI() {
+    const btnConsole = document.getElementById('btn-console');
+    const consolePanel = document.getElementById('console-panel');
+    const closeConsole = document.getElementById('close-console');
+
+    if (btnConsole) {
+      btnConsole.addEventListener('click', () => {
+        consolePanel.classList.toggle('hidden');
+        if (!consolePanel.classList.contains('hidden')) {
+          const input = document.getElementById('console-input');
+          if (input) setTimeout(() => input.focus(), 100);
+        }
+      });
+    }
+
+    if (closeConsole) {
+      closeConsole.addEventListener('click', () => {
+        consolePanel.classList.add('hidden');
+      });
+    }
+  },
+
+  // === SETTINGS UI ===
+  setupSettingsUI() {
+    const btnSettings = document.getElementById('btn-settings');
+    const settingsPanel = document.getElementById('settings-panel');
+    const closeSettings = document.getElementById('close-settings');
+
+    // Abrir/fechar
+    if (btnSettings) {
+      btnSettings.addEventListener('click', () => {
+        settingsPanel.classList.toggle('hidden');
+      });
+    }
+    if (closeSettings) {
+      closeSettings.addEventListener('click', () => {
+        settingsPanel.classList.add('hidden');
+      });
+    }
+
+    // Toggles
+    document.querySelectorAll('.setting-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        btn.textContent = btn.classList.contains('active') ? 'ON' : 'OFF';
+      });
+    });
+
+    // Sliders - mostrar valor
+    const runeGlow = document.getElementById('rune-glow');
+    const runeGlowVal = document.getElementById('rune-glow-val');
+    if (runeGlow && runeGlowVal) {
+      runeGlow.addEventListener('input', () => {
+        runeGlowVal.textContent = runeGlow.value + '%';
+      });
+    }
+
+    const agentSpeed = document.getElementById('agent-speed');
+    const agentSpeedVal = document.getElementById('agent-speed-val');
+    if (agentSpeed && agentSpeedVal) {
+      agentSpeed.addEventListener('input', () => {
+        agentSpeedVal.textContent = agentSpeed.value;
+      });
+    }
+
+    const mcpEnergy = document.getElementById('mcp-energy');
+    const mcpEnergyVal = document.getElementById('mcp-energy-val');
+    if (mcpEnergy && mcpEnergyVal) {
+      mcpEnergy.addEventListener('input', () => {
+        mcpEnergyVal.textContent = mcpEnergy.value;
+        MCPTools.energy.max = parseInt(mcpEnergy.value);
+      });
+    }
+
+    const mcpRegen = document.getElementById('mcp-regen');
+    const mcpRegenVal = document.getElementById('mcp-regen-val');
+    if (mcpRegen && mcpRegenVal) {
+      mcpRegen.addEventListener('input', () => {
+        mcpRegenVal.textContent = mcpRegen.value;
+        MCPTools.energy.regenRate = parseInt(mcpRegen.value);
+      });
+    }
+
+    // Max agents select
+    const maxAgentsSelect = document.getElementById('max-agents');
+    if (maxAgentsSelect) {
+      maxAgentsSelect.addEventListener('change', () => {
+        const max = parseInt(maxAgentsSelect.value);
+        while (Agents.active.length > max) {
+          const last = Agents.active[Agents.active.length - 1];
+          Agents.despawn(last.id);
+        }
+        Interactions.notify(`👥 Máximo de agentes: ${max}`);
+      });
+    }
+
+    // Council rounds
+    const councilRounds = document.getElementById('council-rounds');
+    if (councilRounds) {
+      councilRounds.addEventListener('change', () => {
+        Council.maxRounds = parseInt(councilRounds.value);
+        Interactions.notify(`☤ Rodadas do conselho: ${councilRounds.value}`);
+      });
+    }
+
+    // Botões de ação
+    const btnResetAgents = document.getElementById('btn-reset-agents');
+    if (btnResetAgents) {
+      btnResetAgents.addEventListener('click', () => {
+        [...Agents.active].forEach(a => Agents.despawn(a.id));
+        for (let i = 0; i < 6 && i < Agents.roster.length; i++) {
+          Agents.spawn(Agents.roster[i].id);
+        }
+        Interactions.notify('🔄 Agentes resetados!');
+      });
+    }
+
+    const btnMaxLevel = document.getElementById('btn-max-level');
+    if (btnMaxLevel) {
+      btnMaxLevel.addEventListener('click', () => {
+        Agents.active.forEach(a => {
+          while (a.level < 10) {
+            Agents.gainExperience(a, a.expToNext);
+          }
+        });
+        Interactions.notify('⬆️ Todos os agentes no Nível 10!');
+      });
+    }
+
+    const btnExport = document.getElementById('btn-export-state');
+    if (btnExport) {
+      btnExport.addEventListener('click', () => {
+        const state = {
+          agents: Agents.active.map(a => ({ type: a.type, name: a.name, level: a.level })),
+          inbox: Inbox.messages.length,
+          decisions: Council.decisions.length,
+          timestamp: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `templo-hermes-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        Interactions.notify('📤 Estado exportado!');
+      });
+    }
+
+    const btnClearAll = document.getElementById('btn-clear-all');
+    if (btnClearAll) {
+      btnClearAll.addEventListener('click', () => {
+        if (confirm('Limpar TUDO? Isso não pode ser desfeito.')) {
+          Inbox.clear();
+          Council.decisions = [];
+          Council.debates = [];
+          Console.clearOutput();
+          Interactions.notify('🗑 Tudo limpo!');
+        }
+      });
+    }
   },
   
   updateCouncilUI() {
