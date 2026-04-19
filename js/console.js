@@ -285,12 +285,17 @@ const Console = {
       case 'deletar':
         this.deleteMemory(args[1]);
         break;
+      case 'copiar':
+      case 'copy':
+        this.copyMemories();
+        break;
       default:
         this.log(`📖 Comandos de memória:`, 'info');
         this.log(`  memória list     - Lista todas as memórias`, 'cinza');
         this.log(`  memória add      - Adiciona nova memória`, 'cinza');
         this.log(`  memória view <id> - Visualiza uma memória`, 'cinza');
         this.log(`  memória delete <id> - Remove uma memória`, 'cinza');
+        this.log(`  memória copiar   - Copia todas as memórias`, 'cinza');
     }
   },
 
@@ -304,6 +309,36 @@ const Console = {
     this.log(`📖 Livro de Memórias Coletivas:`, 'info');
     memories.forEach((memory, index) => {
       this.log(`  ${index + 1}. ${memory.title} (${memory.date})`, 'mente');
+    });
+  },
+
+  copyMemories() {
+    const memories = this.getMemories();
+    if (memories.length === 0) {
+      this.log(`📖 Nenhuma memória para copiar.`, 'cinza');
+      return;
+    }
+    
+    let text = '═══ LIVRO DE MEMÓRIAS COLETIVAS ═══\n\n';
+    memories.forEach((memory, index) => {
+      text += `━━━ ${index + 1}. ${memory.title} ━━━\n`;
+      text += `📅 ${memory.date} | 👤 ${memory.author}\n`;
+      if (memory.tags && memory.tags.length) text += `🏷️ ${memory.tags.join(', ')}\n`;
+      text += `\n${memory.content}\n\n`;
+    });
+    
+    navigator.clipboard.writeText(text).then(() => {
+      this.log(`📋 ${memories.length} memórias copiadas para a área de transferência!`, 'sucesso');
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      this.log(`📋 ${memories.length} memórias copiadas!`, 'sucesso');
     });
   },
 

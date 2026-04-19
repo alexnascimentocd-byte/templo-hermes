@@ -13,7 +13,6 @@ const ASSETS = [
   './js/council.js',
   './js/player.js',
   './js/renderer.js',
-  './js/bookmodal.js',
   './js/interactions.js',
   './js/initiation.js',
   './js/main.js',

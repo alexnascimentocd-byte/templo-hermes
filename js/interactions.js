@@ -56,6 +56,7 @@ const Interactions = {
     document.getElementById('book-close').addEventListener('click', () => this.closeBook());
     document.getElementById('book-prev').addEventListener('click', () => this.bookPrev());
     document.getElementById('book-next').addEventListener('click', () => this.bookNext());
+    document.getElementById('book-copy').addEventListener('click', () => this.copyBookText());
     
     return this;
   },
@@ -274,6 +275,54 @@ const Interactions = {
   closeBook() {
     document.getElementById('book-modal').classList.add('hidden');
     this.currentBook = null;
+  },
+  
+  // Copiar todo o texto do livro para o clipboard
+  copyBookText() {
+    if (!this.currentBook) return;
+    
+    const pages = this.currentBook.bookContent;
+    const title = this.currentBook.name || 'Livro';
+    
+    // Montar texto completo de todas as páginas
+    let fullText = `═══ ${title} ═══\n\n`;
+    
+    pages.forEach((page, i) => {
+      if (page && page.trim()) {
+        fullText += `--- Página ${i + 1} ---\n`;
+        fullText += page.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '') + '\n\n';
+      }
+    });
+    
+    // Copiar para clipboard
+    navigator.clipboard.writeText(fullText).then(() => {
+      const btn = document.getElementById('book-copy');
+      const original = btn.textContent;
+      btn.textContent = '✅ Copiado!';
+      btn.style.background = '#2d5a2d';
+      btn.style.borderColor = '#4a8a4a';
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.style.background = '';
+        btn.style.borderColor = '';
+      }, 2000);
+      this.notify('📋 Texto copiado para a área de transferência!');
+    }).catch(() => {
+      // Fallback para navegadores sem clipboard API
+      const ta = document.createElement('textarea');
+      ta.value = fullText;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      
+      const btn = document.getElementById('book-copy');
+      btn.textContent = '✅ Copiado!';
+      setTimeout(() => { btn.textContent = '📋 Copiar'; }, 2000);
+      this.notify('📋 Texto copiado!');
+    });
   },
   
   // Abrir Grimório Mestre

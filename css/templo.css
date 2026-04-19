@@ -595,6 +595,21 @@ body {
   background: var(--gold);
 }
 
+.book-copy-btn {
+  background: var(--gold-dark) !important;
+  border: 1px solid var(--gold) !important;
+  color: var(--obsidian) !important;
+  font-size: 12px !important;
+  padding: 6px 12px !important;
+  transition: all 0.3s !important;
+}
+
+.book-copy-btn:hover {
+  background: #2d5a2d !important;
+  color: #4aff4a !important;
+  border-color: #4a8a4a !important;
+}
+
 #book-page-indicator {
   color: var(--gold);
   font-family: 'Cinzel', serif;
