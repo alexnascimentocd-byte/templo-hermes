@@ -1007,7 +1007,7 @@ const Game = {
       }
     }
 
-    const enviarMsg = () => {
+    const enviarMsg = async () => {
       const msg = chatInp.value.trim();
       const file = this.chatCtx.pendingFile;
       if (!msg && !file) return;
@@ -1056,24 +1056,58 @@ const Game = {
       // Avançar estágio alquímico
       this.avancarEstagio();
 
-      // 3 mentes respondem com base nos temas
-      const respondentes = Agents.active
-        .sort(() => Math.random() - 0.5)
-        .slice(0, Math.min(15, Agents.active.length));
-
-      respondentes.forEach((agente, i) => {
+      // === PRIORIDADE: AÇÃO (Crystal Ball) ===
+      // Se a mensagem parece um comando, EXECUTAR antes de filosofar
+      const isAcao = this.detectarAcao(msg);
+      
+      if (isAcao && typeof CrystalBall !== 'undefined') {
+        // Mostrar que está executando
+        this.chatLog(output, '🔮 Crystal Ball', '⚡ Executando...', 'system');
+        
+        // Executar PRIMEIRO
+        const resultadoCrystal = await CrystalBall.processar(msg);
+        
+        // Mostrar resultado da execução
+        this.chatLog(output, '🔮 Resultado', resultadoCrystal, 'system');
+        
+        // Agentes comentam sobre o RESULTADO (não filosofia)
+        const respondentes = Agents.active
+          .sort(() => Math.random() - 0.5)
+          .slice(0, Math.min(5, Agents.active.length));
+        
+        respondentes.forEach((agente, i) => {
+          setTimeout(() => {
+            const comentario = this.gerarComentarioAcao(agente, msg, resultadoCrystal);
+            this.chatLog(output, `${agente.icon} ${agente.name}`, comentario, 'agent');
+            this.chatCtx.historico.push({ de: agente.name, texto: comentario });
+          }, (i + 1) * 800);
+        });
+        
+        // Síntese
         setTimeout(() => {
-          const resposta = this.gerarRespostaAlquimica(agente, msg || `[arquivo: ${file?.name || 'enviado'}]`, temas);
-          this.chatLog(output, `${agente.icon} ${agente.name}`, resposta, 'agent');
-          this.chatCtx.historico.push({ de: agente.name, texto: resposta });
-        }, (i + 1) * 1000);
-      });
+          this.chatLog(output, '☤ Síntese', `Ação executada. ${respondentes.length} mentalidades analisaram o resultado.`, 'system');
+        }, respondentes.length * 800 + 500);
+        
+      } else {
+        // Não é ação — resposta conversacional normal
+        const respondentes = Agents.active
+          .sort(() => Math.random() - 0.5)
+          .slice(0, Math.min(15, Agents.active.length));
 
-      // Síntese após TODAS as respostas (modo persistente)
-      setTimeout(() => {
-        const sintese = this.gerarSintese();
-        this.chatLog(output, '☤ Síntese do Conselho', sintese, 'system');
-      }, respondentes.length * 1800 + 800);
+        respondentes.forEach((agente, i) => {
+          setTimeout(() => {
+            const resposta = this.gerarRespostaAlquimica(agente, msg || `[arquivo: ${file?.name || 'enviado'}]`, temas);
+            this.chatLog(output, `${agente.icon} ${agente.name}`, resposta, 'agent');
+            this.chatCtx.historico.push({ de: agente.name, texto: resposta });
+          }, (i + 1) * 1000);
+        });
+
+        // Síntese após TODAS as respostas (modo persistente)
+        setTimeout(() => {
+          const sintese = this.gerarSintese();
+          this.chatLog(output, '☤ Síntese do Conselho', sintese, 'system');
+        }, respondentes.length * 1000 + 800);
+      }
 
       // Inbox
       if (typeof Inbox !== 'undefined') {
@@ -1110,6 +1144,130 @@ const Game = {
   },
 
   // Detectar se é link
+  
+  // Detectar se mensagem é uma AÇÃO (comando) vs conversação
+  detectarAcao(msg) {
+    if (!msg) return false;
+    const lower = msg.toLowerCase();
+    
+    // Palavras que indicam ação
+    const acoes = [
+      'listar', 'mostrar', 'ver', 'exibir', 'checar', 'verificar',
+      'criar', 'deletar', 'remover', 'mover', 'copiar', 'editar', 'escrever',
+      'executar', 'rodar', 'run', 'start', 'stop', 'restart',
+      'instalar', 'desinstalar', 'atualizar', 'upgrade',
+      'baixar', 'download', 'upload', 'enviar',
+      'compilar', 'build', 'deploy', 'publicar',
+      'buscar', 'procurar', 'find', 'grep', 'search',
+      'ping', 'traceroute', 'curl', 'wget',
+      'git', 'npm', 'pip', 'docker', 'nginx', 'systemctl',
+      'ps ', 'ls ', 'cd ', 'cat ', 'df ', 'du ', 'top',
+      'chmod', 'chown', 'mkdir', 'rm ', 'cp ', 'mv ',
+      'conectar', 'desconectar', 'configurar',
+      'debugar', 'testar', 'analisar',
+      'processo', 'processos', 'memória', 'memoria', 'disco', 'rede',
+      'arquivo', 'arquivos', 'pasta', 'diretório',
+      'serviço', 'servidor', 'porta', 'firewall',
+      'driver', 'hardware', 'gpu', 'cpu',
+      'docker', 'container', 'imagem',
+      'logs', 'log do', 'erro', 'error',
+      'backup', 'restaurar', 'sincronizar',
+      'quantos', 'quanto', 'qual', 'quais', 'onde',
+      'status do', 'estado do', 'info do'
+    ];
+    
+    return acoes.some(a => lower.includes(a));
+  },
+
+  // Gerar comentário PRÁTICO sobre ação executada (não filosofia)
+  gerarComentarioAcao(agente, comando, resultado) {
+    const tipo = Object.keys(Agents.types).find(k => 
+      Agents.types[k].name === agente.name || Agents.types[k].icon === agente.icon
+    ) || 'mystic';
+    
+    // Comentários práticos por tipo de agente
+    const comentarios = {
+      analyst: [
+        '📊 Dados coletados. Posso detalhar qualquer métrica específica.',
+        '📐 Análise concluída. Os números estão claros.',
+        '📊 Resultado processado. Quer que eu cruze com outros dados?',
+      ],
+      coder: [
+        '🤖 Executou. Posso automatizar isso se quiser.',
+        '💻 Comando processado. Quer que eu crie um script pra isso?',
+        '🤖 Feito. Posso refinar ou repetir com parâmetros diferentes.',
+      ],
+      guardian: [
+        '🛡️ Verificação concluída. Sistema dentro do esperado.',
+        '🛡️ Auditado. Nenhuma anomalia detectada.',
+        '🛡️ Checagem feita. Tudo sob controle.',
+      ],
+      engineer: [
+        '⚙️ Ação executada. Posso iterar ou otimizar.',
+        '⚙️ Concluído. Quer que eu prototipe uma solução automática?',
+        '⚙️ Pronto. Posso criar um pipeline pra repetir isso.',
+      ],
+      healer: [
+        '🌿 Diagnóstico coletado. Sistema estável.',
+        '🌿 Verificação feita. Sem sinais de alerta.',
+        '🌿 Exame concluído. Posso prescrever otimizações se necessário.',
+      ],
+      architect: [
+        '🏛️ Estrutura mapeada. Posso reorganizar se necessário.',
+        '🏛️ Arquitetura verificada. Tudo no lugar.',
+        '🏛️ Mapeamento feito. Quer que eu projete melhorias?',
+      ],
+      researcher: [
+        '📚 Dados catalogados. Posso aprofundar a investigação.',
+        '📚 Informações coletadas. Quer referências adicionais?',
+        '📚 Pesquisa feita. Posso cruzar com outras fontes.',
+      ],
+      transmuter: [
+        '🔄 Dados transformados. Pronto para próxima conversão.',
+        '🔄 Pipeline executado. Posso converter para outro formato.',
+        '🔄 Processamento concluído. Quer refinar o resultado?',
+      ],
+      mystic: [
+        '✨ Visão completa. O quadro geral está claro.',
+        '✨ Síntese feita. Tudo se conecta.',
+        '✨ Panorama obtido. Posso integrar mais dados.',
+      ],
+      messenger: [
+        '🌈 Comunicação clara. Resultado entregue.',
+        '🌈 Mensagem processada. Quer que eu encaminhe pra outro canal?',
+        '🌈 Relatório feito. Posso resumir se precisar.',
+      ],
+      weaver: [
+        '🕸️ Conexões mapeadas. Padrões identificados.',
+        '🕸️ Teia traçada. Tudo interconectado.',
+        '🕸️ Rede analisada. Posso expandir as conexões.',
+      ],
+      diviner: [
+        '🔮 Padrões identificados. Tendências mapeadas.',
+        '🔮 Análise preditiva concluída. Cenários projetados.',
+        '🔮 Projeção feita. Posso detalhar os indicadores.',
+      ],
+      combinator: [
+        '🎲 Combinações exploradas. Possibilidades geradas.',
+        '🎲 Opções mapeadas. Quer que eu teste combinações diferentes?',
+        '🎲 Matriz de possibilidades criada.',
+      ],
+      enigma: [
+        '🗝️ Camadas reveladas. O que estava oculto ficou claro.',
+        '🗝️ Decodificação feita. Significado extraído.',
+        '🗝️ Mistério resolvido. A resposta estava na superfície.',
+      ],
+      alchemist: [
+        '⚗️ Transmutação concluída. Matéria-prima refinada.',
+        '⚗️ Processo alquímico executado. Produto final pronto.',
+        '⚗️ Destilação feita. Essência extraída.',
+      ]
+    };
+    
+    const lista = comentarios[tipo] || comentarios.mystic;
+    return lista[Math.floor(Math.random() * lista.length)];
+  },
+
   isLink(text) {
     return /^https?:\/\/\S+$/i.test(text.trim());
   },

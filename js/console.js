@@ -51,6 +51,8 @@ const Console = {
       case 'remote': case 'remoto': this.cmdRemote(args); break;
       case 'treinar': case 'train': this.cmdTreinar(args); break;
       case 'crystal': case 'bola': case 'esfera': this.cmdCrystal(args); break;
+      case 'alquimia': case 'alchemy': case 'item': case 'inventario': case 'inventário': this.cmdAlchemy(args); break;
+      case 'transmutar': case 'transmute': this.cmdTransmutar(args); break;
       case 'powershell': case 'ps': this.cmdShell('powershell', args); break;
       case 'cmd': this.cmdShell('cmd', args); break;
       case 'bash': case 'sh': this.cmdShell('bash', args); break;
@@ -1160,6 +1162,125 @@ const Console = {
         const res = await cb.processar(cmd);
         this.log(res, 'info');
     }
+  },
+
+
+  cmdAlchemy(args) {
+    const eco = typeof AlchemyEconomy !== 'undefined' ? AlchemyEconomy : null;
+    if (!eco) { this.log('❌ AlchemyEconomy não carregado', 'erro'); return; }
+
+    const sub = args[0] || 'status';
+
+    switch (sub) {
+      case 'status':
+        const s = eco.status();
+        this.log('\n⚗️ ECONOMIA ALQUÍMICA', 'info');
+        this.log(`  Itens no chão: ${s.itensNoChao}`, 'info');
+        this.log(`  Agentes com itens: ${s.agentesComItens}/15`, 'info');
+        this.log(`  Total de itens: ${s.totalItens}`, 'info');
+        this.log(`  Transmutações: ${s.transmutacoes}`, 'info');
+        this.log(`  Comércios: ${s.comercios}`, 'info');
+        break;
+
+      case 'inventario': case 'inv':
+        const agenteId = args[1];
+        if (!agenteId) {
+          // Mostrar todos
+          Agents.roster.forEach(a => {
+            const inv = eco.inventarios[a.id] || [];
+            if (inv.length > 0) {
+              this.log(`${a.icon} ${a.name}: ${inv.map(i => i.icon).join(' ')} (${inv.length} itens)`, 'mente');
+            }
+          });
+        } else {
+          this.log(eco.verInventario(agenteId), 'info');
+        }
+        break;
+
+      case 'chao': case 'chão': case 'ground':
+        this.log(eco.verItensNoChao(), 'info');
+        break;
+
+      case 'catalogo': case 'catálogo': case 'catalog':
+        this.log(eco.verCatalogo(), 'info');
+        break;
+
+      case 'receitas': case 'recipes':
+        this.log(eco.verReceitas(), 'info');
+        break;
+
+      case 'estatisticas': case 'stats':
+        this.log(eco.verEstatisticas(), 'info');
+        break;
+
+      case 'pegar': case 'pick':
+        const itemId = args[1];
+        const agPega = args[2] || (Agents.active[0]?.id);
+        if (!itemId || !agPega) {
+          this.log('Uso: alquimia pegar <itemId> [agenteId]', 'erro');
+          return;
+        }
+        const rPega = eco.pegarItem(agPega, itemId);
+        this.log(rPega.msg, rPega.sucesso ? 'sucesso' : 'erro');
+        break;
+
+      case 'soltar': case 'drop':
+        const itemSolta = args[1];
+        const agSolta = args[2] || (Agents.active[0]?.id);
+        if (!itemSolta || !agSolta) {
+          this.log('Uso: alquimia soltar <itemId> [agenteId]', 'erro');
+          return;
+        }
+        const rSolta = eco.soltarItem(agSolta, itemSolta);
+        this.log(rSolta.msg, rSolta.sucesso ? 'sucesso' : 'erro');
+        break;
+
+      case 'dar': case 'give':
+        const de = args[1];
+        const para = args[2];
+        const itemDar = args[3];
+        if (!de || !para || !itemDar) {
+          this.log('Uso: alquimia dar <deId> <paraId> <itemId>', 'erro');
+          return;
+        }
+        const rDar = eco.darItem(de, para, itemDar);
+        this.log(rDar.msg, rDar.sucesso ? 'sucesso' : 'erro');
+        break;
+
+      case 'tick':
+        eco.tickAgentes();
+        this.log('⚡ Tick executado — agentes agiram', 'sucesso');
+        break;
+
+      default:
+        this.log('\n⚗️ ALCHEMY ECONOMY — Comandos:', 'info');
+        this.log('  alquimia status      — Visão geral', 'info');
+        this.log('  alquimia inventario  — Inventários dos agentes', 'info');
+        this.log('  alquimia chão        — Itens espalhados', 'info');
+        this.log('  alquimia catálogo    — Todos os itens', 'info');
+        this.log('  alquimia receitas    — Combinações possíveis', 'info');
+        this.log('  alquimia stats       — Estatísticas', 'info');
+        this.log('  alquimia tick        — Forçar ação autônoma', 'info');
+        this.log('  transmutar <i1> <i2> <agente> — Combinar itens', 'info');
+    }
+  },
+
+  cmdTransmutar(args) {
+    const eco = typeof AlchemyEconomy !== 'undefined' ? AlchemyEconomy : null;
+    if (!eco) { this.log('❌ AlchemyEconomy não carregado', 'erro'); return; }
+
+    const item1 = args[0];
+    const item2 = args[1];
+    const agenteId = args[2];
+
+    if (!item1 || !item2 || !agenteId) {
+      this.log('Uso: transmutar <itemId1> <itemId2> <agenteId>', 'erro');
+      this.log('Exemplo: transmutar item_1 item_5 agent_3', 'info');
+      return;
+    }
+
+    const r = eco.transmutar(agenteId, item1, item2);
+    this.log(r.msg, r.sucesso ? 'sucesso' : 'aviso');
   },
 
 

@@ -497,6 +497,7 @@
 <script src="js/parallel-engine.js">
 <script src="js/agent-trainer.js">
 <script src="js/crystal-ball.js">
+<script src="js/alchemy-economy.js">
 
 <!-- Painel Remoto -->
 <div id="remote-panel" class="panel hidden">
@@ -612,6 +613,13 @@
       
       // Init CrystalBall
       if (typeof CrystalBall !== 'undefined') CrystalBall.init();
+      
+      // Init AlchemyEconomy
+      if (typeof AlchemyEconomy !== 'undefined') {
+        AlchemyEconomy.init();
+        // Tick autônomo a cada 30s
+        setInterval(() => AlchemyEconomy.tickAgentes(), 30000);
+      }
       
       // Init RemoteAdmin
       if (typeof RemoteAdmin !== 'undefined') {
