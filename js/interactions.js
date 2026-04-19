@@ -34,7 +34,13 @@ const Interactions = {
     
     // Minimap toggle
     document.getElementById('btn-minimap').addEventListener('click', () => {
-      document.getElementById('minimap').classList.toggle('hidden');
+      const mm = document.getElementById('minimap');
+      mm.classList.toggle('hidden');
+      if (!mm.classList.contains('hidden')) {
+        if (typeof PriorityChat !== 'undefined') PriorityChat.container.style.display = 'none';
+      } else {
+        if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
+      }
     });
     
     // Agentes toggle
@@ -590,6 +596,7 @@ const Interactions = {
   // Fechar painel de agentes
   closeAgentsPanel() {
     document.getElementById('agents-panel').classList.add('hidden');
+    if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
   },
   
   // Sistema de Chat com prioridade

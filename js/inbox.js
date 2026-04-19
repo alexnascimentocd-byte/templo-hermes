@@ -266,8 +266,10 @@ ${(decision.debateLog || []).map((d, i) => `
         inboxPanel.classList.toggle('hidden');
         if (!inboxPanel.classList.contains('hidden')) {
           this.render();
-          // Marcar visíveis como lidas ao abrir
           this.markAllRead();
+          if (typeof PriorityChat !== 'undefined') PriorityChat.container.style.display = 'none';
+        } else {
+          if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
         }
       });
     }
@@ -275,6 +277,7 @@ ${(decision.debateLog || []).map((d, i) => `
     if (closeInbox) {
       closeInbox.addEventListener('click', () => {
         inboxPanel.classList.add('hidden');
+        if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
       });
     }
 

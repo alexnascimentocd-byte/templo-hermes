@@ -144,7 +144,25 @@ const PriorityChat = {
   
   addMessage(sender, message, priority = 1) {
     Interactions.addChatMessage(sender, message, priority);
+    // Só mostra se nenhum painel estiver aberto
     if (this.container.style.display !== 'none') {
+      this.render();
+    }
+  },
+
+  // Verifica se algum painel está aberto (esconde chat de prioridade)
+  isAnyPanelOpen() {
+    const panels = ['console-panel', 'chat-panel', 'council-panel', 'inbox-panel', 'settings-panel', 'agents-panel'];
+    return panels.some(id => {
+      const el = document.getElementById(id);
+      return el && !el.classList.contains('hidden');
+    });
+  },
+
+  // Mostrar só se nenhum painel estiver aberto
+  showIfClear() {
+    if (!this.isAnyPanelOpen() && Interactions.chatMessages.length > 0) {
+      this.container.style.display = 'block';
       this.render();
     }
   }
@@ -268,6 +286,9 @@ const Game = {
         councilPanel.classList.toggle('hidden');
         if (!councilPanel.classList.contains('hidden')) {
           this.updateCouncilUI();
+          if (typeof PriorityChat !== 'undefined') PriorityChat.container.style.display = 'none';
+        } else {
+          if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
         }
       });
     }
@@ -275,6 +296,7 @@ const Game = {
     if (closeCouncil) {
       closeCouncil.addEventListener('click', () => {
         councilPanel.classList.add('hidden');
+        if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
       });
     }
     
@@ -352,6 +374,9 @@ const Game = {
         if (!consolePanel.classList.contains('hidden')) {
           const input = document.getElementById('console-input');
           if (input) setTimeout(() => input.focus(), 100);
+          if (typeof PriorityChat !== 'undefined') PriorityChat.container.style.display = 'none';
+        } else {
+          if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
         }
       });
     }
@@ -359,6 +384,7 @@ const Game = {
     if (closeConsole) {
       closeConsole.addEventListener('click', () => {
         consolePanel.classList.add('hidden');
+        if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
       });
     }
 
@@ -496,11 +522,17 @@ const Game = {
     if (btnSettings) {
       btnSettings.addEventListener('click', () => {
         settingsPanel.classList.toggle('hidden');
+        if (!settingsPanel.classList.contains('hidden')) {
+          if (typeof PriorityChat !== 'undefined') PriorityChat.container.style.display = 'none';
+        } else {
+          if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
+        }
       });
     }
     if (closeSettings) {
       closeSettings.addEventListener('click', () => {
         settingsPanel.classList.add('hidden');
+        if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
       });
     }
 
@@ -641,6 +673,14 @@ const Game = {
       document.getElementById('settings-panel')?.classList.add('hidden');
       document.getElementById('minimap')?.classList.add('hidden');
       document.getElementById('chat-panel')?.classList.add('hidden');
+      // Mostrar mensagens de volta quando fecha tudo
+      if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
+    };
+
+    // Helper: abrir painel e esconder mensagens
+    const openPanel = (id) => {
+      document.getElementById(id)?.classList.remove('hidden');
+      if (typeof PriorityChat !== 'undefined') PriorityChat.container.style.display = 'none';
     };
 
     if (btnMenu && menu) {
@@ -666,32 +706,28 @@ const Game = {
           // Abrir o painel selecionado
           switch (acao) {
             case 'agents': {
-              const p = document.getElementById('agents-panel');
-              p.classList.remove('hidden');
+              openPanel('agents-panel');
               if (typeof Interactions !== 'undefined') Interactions.updateAgentsList();
               break;
             }
             case 'council': {
-              const p = document.getElementById('council-panel');
-              p.classList.remove('hidden');
+              openPanel('council-panel');
               this.updateCouncilUI();
               break;
             }
             case 'inbox': {
-              const p = document.getElementById('inbox-panel');
-              p.classList.remove('hidden');
+              openPanel('inbox-panel');
               if (typeof Inbox !== 'undefined') Inbox.render();
               break;
             }
             case 'console': {
-              const p = document.getElementById('console-panel');
-              p.classList.remove('hidden');
+              openPanel('console-panel');
               const inp = document.getElementById('console-input');
               if (inp) setTimeout(() => inp.focus(), 100);
               break;
             }
             case 'minimap': {
-              document.getElementById('minimap').classList.remove('hidden');
+              openPanel('minimap');
               break;
             }
             case 'fullscreen': {
@@ -700,13 +736,11 @@ const Game = {
               break;
             }
             case 'settings': {
-              const p = document.getElementById('settings-panel');
-              p.classList.remove('hidden');
+              openPanel('settings-panel');
               break;
             }
             case 'chat': {
-              const p = document.getElementById('chat-panel');
-              p.classList.remove('hidden');
+              openPanel('chat-panel');
               break;
             }
           }
@@ -741,7 +775,7 @@ const Game = {
         const isOpen = !panel.classList.contains('hidden');
         closeAllPanels();
         if (!isOpen) {
-          panel.classList.remove('hidden');
+          openPanel('console-panel');
           const inp = document.getElementById('console-input');
           if (inp) setTimeout(() => inp.focus(), 100);
         }
@@ -754,7 +788,7 @@ const Game = {
         const isOpen = !panel.classList.contains('hidden');
         closeAllPanels();
         if (!isOpen) {
-          panel.classList.remove('hidden');
+          openPanel('inbox-panel');
           if (typeof Inbox !== 'undefined') {
             Inbox.render();
             Inbox.markAllRead();
@@ -787,6 +821,9 @@ const Game = {
           consolePanel.classList.add('hidden');
           const inp = document.getElementById('chat-input');
           if (inp) setTimeout(() => inp.focus(), 100);
+          if (typeof PriorityChat !== 'undefined') PriorityChat.container.style.display = 'none';
+        } else {
+          if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
         }
       });
     }
@@ -796,6 +833,7 @@ const Game = {
     if (closeBtn) {
       closeBtn.addEventListener('click', () => {
         document.getElementById('chat-panel').classList.add('hidden');
+        if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
       });
     }
 
