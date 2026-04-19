@@ -49,6 +49,7 @@ const Console = {
       case 'agente': case 'agent': case 'hermes': this.cmdAgente(args); break;
       case 'sys': case 'sysadmin': case 'sistema': this.cmdSysAdmin(args); break;
       case 'remote': case 'remoto': this.cmdRemote(args); break;
+      case 'treinar': case 'train': this.cmdTreinar(args); break;
       case 'powershell': case 'ps': this.cmdShell('powershell', args); break;
       case 'cmd': this.cmdShell('cmd', args); break;
       case 'bash': case 'sh': this.cmdShell('bash', args); break;
@@ -1024,6 +1025,51 @@ const Console = {
         this.log('  remote history        — Ver histórico', 'info');
     }
   },
+
+  cmdTreinar(args) {
+    const trainer = typeof AgentTrainer !== 'undefined' ? AgentTrainer : null;
+    const engine = typeof ParallelEngine !== 'undefined' ? ParallelEngine : null;
+    
+    if (!trainer || !engine) {
+      this.log('❌ AgentTrainer ou ParallelEngine não carregado', 'erro');
+      return;
+    }
+    
+    const sub = args[0] || 'todos';
+    
+    if (sub === 'todos' || sub === 'all') {
+      this.log('🏋️ Treinando todas as 15 mentalidades...', 'info');
+      this.log('⏳ Isso pode levar alguns segundos...', 'aviso');
+      
+      setTimeout(() => {
+        const relatorio = trainer.gerarRelatorio();
+        this.log(relatorio, 'info');
+        this.log('✅ Treinamento concluído!', 'sucesso');
+      }, 100);
+      return;
+    }
+    
+    // Treinar agente específico
+    const tipo = sub;
+    const categoria = args[1] || 'tecnico';
+    
+    if (!engine.profiles[tipo]) {
+      this.log(`❌ Tipo de agente desconhecido: ${tipo}`, 'erro');
+      this.log(`Tipos: ${Object.keys(engine.profiles).join(', ')}`, 'info');
+      return;
+    }
+    
+    this.log(`🏋️ Treinando ${engine.profiles[tipo].nome} (${tipo})...`, 'info');
+    const resultados = trainer.treinarAgente(tipo, categoria, 3);
+    
+    for (const r of resultados) {
+      this.log(`\n📋 "${r.demanda}"`, 'aviso');
+      this.log(`   ${r.resposta}`, 'mente');
+    }
+    
+    this.log(`\n✅ ${resultados.length} exercícios concluídos`, 'sucesso');
+  },
+
 
   async cmdShell(shell, args) {
     const sa = typeof SystemAdmin !== 'undefined' ? SystemAdmin : null;
