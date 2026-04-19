@@ -182,6 +182,42 @@ const Game = {
     if (typeof Persistence !== 'undefined') Persistence.init();
     if (typeof KnowledgeBase !== 'undefined') KnowledgeBase.init();
     
+    // Patch Agents com persistência (se o agents.js não tem saveAll)
+    if (typeof Agents !== 'undefined') {
+      if (!Agents.saveAll) {
+        Agents.saveAll = function() {
+          if (typeof Persistence !== 'undefined') {
+            Persistence.saveAgents(this.roster);
+          }
+        };
+      }
+      // Carregar estado salvo dos agentes
+      if (typeof Persistence !== 'undefined') {
+        const saved = Persistence.loadAgents();
+        if (saved && saved.length > 0) {
+          saved.forEach(savedAgent => {
+            const agent = Agents.roster.find(a => a.type === savedAgent.type);
+            if (agent && savedAgent.level > agent.level) {
+              agent.level = savedAgent.level;
+              agent.experience = savedAgent.experience || 0;
+              agent.expToNext = savedAgent.expToNext || 100;
+            }
+          });
+        }
+      }
+      // Auto-save periódico
+      setInterval(() => Agents.saveAll(), 60000);
+      
+      // Patch gainExperience para auto-save
+      const origGain = Agents.gainExperience.bind(Agents);
+      let saveTimer = null;
+      Agents.gainExperience = function(agent, amount) {
+        origGain(agent, amount);
+        if (saveTimer) clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => this.saveAll(), 3000);
+      };
+    }
+    
     // Inicializar módulos
     World.init();
     Items.init();
