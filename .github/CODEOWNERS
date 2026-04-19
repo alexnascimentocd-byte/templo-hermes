@@ -1,0 +1,7 @@
+# Proteção de arquivos críticos
+# Qualquer mudança nesses arquivos requer review
+
+.github/workflows/  @alexnascimentocd-byte
+remote/              @alexnascimentocd-byte
+js/remote-admin.js   @alexnascimentocd-byte
+js/system-admin.js   @alexnascimentocd-byte
