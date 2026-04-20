@@ -53,6 +53,11 @@ const Console = {
       case 'crystal': case 'bola': case 'esfera': this.cmdCrystal(args); break;
       case 'alquimia': case 'alchemy': case 'item': case 'inventario': case 'inventário': this.cmdAlchemy(args); break;
       case 'transmutar': case 'transmute': this.cmdTransmutar(args); break;
+      case 'cortex': case 'cérebro': case 'cerebro': this.cmdCortex(args); break;
+      case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
+      case 'escrever': case 'write': this.cmdEscrever(args); break;
+      case 'ler': case 'read': this.cmdLer(args); break;
+      case 'ideia': case 'idea': this.cmdIdeia(args); break;
       case 'powershell': case 'ps': this.cmdShell('powershell', args); break;
       case 'cmd': this.cmdShell('cmd', args); break;
       case 'bash': case 'sh': this.cmdShell('bash', args); break;
@@ -1322,6 +1327,151 @@ const Console = {
     this.log(r.msg, r.sucesso ? 'sucesso' : 'aviso');
   },
 
+  cmdCortex(args) {
+    const cx = typeof CognitiveCortex !== 'undefined' ? CognitiveCortex : null;
+    if (!cx) { this.log('❌ CognitiveCortex não carregado', 'erro'); return; }
+
+    const sub = args[0] || 'status';
+
+    switch (sub) {
+      case 'status':
+        const s = cx.status();
+        this.log('\n🧠 CÓRTEX COGNITIVO', 'info');
+        this.log(`  Córtexes ativos: ${s.cortexes}`, 'info');
+        this.log(`  Memória: ${s.memoria} registros`, 'info');
+        this.log(`  Melhorias: ${s.melhorias}`, 'info');
+        this.log(`  Objetos visíveis: ${s.objetosVisiveis}`, 'info');
+        break;
+
+      case 'processar': case 'analisar':
+        const entrada = args.slice(1).join(' ');
+        if (!entrada) {
+          this.log('Uso: cortex processar <demanda>', 'erro');
+          return;
+        }
+        this.log('🧠 Processando...', 'aviso');
+        const resultado = cx.processar(entrada);
+        this.log('\n📋 ANÁLISE:', 'info');
+        this.log(`  Objetivo: ${resultado.analise.objetivo}`, 'info');
+        this.log(`  Complexidade: ${'█'.repeat(resultado.analise.complexidade)}${'░'.repeat(5 - resultado.analise.complexidade)}`, 'info');
+        this.log(`  Prioridade: ${resultado.analise.prioridade}`, 'info');
+        this.log(`  Riscos: ${resultado.analise.riscos.join(', ')}`, 'info');
+        this.log('\n📝 Passos:', 'info');
+        resultado.analise.passos.forEach(p => this.log(`  ${p}`, 'info'));
+        this.log('\n💻 Código:', 'info');
+        this.log(resultado.codigo, 'info');
+        if (resultado.comandos.length > 0) {
+          this.log('\n⚙️ Comandos:', 'info');
+          resultado.comandos.forEach(c => this.log(`  $ ${c}`, 'info'));
+        }
+        break;
+
+      case 'padroes': case 'padrões':
+        const padroes = cx.cortexes.posterior.reconhecerPadroes();
+        this.log('\n🔍 PADRÕES DETECTADOS:', 'info');
+        padroes.forEach(p => this.log(`  ${p}`, 'info'));
+        break;
+
+      case 'melhorias': case 'rank':
+        this.log(cx.cortexes.posterior.verMelhorias(), 'info');
+        break;
+
+      case 'memoria': case 'memória':
+        const termo = args.slice(1).join(' ');
+        if (termo) {
+          const resultados = cx.cortexes.posterior.buscar(termo);
+          this.log(`\n🔍 Memória (busca: "${termo}") — ${resultados.length} resultados:`, 'info');
+          resultados.forEach(r => {
+            this.log(`  [${new Date(r.timestamp).toLocaleTimeString()}] ${r.tipo}: ${(r.entrada || '').substring(0, 50)}`, 'info');
+          });
+        } else {
+          this.log(`\n📚 Memória: ${cx.cortexes.posterior.memoria.length} registros`, 'info');
+          cx.cortexes.posterior.memoria.slice(-5).forEach(r => {
+            this.log(`  [${new Date(r.timestamp).toLocaleTimeString()}] ${r.tipo}`, 'info');
+          });
+        }
+        break;
+
+      default:
+        this.log('\n🧠 CÓRTEX COGNITIVO — Comandos:', 'info');
+        this.log('  cortex status         — Visão geral', 'info');
+        this.log('  cortex processar <d>  — Analisar demanda', 'info');
+        this.log('  cortex padrões        — Detectar padrões', 'info');
+        this.log('  cortex melhorias      — Ranking de melhorias', 'info');
+        this.log('  cortex memória [busca]— Buscar na memória', 'info');
+        this.log('  ver                   — O que os olhos veem', 'info');
+        this.log('  ver <objeto>          — Analisar objeto', 'info');
+        this.log('  ler <arquivo>         — Ler arquivo do PC', 'info');
+        this.log('  escrever <arq> <txt>  — Escrever arquivo', 'info');
+        this.log('  ideia <descrição>     — Do pensamento ao código', 'info');
+    }
+  },
+
+  cmdVer(args) {
+    const cx = typeof CognitiveCortex !== 'undefined' ? CognitiveCortex : null;
+    if (!cx) { this.log('❌ CognitiveCortex não carregado', 'erro'); return; }
+
+    const alvo = args.join(' ');
+    if (alvo) {
+      this.log(cx.cortexes.visual.analisarObjeto(alvo), 'info');
+    } else {
+      this.log(cx.cortexes.visual.descreverCena(), 'info');
+    }
+  },
+
+  async cmdEscrever(args) {
+    const cx = typeof CognitiveCortex !== 'undefined' ? CognitiveCortex : null;
+    if (!cx) { this.log('❌ CognitiveCortex não carregado', 'erro'); return; }
+
+    const caminho = args[0];
+    const conteudo = args.slice(1).join(' ');
+    if (!caminho || !conteudo) {
+      this.log('Uso: escrever <caminho> <conteúdo>', 'erro');
+      this.log('Exemplo: escrever /tmp/teste.txt Olá mundo', 'info');
+      return;
+    }
+
+    this.log(`📝 Escrevendo em ${caminho}...`, 'aviso');
+    const resultado = await cx.escreverArquivo(caminho, conteudo);
+    this.log(resultado.success ? `✅ Arquivo escrito: ${caminho}` : `❌ Erro: ${resultado.output}`, resultado.success ? 'sucesso' : 'erro');
+  },
+
+  async cmdLer(args) {
+    const cx = typeof CognitiveCortex !== 'undefined' ? CognitiveCortex : null;
+    if (!cx) { this.log('❌ CognitiveCortex não carregado', 'erro'); return; }
+
+    const caminho = args[0];
+    if (!caminho) {
+      this.log('Uso: ler <caminho>', 'erro');
+      this.log('Exemplo: ler /etc/hostname', 'info');
+      return;
+    }
+
+    this.log(`📖 Lendo ${caminho}...`, 'aviso');
+    const resultado = await cx.lerArquivo(caminho);
+    if (resultado.success) {
+      this.log(resultado.output, 'info');
+    } else {
+      this.log(`❌ Erro: ${resultado.output}`, 'erro');
+    }
+  },
+
+  async cmdIdeia(args) {
+    const cx = typeof CognitiveCortex !== 'undefined' ? CognitiveCortex : null;
+    if (!cx) { this.log('❌ CognitiveCortex não carregado', 'erro'); return; }
+
+    const ideia = args.join(' ');
+    if (!ideia) {
+      this.log('Uso: ideia <descrição da ideia>', 'erro');
+      this.log('O córtex analisa, gera código e mostra comandos pra executar.', 'info');
+      this.log('Exemplo: ideia criar script de backup automático', 'info');
+      return;
+    }
+
+    this.log('🧠 Processando ideia pelos 4 córtexes...', 'aviso');
+    const saida = await cx.conselhoParaCodigo(ideia);
+    this.log(saida, 'info');
+  },
 
   async cmdShell(shell, args) {
     const sa = typeof SystemAdmin !== 'undefined' ? SystemAdmin : null;

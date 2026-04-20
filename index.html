@@ -498,6 +498,7 @@
 <script src="js/agent-trainer.js">
 <script src="js/crystal-ball.js">
 <script src="js/alchemy-economy.js">
+<script src="js/cognitive-cortex.js">
 
 <!-- Painel Remoto -->
 <div id="remote-panel" class="panel hidden">
@@ -613,6 +614,11 @@
       
       // Init CrystalBall
       if (typeof CrystalBall !== 'undefined') CrystalBall.init();
+      
+      // Init CognitiveCortex
+      if (typeof CognitiveCortex !== 'undefined') {
+        console.log('🧠 CognitiveCortex carregado');
+      }
       
       // Init AlchemyEconomy
       if (typeof AlchemyEconomy !== 'undefined') {
