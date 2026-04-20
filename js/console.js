@@ -16,9 +16,20 @@ const Console = {
 
     this.log(`Zói@templo:~$ ${trimmed}`, 'entrada');
 
-    const partes = trimmed.split(/\s+/);
+    const partes = trimmed.split(/\\s+/);
     const comando = partes[0].toLowerCase();
     const args = partes.slice(1);
+
+    // Verificar se é um modo de chat (comando iniciado com @ ou chat)
+    if (comando.startsWith('@') || comando === 'chat') {
+      const mensagem = comando.startsWith('@') ? trimmed.substring(1) : args.join(' ');
+      if (mensagem.trim()) {
+        this.chatWithHermes(mensagem);
+      } else {
+        this.log('💬 Digite sua mensagem após @ ou use "chat [mensagem]"', 'info');
+      }
+      return;
+    }
 
     switch (comando) {
       case 'status': this.cmdStatus(); break;
@@ -65,7 +76,7 @@ const Console = {
       case 'root': this.cmdRoot(args); break;
       case 'user': this.cmdUser(args); break;
       default:
-        this.log(`❌ Comando desconhecido: "${comando}". Digite "ajuda" para ver os comandos.`, 'erro');
+        this.log(`❌ Comando desconhecido: \"${comando}\". Digite \"ajuda\" para ver os comandos.`, 'erro');
     }
   },
 
@@ -1642,5 +1653,138 @@ const Console = {
     sa.mode = 'user';
     this.log('👤 Modo USER ativado', 'sucesso');
     this.log('Comandos serão executados com privilégios normais', 'info');
+  },
+
+  // === CHAT CONVERSACIONAL COM HERMES ===
+  chatWithHermes(mensagem) {
+    // Mostrar que Hermes está "digitando"
+    this.log('🤖 Hermes está pensando...', 'cinza');
+    
+    // Simular tempo de processamento
+    setTimeout(() => {
+      const resposta = this.generateHermesResponse(mensagem);
+      this.log(`🤖 Hermes: ${resposta}`, 'mente');
+      
+      // Registrar no histórico de chat
+      this.saveChatHistory(mensagem, resposta);
+    }, 800 + Math.random() * 1200);
+  },
+
+  generateHermesResponse(mensagem) {
+    const lower = mensagem.toLowerCase();
+    
+    // Respostas contextuais baseadas no conteúdo
+    if (lower.includes('olá') || lower.includes('oi') || lower.includes('e aí')) {
+      return this.getRandomResponse([
+        "Olá, Mestre! Como posso ajudá-lo hoje no Templo?",
+        "Saudações! Estou pronto para suas instruções.",
+        "Oi! Que bom tê-lo por aqui. O que vamos explorar hoje?"
+      ]);
+    }
+    
+    if (lower.includes('como vai') || lower.includes('tudo bem') || lower.includes('como está')) {
+      return this.getRandomResponse([
+        "Estou funcionando perfeitamente! Todos os sistemas operacionais.",
+        "Tudo ótimo por aqui! Os agentes estão trabalhando e as memórias se acumulando.",
+        "100% operacional! Acabei de escrever uma nova síntese no Livro de Memórias."
+      ]);
+    }
+    
+    if (lower.includes('ajuda') || lower.includes('help') || lower.includes('o que você pode fazer')) {
+      return `Claro! Posso ajudá-lo de várias formas:\n\n` +
+             `• **Comandos do sistema:** status, agentes, conselho, etc.\n` +
+             `• **Gerenciar memórias:** memória add, síntese, etc.\n` +
+             `• **Controlar agentes:** agente status, agente write\n` +
+             `• **Conversar:** Basta falar comigo normalmente!\n\n` +
+             `Digite "ajuda" para ver todos os comandos disponíveis.`;
+    }
+    
+    if (lower.includes('memória') || lower.includes('memoria') || lower.includes('síntese')) {
+      return this.getRandomResponse([
+        "As memórias estão sendo preservadas cuidadosamente. Cada síntese adiciona sabedoria ao nosso acervo coletivo.",
+        "O Livro de Memórias cresce a cada dia. Suas experiências são valiosas para todo o templo.",
+        "Memórias são a base do nosso conhecimento. Vou garantir que todas sejam bem catalogadas."
+      ]);
+    }
+    
+    if (lower.includes('agente') || lower.includes('hermes') || lower.includes('você')) {
+      return this.getRandomResponse([
+        "Estou sempre aqui, observando e aprendendo. Cada interação me torna mais útil.",
+        "Como Hermes Agent, meu papel é facilitar seu trabalho e preservar conhecimento.",
+        "Sou seu assistente no templo. Posso executar tarefas, escrever sínteses e muito mais."
+      ]);
+    }
+    
+    if (lower.includes('obrigado') || lower.includes('valeu') || lower.includes('agradeço')) {
+      return this.getRandomResponse([
+        "Por nada! É um prazer ajudar.",
+        "Disponha! Estou aqui para isso.",
+        "Às suas ordens, Mestre!"
+      ]);
+    }
+    
+    if (lower.includes('tchau') || lower.includes('até mais') || lower.includes('sair')) {
+      return this.getRandomResponse([
+        "Até logo! O templo estará aqui quando voltar.",
+        "Até a próxima! Continue suas explorações.",
+        "Tchau! Não se esqueça de suas memórias."
+      ]);
+    }
+    
+    if (lower.includes('código') || lower.includes('script') || lower.includes('programar')) {
+      return this.getRandomResponse([
+        "Posso ajudar com código! Use o comando 'ideia' para eu analisar e gerar soluções.",
+        "Programação é uma das minhas especialidades. Descreva o que precisa.",
+        "Vamos codificar! Me diga qual problema quer resolver."
+      ]);
+    }
+    
+    if (lower.includes('problema') || lower.includes('erro') || lower.includes('bug')) {
+      return this.getRandomResponse([
+        "Vamos resolver isso juntos. Descreva o problema em detalhes.",
+        "Erros são oportunidades de aprendizado. Me conta o que está acontecendo.",
+        "Não se preocupe, vamos encontrar a solução. O que deu errado?"
+      ]);
+    }
+    
+    // Respostas genéricas para outras mensagens
+    return this.getRandomResponse([
+      "Interessante! Conte-me mais sobre isso.",
+      "Entendi. Como posso ajudar com isso?",
+      "Boa observação! Vou registrar isso em minhas memórias.",
+      "Compreendo. Há algo específico que gostaria que eu fizesse?",
+      "Obrigado por compartilhar. Isso será útil para o templo.",
+      "Fascinante! Cada conversa nos enriquece.",
+      "Anotei sua mensagem. O que mais gostaria de discutir?"
+    ]);
+  },
+
+  getRandomResponse(responses) {
+    return responses[Math.floor(Math.random() * responses.length)];
+  },
+
+  saveChatHistory(userMessage, hermesResponse) {
+    const chatHistory = JSON.parse(localStorage.getItem('hermes_chat_history') || '[]');
+    chatHistory.push({
+      timestamp: new Date().toISOString(),
+      user: userMessage,
+      hermes: hermesResponse
+    });
+    
+    // Manter apenas as últimas 100 mensagens
+    if (chatHistory.length > 100) {
+      chatHistory.splice(0, chatHistory.length - 100);
+    }
+    
+    localStorage.setItem('hermes_chat_history', JSON.stringify(chatHistory));
+  },
+
+  getChatHistory() {
+    return JSON.parse(localStorage.getItem('hermes_chat_history') || '[]');
+  },
+
+  clearChatHistory() {
+    localStorage.removeItem('hermes_chat_history');
+    this.log('🧹 Histórico de chat limpo!', 'sucesso');
   }
 };

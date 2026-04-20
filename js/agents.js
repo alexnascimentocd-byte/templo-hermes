@@ -167,10 +167,10 @@ const Agents = {
       preferredZone: typeData.preferredZone,
       
       // Estado
-      x: 20,
-      y: 5,
-      targetX: 20,
-      targetY: 5,
+      x: 30,
+      y: 15,
+      targetX: 30,
+      targetY: 15,
       direction: 'down',
       moving: false,
       

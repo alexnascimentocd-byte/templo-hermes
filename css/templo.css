@@ -2602,3 +2602,36 @@ body {
     display: none;
   }
 }
+
+/* ===== FULLSCREEN ===== */
+:fullscreen {
+  background: var(--obsidian);
+}
+:fullscreen #dashboard {
+  width: 100vw;
+  height: 100vh;
+}
+:fullscreen #temple-container {
+  width: 100%;
+  height: 100%;
+}
+:fullscreen #temple-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* iOS standalone mode */
+@supports (-webkit-touch-callout: none) {
+  body {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Prevenir desfoque no zoom */
+#temple-canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+  will-change: transform;
+  transform: translateZ(0);
+}

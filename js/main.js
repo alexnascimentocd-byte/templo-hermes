@@ -174,6 +174,7 @@ const Game = {
     this.setupSettingsUI();
     this.setupMobileMenu();
     this.setupChatMode();
+    this.setupHeaderButtons();
     
     // Inicializar Grimório dos NPCs
     if (typeof NPCGrimoire !== 'undefined') {
@@ -856,6 +857,68 @@ const Game = {
           }
         }
       });
+    }
+  },
+
+  // === BOTÕES DO HEADER (Desktop) ===
+  setupHeaderButtons() {
+    // Tela cheia
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    if (btnFullscreen) {
+      btnFullscreen.addEventListener('click', () => {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+          btnFullscreen.title = 'Tela Cheia';
+        } else {
+          document.documentElement.requestFullscreen().catch(() => {});
+          btnFullscreen.title = 'Sair Tela Cheia';
+        }
+      });
+    }
+
+    // Minimapa
+    const btnMinimap = document.getElementById('btn-minimap');
+    const minimap = document.getElementById('minimap');
+    if (btnMinimap && minimap) {
+      btnMinimap.addEventListener('click', () => {
+        minimap.classList.toggle('hidden');
+      });
+    }
+
+    // Agentes (desktop)
+    const btnAgents = document.getElementById('btn-agents');
+    const agentsPanel = document.getElementById('agents-panel');
+    if (btnAgents && agentsPanel) {
+      btnAgents.addEventListener('click', () => {
+        agentsPanel.classList.toggle('hidden');
+        if (!agentsPanel.classList.contains('hidden')) {
+          if (typeof Agents !== 'undefined') Agents.renderPanel();
+        }
+      });
+    }
+
+    // Grimório (desktop)
+    const btnGrimoire = document.getElementById('btn-grimoire');
+    const grimoirePanel = document.getElementById('grimoire-panel');
+    if (btnGrimoire && grimoirePanel) {
+      btnGrimoire.addEventListener('click', () => {
+        grimoirePanel.classList.toggle('hidden');
+        if (!grimoirePanel.classList.contains('hidden')) {
+          if (typeof NPCGrimoire !== 'undefined') NPCGrimoire.loadAll();
+        }
+      });
+    }
+
+    // Fechar agentes
+    const closeAgents = document.getElementById('close-agents');
+    if (closeAgents && agentsPanel) {
+      closeAgents.addEventListener('click', () => agentsPanel.classList.add('hidden'));
+    }
+
+    // Fechar grimório
+    const closeGrimoire = document.getElementById('close-grimoire');
+    if (closeGrimoire && grimoirePanel) {
+      closeGrimoire.addEventListener('click', () => grimoirePanel.classList.add('hidden'));
     }
   },
 
