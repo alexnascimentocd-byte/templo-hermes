@@ -161,6 +161,76 @@ const Renderer = {
         ctx.fillRect(x + 4, y + 2, 26, 2);
         ctx.fillRect(x + 4, y + 28, 26, 2);
         break;
+        
+      case World.blocks.DESERT:
+        // Areia com ondulação
+        ctx.fillStyle = 'rgba(180,150,80,0.15)';
+        const sandOff = (this.animFrame + tileX * 3 + tileY * 7) % 12;
+        ctx.fillRect(x + sandOff, y + 8, 16, 3);
+        ctx.fillRect(x + (sandOff + 6) % 12, y + 20, 12, 2);
+        break;
+        
+      case World.blocks.SAND:
+        // Areia clara - pontos de brilho
+        ctx.fillStyle = 'rgba(255,240,200,0.1)';
+        ctx.fillRect(x + 4, y + 4, 4, 4);
+        ctx.fillRect(x + 20, y + 16, 6, 6);
+        break;
+        
+      case World.blocks.DUNE:
+        // Sombra de duna
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx.beginPath();
+        ctx.moveTo(x, y + size);
+        ctx.lineTo(x + size/2, y + 8);
+        ctx.lineTo(x + size, y + size);
+        ctx.fill();
+        break;
+        
+      case World.blocks.CACTUS:
+        // Cacto pixel art
+        ctx.fillStyle = '#1a4a1a';
+        ctx.fillRect(x + 12, y + 4, 8, 24);
+        ctx.fillRect(x + 4, y + 12, 8, 8);
+        ctx.fillRect(x + 20, y + 8, 8, 10);
+        ctx.fillStyle = '#3a7a3a';
+        ctx.fillRect(x + 14, y + 6, 4, 20);
+        break;
+        
+      case World.blocks.BONE:
+        // Osso
+        ctx.fillStyle = '#ddd0b8';
+        ctx.fillRect(x + 8, y + 14, 16, 4);
+        ctx.fillRect(x + 6, y + 10, 4, 12);
+        ctx.fillRect(x + 22, y + 10, 4, 12);
+        break;
+        
+      case World.blocks.RUINS:
+        // Ruínas - pedra quebrada
+        ctx.fillStyle = '#5a4a3a';
+        ctx.fillRect(x + 2, y + 2, 12, 18);
+        ctx.fillRect(x + 18, y + 8, 12, 22);
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.fillRect(x + 6, y + 6, 4, 8);
+        break;
+        
+      case World.blocks.AMETHYST:
+        // Cristal ametista brilhante
+        const amGlow = Math.sin(this.animFrame * 0.08 + tileX) * 0.15 + 0.2;
+        ctx.fillStyle = `rgba(180,100,255,${amGlow})`;
+        ctx.fillRect(x + 4, y + 4, size - 8, size - 8);
+        ctx.fillStyle = 'rgba(255,200,255,0.15)';
+        ctx.fillRect(x + 8, y + 8, 8, 8);
+        break;
+        
+      case World.blocks.BLUE_CRYSTAL:
+        // Cristal azul brilhante
+        const blGlow = Math.sin(this.animFrame * 0.08 + tileY) * 0.15 + 0.2;
+        ctx.fillStyle = `rgba(80,150,255,${blGlow})`;
+        ctx.fillRect(x + 4, y + 4, size - 8, size - 8);
+        ctx.fillStyle = 'rgba(200,230,255,0.15)';
+        ctx.fillRect(x + 8, y + 8, 8, 8);
+        break;
     }
   },
   
@@ -361,26 +431,69 @@ const Renderer = {
     ctx.textAlign = 'left';
   },
   
-  // Renderizar labels das zonas
+  // Renderizar labels das zonas + numerais
   renderZoneLabels(ctx, T) {
+    const zoom = this.camera.zoom || 1;
+    const effectiveT = T * zoom;
+    
     for (const [id, zone] of Object.entries(World.zones)) {
       const b = zone.bounds;
-      const screenX = (b.x + b.w / 2) * T - this.camera.x;
-      const screenY = (b.y + 1) * T - this.camera.y;
-      
+      const screenX = (b.x + b.w / 2) * effectiveT - this.camera.x;
+      const screenY = (b.y + 1) * effectiveT - this.camera.y;
+
       // Só mostrar se visível
-      if (screenY < -20 || screenY > this.canvas.height + 20) continue;
-      
+      if (screenY < -30 || screenY > this.canvas.height + 30) continue;
+      if (screenX < -100 || screenX > this.canvas.width + 100) continue;
+
+      // Nome da zona
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
       ctx.fillRect(screenX - 80, screenY - 12, 160, 20);
-      ctx.strokeStyle = '#d4a547';
+      ctx.strokeStyle = zone.color || '#d4a547';
       ctx.lineWidth = 1;
       ctx.strokeRect(screenX - 80, screenY - 12, 160, 20);
-      
-      ctx.fillStyle = '#d4a547';
+
+      ctx.fillStyle = zone.color || '#d4a547';
       ctx.font = '10px "Press Start 2P", monospace';
       ctx.textAlign = 'center';
       ctx.fillText(`${zone.icon} ${zone.name}`, screenX, screenY + 3);
+      
+      // Numerais nos pilares do octagrama padrão
+      if (zone.numeral) {
+        const numY = screenY - 24;
+        
+        // Numeral caldeu (número romano)
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(screenX - 30, numY - 14, 26, 18);
+        ctx.fillStyle = World.numeralSystems.caldeu.colors[
+          parseInt(zone.numeral.caldeu.replace('VIII','7').replace('VII','6').replace('VI','5').replace('IV','3').replace('III','2').replace('II','1').replace('V','4').replace('I','0')) || 0
+        ] || '#ffd700';
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText(zone.numeral.caldeu, screenX - 17, numY);
+        
+        // Numeral alquímico (símbolo)
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(screenX + 6, numY - 14, 24, 18);
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '14px serif';
+        ctx.fillText(zone.numeral.alquimico, screenX + 18, numY);
+      }
+      
+      // Indicador de octagrama (para zonas dos octagramas duplo e ninhado)
+      if (zone.octagram === 'duplo') {
+        const indY = screenY - 24;
+        ctx.fillStyle = 'rgba(33,150,243,0.7)';
+        ctx.fillRect(screenX - 14, indY - 14, 28, 18);
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px monospace';
+        ctx.fillText('⬡ II', screenX, indY);
+      } else if (zone.octagram === 'ninhado') {
+        const indY = screenY - 24;
+        ctx.fillStyle = 'rgba(121,85,72,0.7)';
+        ctx.fillRect(screenX - 14, indY - 14, 28, 18);
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px monospace';
+        ctx.fillText('◎ III', screenX, indY);
+      }
     }
     ctx.textAlign = 'left';
   },
@@ -391,13 +504,44 @@ const Renderer = {
     const ctx = this.minimapCtx;
     const w = 200, h = 200;
     
-    // Fundo
-    ctx.fillStyle = '#0a0a1a';
+    // Fundo desértico
+    ctx.fillStyle = '#1a1510';
     ctx.fillRect(0, 0, w, h);
     
     // Zonas
     const scaleX = w / World.WORLD_WIDTH;
     const scaleY = h / World.WORLD_HEIGHT;
+    
+    // Desenhar blocos de deserto no minimapa
+    for (let y = 0; y < World.WORLD_HEIGHT; y += 2) {
+      for (let x = 0; x < World.WORLD_WIDTH; x += 2) {
+        const block = World.getBlock(x, y);
+        if ([World.blocks.DESERT, World.blocks.SAND, World.blocks.DUNE].includes(block)) {
+          ctx.fillStyle = World.blockColors[block] || '#c2a05a';
+          ctx.globalAlpha = 0.3;
+          ctx.fillRect(x * scaleX, y * scaleY, scaleX * 2, scaleY * 2);
+          ctx.globalAlpha = 1;
+        }
+      }
+    }
+    
+    // Anéis do octagrama no minimapa (conexões)
+    ctx.strokeStyle = 'rgba(123,63,160,0.3)';
+    ctx.lineWidth = 1;
+    // Anel interno (raio 6)
+    ctx.beginPath();
+    ctx.arc(World.CENTER_X * scaleX, World.CENTER_Y * scaleY, 6 * scaleX, 0, Math.PI * 2);
+    ctx.stroke();
+    // Anel médio (raio 12)
+    ctx.strokeStyle = 'rgba(155,89,182,0.3)';
+    ctx.beginPath();
+    ctx.arc(World.CENTER_X * scaleX, World.CENTER_Y * scaleY, 12 * scaleX, 0, Math.PI * 2);
+    ctx.stroke();
+    // Anel externo (raio 19)
+    ctx.strokeStyle = 'rgba(121,85,72,0.3)';
+    ctx.beginPath();
+    ctx.arc(World.CENTER_X * scaleX, World.CENTER_Y * scaleY, 19 * scaleX, 0, Math.PI * 2);
+    ctx.stroke();
     
     for (const [id, zone] of Object.entries(World.zones)) {
       const b = zone.bounds;
