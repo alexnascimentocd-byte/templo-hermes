@@ -212,28 +212,63 @@ const Game = {
   },
   
   setupTouchControls() {
-    let touchStartX = 0;
-    let touchStartY = 0;
-    
-    const canvas = document.getElementById('temple-canvas');
-    
-    canvas.addEventListener('touchstart', (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    });
-    
-    canvas.addEventListener('touchend', (e) => {
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      const dy = e.changedTouches[0].clientY - touchStartY;
-      
-      const minSwipe = 30;
-      
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > minSwipe) {
-        Player.moveTo(Player.x + (dx > 0 ? 2 : -2), Player.y);
-      } else if (Math.abs(dy) > minSwipe) {
-        Player.moveTo(Player.x, Player.y + (dy > 0 ? 2 : -2));
+    // Criar D-pad estilo Minecraft
+    const dpad = document.createElement('div');
+    dpad.id = 'dpad';
+    dpad.innerHTML = `
+      <button class="dpad-btn dpad-up" data-dir="up">▲</button>
+      <button class="dpad-btn dpad-left" data-dir="left">◀</button>
+      <button class="dpad-btn dpad-right" data-dir="right">▶</button>
+      <button class="dpad-btn dpad-down" data-dir="down">▼</button>
+    `;
+    document.body.appendChild(dpad);
+
+    // Movimento contínuo segurando o botão
+    let moveInterval = null;
+    const step = 1;
+
+    function startMove(dir) {
+      if (moveInterval) clearInterval(moveInterval);
+      doMove(dir);
+      moveInterval = setInterval(() => doMove(dir), 180);
+    }
+
+    function doMove(dir) {
+      if (!Player || Player.moving) return;
+      switch(dir) {
+        case 'up':    Player.moveTo(Player.x, Player.y - step); break;
+        case 'down':  Player.moveTo(Player.x, Player.y + step); break;
+        case 'left':  Player.moveTo(Player.x - step, Player.y); break;
+        case 'right': Player.moveTo(Player.x + step, Player.y); break;
       }
+    }
+
+    function stopMove() {
+      if (moveInterval) { clearInterval(moveInterval); moveInterval = null; }
+    }
+
+    // Touch events (mobile)
+    dpad.querySelectorAll('.dpad-btn').forEach(btn => {
+      const dir = btn.dataset.dir;
+      btn.addEventListener('touchstart', (e) => { e.preventDefault(); startMove(dir); });
+      btn.addEventListener('touchend', stopMove);
+      btn.addEventListener('touchcancel', stopMove);
+      // Mouse (desktop teste)
+      btn.addEventListener('mousedown', () => startMove(dir));
+      btn.addEventListener('mouseup', stopMove);
+      btn.addEventListener('mouseleave', stopMove);
     });
+
+    // Canvas click para interagir com NPCs/itens
+    const canvas = document.getElementById('temple-canvas');
+    if (canvas) {
+      canvas.addEventListener('click', (e) => {
+        if (typeof Interactions !== 'undefined') Interactions.onCanvasClick(e);
+      });
+      canvas.addEventListener('mousemove', (e) => {
+        if (typeof Interactions !== 'undefined') Interactions.onCanvasHover(e);
+      });
+    }
   },
 
   // Corrigir scroll quando teclado mobile abre/fecha

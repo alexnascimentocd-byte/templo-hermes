@@ -231,11 +231,7 @@ const Interactions = {
       this.showAgentInfo(clickedAgent);
       return;
     }
-    
-    // Mover jogador para posição
-    if (Player && World.isWalkable(worldX, worldY)) {
-      Player.moveTo(worldX, worldY);
-    }
+    // Movimento apenas via D-pad, não por click no canvas
   },
   
   // Hover no canvas
