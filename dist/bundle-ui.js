@@ -3903,8 +3903,8 @@ const CognitiveCortex = {
         const templates = {
           criar: {
             python: `#!/usr/bin/env python3\n# ${entrada}\n\ndef main():\n    print("Executando: ${entrada}")\n    # TODO: implementar\n    pass\n\nif __name__ == '__main__':\n    main()`,
-            javascript: `
-            bash: `#!/bin/bash\n# ${entrada}\n\necho "Executando: ${entrada}"\n# TODO: implementar\nexit 0`,
+            javascript: `// ${entrada}\\nconsole.log("Executando: ${entrada}");\\n// TODO: implementar`,
+            bash: `#!/bin/bash\\n# ${entrada}\\n\\necho "Executando: ${entrada}"\\n# TODO: implementar\\nexit 0`,
             html: `<!DOCTYPE html>\n<html>\n<head><title>${entrada}</title></head>\n<body>\n  <h1>${entrada}</h1>\n</body>\n</html>`,
             powershell: `# ${entrada}\nWrite-Host "Executando: ${entrada}"\n# TODO: implementar`
           },

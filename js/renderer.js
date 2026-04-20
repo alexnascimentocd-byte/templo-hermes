@@ -80,13 +80,13 @@ const Renderer = {
     }
     
     // Renderizar itens
-    this.renderItems(ctx, T);
+    this.renderItems(ctx, effectiveT);
     
     // Renderizar agentes
-    this.renderAgents(ctx, T);
+    this.renderAgents(ctx, effectiveT);
     
     // Renderizar jogador (Zói)
-    this.renderPlayer(ctx, T);
+    this.renderPlayer(ctx, effectiveT);
     
     // Renderizar zonas
     this.renderZoneLabels(ctx, T);
