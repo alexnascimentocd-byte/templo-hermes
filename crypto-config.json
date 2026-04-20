@@ -1,0 +1,24 @@
+{
+  "BTC": {
+    "network": "Bitcoin",
+    "address": "bc1qsr7p9lngmlau2sjnsqwu2n6rzmvjrahfnvvzhh",
+    "symbol": "BTC"
+  },
+  "ETH": {
+    "network": "Ethereum (ERC20)",
+    "address": "0x34d1915bc5FE1F3C69289dc799F8209ff5116719",
+    "symbol": "ETH"
+  },
+  "USDT_TRC20": {
+    "network": "Tron (TRC20)",
+    "address": "TLBabfALehgYSWSYfHhZh1iMiuujhd8v2g4",
+    "symbol": "USDT"
+  },
+  "SOL": {
+    "network": "Solana",
+    "address": "AMEyqLjc2u96Uzkg56vfe6eJevpgKmLorUyACCCFMCrk",
+    "symbol": "SOL"
+  },
+  "created_at": "2026-04-20",
+  "owner": "Alex Nascimento"
+}
