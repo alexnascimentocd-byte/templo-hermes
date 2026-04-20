@@ -112,7 +112,7 @@ const NetworkGateway = {
     pix: {
       name: 'Pix Direto',
       active: true,
-      key: '28.173.770/0001-55',
+      key: '58af96e5-9949-41be-9546-c074b206cbcf',
       note: 'Pagamento via Pix - Serviço Digital'
     },
     whatsapp: {
