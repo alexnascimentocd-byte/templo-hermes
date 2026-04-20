@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚀 Packs Digitais — Transforme Seu Marketing Hoje</title>
+  <meta name="description" content="Scripts de vendas, estratégias de marketing e mentalidade empreendedora. Resultados reais para quem quer vender mais.">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1a2e 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 50%, rgba(212,165,71,0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 50%, rgba(74,138,255,0.06) 0%, transparent 50%);
+      animation: heroGlow 8s ease-in-out infinite alternate;
+    }
+    
+    @keyframes heroGlow {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(5deg); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(212,165,71,0.15);
+      border: 1px solid rgba(212,165,71,0.3);
+      color: #d4a547;
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      animation: fadeInDown 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 6vw, 56px);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, #d4a547, #ffcc00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: #999;
+      max-width: 500px;
+      margin: 0 auto 32px;
+      animation: fadeInUp 0.8s ease 0.4s both;
+    }
+
+    .hero-cta {
+      display: inline-block;
+      background: linear-gradient(135deg, #d4a547, #b8892e);
+      color: #000;
+      padding: 16px 40px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.3s;
+      animation: fadeInUp 0.8s ease 0.6s both;
+      box-shadow: 0 4px 30px rgba(212,165,71,0.3);
+    }
+
+    .hero-cta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 40px rgba(212,165,71,0.5);
+    }
+
+    .hero-scroll {
+      margin-top: 40px;
+      animation: bounce 2s infinite;
+      color: #555;
+      font-size: 24px;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(10px); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* PROBLEMA */
+    .problema {
+      padding: 80px 20px;
+      background: #0d0d15;
+      text-align: center;
+    }
+
+    .problema h2 {
+      font-size: 28px;
+      color: #ff6b6b;
+      margin-bottom: 30px;
+    }
+
+    .problema-list {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .problema-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 0;
+      border-bottom: 1px solid #1a1a2a;
+    }
+
+    .problema-item .emoji { font-size: 24px; flex-shrink: 0; }
+    .problema-item .text { color: #aaa; }
+    .problema-item .text strong { color: #ff6b6b; }
+
+    /* PRODUTOS */
+    .produtos {
+      padding: 80px 20px;
+      background: #0a0a12;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 32px;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: #888;
+      font-size: 16px;
+      margin-bottom: 50px;
+    }
+
+    .produtos-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .produto-card {
+      background: linear-gradient(135deg, #12121f, #1a1a2e);
+      border: 1px solid #2a2a4a;
+      border-radius: 16px;
+      padding: 32px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .produto-card:hover {
+      transform: translateY(-8px);
+      border-color: #d4a547;
+      box-shadow: 0 20px 60px rgba(212,165,71,0.15);
+    }
+
+    .produto-card.destaque {
+      border-color: #d4a547;
+      background: linear-gradient(135deg, #1a1510, #1a1a2e);
+    }
+
+    .produto-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #d4a547;
+      color: #000;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .produto-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .produto-card h3 {
+      font-size: 20px;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .produto-card .descricao {
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .produto-beneficios {
+      list-style: none;
+      margin-bottom: 24px;
+    }
+
+    .produto-beneficios li {
+      padding: 6px 0;
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    .produto-beneficios li::before {
+      content: '✅ ';
+    }
+
+    .produto-preco {
+      margin-bottom: 20px;
+    }
+
+    .preco-antigo {
+      text-decoration: line-through;
+      color: #666;
+      font-size: 16px;
+    }
+
+    .preco-atual {
+      font-size: 36px;
+      font-weight: 900;
+      color: #4aff8a;
+      display: block;
+      margin: 4px 0;
+    }
+
+    .preco-parcela {
+      color: #888;
+      font-size: 13px;
+    }
+
+    .produto-cta {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .cta-kiwify {
+      background: linear-gradient(135deg, #ff6b35, #ff4500);
+      color: #fff;
+    }
+
+    .cta-kiwify:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 20px rgba(255,107,53,0.4);
+    }
+
+    .produto-pix {
+      display: block;
+      text-align: center;
+      margin-top: 10px;
+      color: #32bcad;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .produto-pix:hover { text-decoration: underline; }
+
+    /* DEPOIMENTOS */
+    .depoimentos {
+      padding: 80px 20px;
+      background: #0d0d15;
+    }
+
+    .depoimentos-grid {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .depoimento-card {
+      background: #12121f;
+      border-left: 3px solid #d4a547;
+      padding: 24px;
+      border-radius: 0 12px 12px 0;
+    }
+
+    .depoimento-text {
+      color: #bbb;
+      font-style: italic;
+      margin-bottom: 12px;
+    }
+
+    .depoimento-author {
+      color: #d4a547;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .depoimento-stars {
+      color: #ffd700;
+      margin-bottom: 8px;
+    }
+
+    /* GARANTIA */
+    .garantia {
+      padding: 60px 20px;
+      text-align: center;
+      background: #0a0a12;
+    }
+
+    .garantia-box {
+      max-width: 500px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #0a1a0a, #0a0a12);
+      border: 2px dashed #4aff8a;
+      border-radius: 16px;
+      padding: 40px;
+    }
+
+    .garantia-box .icon { font-size: 48px; margin-bottom: 16px; }
+    .garantia-box h3 { color: #4aff8a; font-size: 22px; margin-bottom: 10px; }
+    .garantia-box p { color: #888; }
+
+    /* FAQ */
+    .faq {
+      padding: 80px 20px;
+      background: #0d0d15;
+    }
+
+    .faq-list {
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid #1a1a2a;
+      padding: 20px 0;
+    }
+
+    .faq-q {
+      color: #d4a547;
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .faq-a { color: #999; font-size: 14px; }
+
+    /* CTA FINAL */
+    .cta-final {
+      padding: 80px 20px;
+      text-align: center;
+      background: linear-gradient(135deg, #1a0a2e, #0a1a2e);
+    }
+
+    .cta-final h2 {
+      font-size: 32px;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    .cta-final p {
+      color: #888;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+
+    .cta-final-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #d4a547, #ffcc00);
+      color: #000;
+      padding: 18px 50px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 900;
+      text-decoration: none;
+      transition: all 0.3s;
+      box-shadow: 0 4px 30px rgba(212,165,71,0.3);
+      animation: pulse 2s infinite;
+    }
+
+    .cta-final-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 40px rgba(212,165,71,0.5);
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 4px 30px rgba(212,165,71,0.3); }
+      50% { box-shadow: 0 4px 50px rgba(212,165,71,0.6); }
+    }
+
+    /* FOOTER */
+    .footer {
+      padding: 30px 20px;
+      text-align: center;
+      background: #080810;
+      color: #444;
+      font-size: 12px;
+    }
+
+    /* URGÊNCIA */
+    .urgencia-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(90deg, #ff6b35, #ff4500);
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 1000;
+      animation: urgenciaPulse 3s infinite;
+    }
+
+    @keyframes urgenciaPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+
+    /* RESPONSIVO */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 28px; }
+      .hero p { font-size: 15px; }
+      .produtos-grid { grid-template-columns: 1fr; }
+      .depoimentos-grid { grid-template-columns: 1fr; }
+      .section-title { font-size: 24px; }
+      .urgencia-bar { font-size: 11px; padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA DE URGÊNCIA -->
+  <div class="urgencia-bar">
+    🔥 OFERTA POR TEMPO LIMITADO — Preços promocionais podem subir a qualquer momento!
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">⚡ +5.000 clientes satisfeitos</div>
+      <h1>Pare de <span>Perder Vendas</span> por Falta de Estratégia</h1>
+      <p>Scripts prontos, estratégias validadas e mentalidade de alta performance. Tudo que você precisa para vender mais, em um só lugar.</p>
+      <a href="#produtos" class="hero-cta">VER OS PACKS →</a>
+      <div class="hero-scroll">↓</div>
+    </div>
+  </section>
+
+  <!-- PROBLEMA -->
+  <section class="problema">
+    <h2>😤 Você está cansado de...</h2>
+    <div class="problema-list">
+      <div class="problema-item">
+        <span class="emoji">📝</span>
+        <div class="text"><strong>Ficar horas escrevendo</strong> mensagens de venda que não convertem</div>
+      </div>
+      <div class="problema-item">
+        <span class="emoji">🤷</span>
+        <div class="text"><strong>Não saber o que postar</strong> nas redes sociais para atrair clientes</div>
+      </div>
+      <div class="problema-item">
+        <span class="emoji">😰</span>
+        <div class="text"><strong>Ver concorrentes vendendo</strong> enquanto você trava sem saber como</div>
+      </div>
+      <div class="problema-item">
+        <span class="emoji">💸</span>
+        <div class="text"><strong>Gastar dinheiro com cursos</strong> que prometem muito e entregam pouco</div>
+      </div>
+      <div class="problema-item">
+        <span class="emoji">😤</span>
+        <div class="text"><strong>Começar e desistir</strong> porque não vê resultado rápido</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUTOS -->
+  <section class="produtos" id="produtos">
+    <h2 class="section-title">🎁 Escolha Seu Pack</h2>
+    <p class="section-subtitle">Cada pack é uma solução completa para um problema específico</p>
+
+    <div class="produtos-grid">
+
+      <!-- PRODUTO 1 -->
+      <div class="produto-card">
+        <div class="produto-icon">📝</div>
+        <h3>Pack 550+ Scripts e Copies</h3>
+        <p class="descricao">O maior arsenal de textos de venda do mercado. Copie, cole e venda.</p>
+        <ul class="produto-beneficios">
+          <li>550+ scripts prontos para WhatsApp</li>
+          <li>Copies de alta conversão para Instagram</li>
+          <li>E-mails de venda testados e aprovados</li>
+          <li>Textos para anúncios (Facebook/Google)</li>
+          <li>Atualizações vitalícias incluídas</li>
+        </ul>
+        <div class="produto-preco">
+          <span class="preco-antigo">De R$ 97,00</span>
+          <span class="preco-atual">R$ 19,90</span>
+          <span class="preco-parcela">ou 1x no cartão</span>
+        </div>
+        <a href="https://pay.kiwify.com.br/qC8YHzK" class="produto-cta cta-kiwify" target="_blank">
+          💳 COMPRAR AGORA
+        </a>
+        <a href="#pix-modal" class="produto-pix" onclick="showPix('Pack 550+ Scripts', '19.90')">🔑 Ou pagar com Pix</a>
+      </div>
+
+      <!-- PRODUTO 2 -->
+      <div class="produto-card">
+        <div class="produto-icon">🎯</div>
+        <h3>Primeira Venda em 48h</h3>
+        <p class="descricao">O passo a passo exato para fazer sua primeira venda online em até 48 horas.</p>
+        <ul class="produto-beneficios">
+          <li>Método validado por iniciantes</li>
+          <li>Passo a passo sem enrolação</li>
+          <li>Funciona sem investir em anúncios</li>
+          <li>Sem precisar de seguidores</li>
+          <li>Suporte por 7 dias incluído</li>
+        </ul>
+        <div class="produto-preco">
+          <span class="preco-antigo">De R$ 47,00</span>
+          <span class="preco-atual">R$ 9,90</span>
+          <span class="preco-parcela">ou 1x no cartão</span>
+        </div>
+        <a href="https://pay.kiwify.com.br/xcL4QxC" class="produto-cta cta-kiwify" target="_blank">
+          💳 COMPRAR AGORA
+        </a>
+        <a href="#pix-modal" class="produto-pix" onclick="showPix('Primeira Venda em 48h', '9.90')">🔑 Ou pagar com Pix</a>
+      </div>
+
+      <!-- PRODUTO 3 (DESTAQUE) -->
+      <div class="produto-card destaque">
+        <div class="produto-badge">⭐ MAIS VENDIDO</div>
+        <div class="produto-icon">🧠</div>
+        <h3>Marketing Digital + Mentalidade</h3>
+        <p class="descricao">A combinação que transforma: técnica de marketing + mindset de alta performance.</p>
+        <ul class="produto-beneficios">
+          <li>Estratégias de marketing atualizadas</li>
+          <li>Mentalidade empreendedora aplicada</li>
+          <li>Tráfego orgânico e pago</li>
+          <li>Vendas por WhatsApp e Instagram</li>
+          <li>Bônus: templates de stories</li>
+          <li>Bônus: planilha de métricas</li>
+        </ul>
+        <div class="produto-preco">
+          <span class="preco-antigo">De R$ 147,00</span>
+          <span class="preco-atual">R$ 27,90</span>
+          <span class="preco-parcela">ou 1x no cartão</span>
+        </div>
+        <a href="https://pay.kiwify.com.br/D4NExoo" class="produto-cta cta-kiwify" target="_blank">
+          🔥 COMPRAR O MAIS VENDIDO
+        </a>
+        <a href="#pix-modal" class="produto-pix" onclick="showPix('Marketing Digital + Mentalidade', '27.90')">🔑 Ou pagar com Pix</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- DEPOIMENTOS -->
+  <section class="depoimentos">
+    <h2 class="section-title">💬 O Que Dizem Nossos Clientes</h2>
+    <p class="section-subtitle">Resultados reais de pessoas reais</p>
+    <div class="depoimentos-grid">
+      <div class="depoimento-card">
+        <div class="depoimento-stars">⭐⭐⭐⭐⭐</div>
+        <p class="depoimento-text">"Comprei o Pack de Scripts e em 3 dias já tinha feito 2 vendas. Os textos são prontos, é só copiar e mandar!"</p>
+        <div class="depoimento-author">— Maria S., Empreendedora</div>
+      </div>
+      <div class="depoimento-card">
+        <div class="depoimento-stars">⭐⭐⭐⭐⭐</div>
+        <p class="depoimento-text">"O curso de Primeira Venda mudou tudo. Eu não sabia nem por onde começar e em 48h fiz minha primeira venda!"</p>
+        <div class="depoimento-author">— João P., Iniciante</div>
+      </div>
+      <div class="depoimento-card">
+        <div class="depoimento-stars">⭐⭐⭐⭐⭐</div>
+        <p class="depoimento-text">"Marketing + Mentalidade é o melhor custo-benefício. A parte de mindset sozinha já vale mais que o preço."</p>
+        <div class="depoimento-author">— Ana L., Digital Marketer</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GARANTIA -->
+  <section class="garantia">
+    <div class="garantia-box">
+      <div class="icon">🛡️</div>
+      <h3>Garantia Incondicional de 7 Dias</h3>
+      <p>Compre, acesse, teste. Se em 7 dias você não estiver satisfeito, devolvemos 100% do seu dinheiro. Sem perguntas, sem burocracia.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq">
+    <h2 class="section-title">❓ Perguntas Frequentes</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">Como recebo o produto?</div>
+        <div class="faq-a">Imediatamente após a confirmação do pagamento, você recebe o acesso por e-mail. É instantâneo!</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Posso pagar com Pix?</div>
+        <div class="faq-a">Sim! Aceitamos Pix, cartão de crédito e boleto. No Pix você copia a chave e paga pelo app do seu banco.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Funciona para iniciantes?</div>
+        <div class="faq-a">Sim! Todos os produtos foram pensados para quem está começando. Sem jargão, sem complicação.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Tem atualização?</div>
+        <div class="faq-a">Sim! Todas as atualizações futuras são gratuitas para quem já comprou.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">E se eu não gostar?</div>
+        <div class="faq-a">Você tem 7 dias de garantia total. É só pedir reembolso e devolvemos tudo.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta-final">
+    <h2>⚡ Não Deixe Para Depois</h2>
+    <p>Cada dia sem estratégia é uma venda que você deixa na mesa.<br>Comece agora e veja resultados ainda hoje.</p>
+    <a href="#produtos" class="cta-final-btn">ESCOLHER MEU PACK →</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>© 2026 Packs Digitais — Todos os direitos reservados</p>
+    <p style="margin-top:4px;">CNPJ: 28.173.770/0001-55 | contato@packsdigitais.com.br</p>
+  </footer>
+
+  <!-- MODAL PIX -->
+  <div id="pix-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.9);align-items:center;justify-content:center;">
+    <div style="background:#1a1a2e;border:2px solid #32bcad;border-radius:16px;padding:30px;max-width:400px;text-align:center;color:#fff;">
+      <h2 style="color:#32bcad;margin-bottom:10px;">🔑 Pagamento via Pix</h2>
+      <p id="pix-product" style="color:#aaa;margin-bottom:10px;"></p>
+      <div id="pix-price" style="font-size:36px;font-weight:bold;color:#32bcad;margin:15px 0;"></div>
+      <div style="background:#0a0a1a;padding:15px;border-radius:8px;font-family:monospace;word-break:break-all;margin:15px 0;border:1px solid #2a2a4a;font-size:12px;">
+        58af96e5-9949-41be-9546-c074b206cbcf
+      </div>
+      <button onclick="navigator.clipboard.writeText('58af96e5-9949-41be-9546-c074b206cbcf');this.textContent='✅ Copiado!'" style="width:100%;padding:14px;border:none;border-radius:8px;background:#32bcad;color:#fff;font-size:16px;font-weight:bold;cursor:pointer;">
+        📋 COPIAR CHAVE PIX
+      </button>
+      <p style="color:#4aff8a;margin-top:15px;font-size:13px;">✅ Após pagar, envie o comprovante:</p>
+      <a href="https://wa.me/5527999193918?text=Comprovante%20de%20pagamento" target="_blank" style="display:block;width:100%;padding:12px;border:none;border-radius:8px;background:#25d366;color:#fff;font-size:14px;font-weight:bold;text-decoration:none;margin-top:10px;">
+        📤 ENVIAR COMPROVANTE
+      </a>
+      <button onclick="document.getElementById('pix-modal').style.display='none'" style="background:none;border:1px solid #666;color:#666;padding:8px 20px;border-radius:8px;cursor:pointer;margin-top:15px;font-size:12px;">
+        Fechar
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Mostrar modal Pix
+    function showPix(product, price) {
+      document.getElementById('pix-product').textContent = product;
+      document.getElementById('pix-price').textContent = 'R$ ' + price;
+      document.getElementById('pix-modal').style.display = 'flex';
+    }
+
+    // Fechar modal ao clicar fora
+    document.getElementById('pix-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'pix-modal') e.target.style.display = 'none';
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    });
+
+    // Tracking de cliques nos CTAs
+    document.querySelectorAll('.produto-cta, .hero-cta, .cta-final-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        console.log('[SalesPage] CTA clicado:', btn.textContent.trim());
+      });
+    });
+
+    console.log('[SalesPage] Página de vendas carregada ✅');
+  </script>
+</body>
+</html>
