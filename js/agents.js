@@ -179,11 +179,16 @@ const Agents = {
       experience: 0,
       expToNext: 100,
       
+      // Sistema de Skills Expansível
+      skills: this.initializeSkills(type),
+      skillPoints: 0,
+      maxSkills: 8,
+      
       // Livro pessoal (console do agente)
       book: {
         title: `Livro de ${name || typeData.name}`,
         pages: [
-          { content: `╔══════════════════════════════╗\n║  ${typeData.icon} ${(name || typeData.name).toUpperCase().padEnd(24)}║\n╠══════════════════════════════╣\n║ Nível: 1                     ║\n║ Habilidade: ${typeData.skill.padEnd(17)}║\n║ ${typeData.hermetic.padEnd(29)}║\n║                              ║\n║ "${typeData.description.substring(0, 28)}" ║\n╚══════════════════════════════╝` }
+          { content: `╔══════════════════════════════╗\\n║  ${typeData.icon} ${(name || typeData.name).toUpperCase().padEnd(24)}║\\n╠══════════════════════════════╣\\n║ Nível: 1                     ║\\n║ Habilidade: ${typeData.skill.padEnd(17)}║\\n║ ${typeData.hermetic.padEnd(29)}║\\n║                              ║\\n║ \"${typeData.description.substring(0, 28)}\" ║\\n╚══════════════════════════════╝` }
         ],
         currentPage: 0
       },
@@ -210,6 +215,131 @@ const Agents = {
     
     this.roster.push(agent);
     return agent;
+  },
+  
+  // Inicializar skills baseadas no tipo
+  initializeSkills(type) {
+    const baseSkills = {
+      // Skills universais
+      comunicacao: { level: 1, maxLevel: 10, title: 'Comunicação Hermética', description: 'Habilidade de transmitir conhecimento entre mentes' },
+      observacao: { level: 1, maxLevel: 10, title: 'Observação Atenta', description: 'Capacidade de perceber padrões ocultos' },
+      
+      // Skills específicas por tipo
+      ...(type === 'coder' ? {
+        algoritmos: { level: 1, maxLevel: 10, title: 'Algoritmos Avançados', description: 'Domínio de estruturas lógicas complexas' },
+        automacao: { level: 0, maxLevel: 10, title: 'Automação Inteligente', description: 'Criação de sistemas que se auto-otimizam' }
+      } : {}),
+      
+      ...(type === 'researcher' ? {
+        catalogacao: { level: 1, maxLevel: 10, title: 'Catalogação Sistemática', description: 'Organização metódica do conhecimento' },
+        analise: { level: 0, maxLevel: 10, title: 'Análise Profunda', description: 'Investigação minuciosa de fenômenos' }
+      } : {}),
+      
+      ...(type === 'alchemist' ? {
+        transmutacao: { level: 1, maxLevel: 10, title: 'Transmutação Controlada', description: 'Transformação precisa de elementos' },
+        purificacao: { level: 0, maxLevel: 10, title: 'Purificação Essencial', description: 'Remoção de impurezas conceituais' }
+      } : {}),
+      
+      ...(type === 'guardian' ? {
+        protecao: { level: 1, maxLevel: 10, title: 'Proteção Vigilante', description: 'Defesa ativa contra ameaças' },
+        checkpoints: { level: 0, maxLevel: 10, title: 'Checkpoints de Segurança', description: 'Pontos de verificação de integridade' }
+      } : {}),
+      
+      ...(type === 'mystic' ? {
+        intuicao: { level: 1, maxLevel: 10, title: 'Intuição Expandida', description: 'Acesso a conhecimento além da razão' },
+        transcendencia: { level: 0, maxLevel: 10, title: 'Transcendência Gradual', description: 'Elevação progressiva de consciência' }
+      } : {}),
+      
+      ...(type === 'messenger' ? {
+        conexao: { level: 1, maxLevel: 10, title: 'Conexão Instantânea', description: 'Estabelecimento de pontes mentais' },
+        broadcast: { level: 0, maxLevel: 10, title: 'Broadcast Universal', description: 'Transmissão para todas as mentes' }
+      } : {})
+    };
+    
+    return baseSkills;
+  },
+  
+  // Upar skill
+  upgradeSkill(agent, skillId) {
+    if (!agent.skills[skillId]) return false;
+    if (agent.skillPoints <= 0) return false;
+    if (agent.skills[skillId].level >= agent.skills[skillId].maxLevel) return false;
+    
+    agent.skills[skillId].level++;
+    agent.skillPoints--;
+    
+    // Ganhar experiência por upar skill
+    this.gainExperience(agent, 25);
+    
+    return true;
+  },
+  
+  // Adicionar skill nova
+  addSkill(agent, skillId, skillData) {
+    if (Object.keys(agent.skills).length >= agent.maxSkills) return false;
+    if (agent.skills[skillId]) return false;
+    
+    agent.skills[skillId] = {
+      level: 1,
+      maxLevel: skillData.maxLevel || 10,
+      title: skillData.title,
+      description: skillData.description
+    };
+    
+    // Ganhar experiência por adicionar skill
+    this.gainExperience(agent, 50);
+    
+    return true;
+  },
+  
+  // Obter título da skill baseado no nível
+  getSkillTitle(skill) {
+    if (skill.level >= 9) return `Mestre ${skill.title}`;
+    if (skill.level >= 7) return `Especialista ${skill.title}`;
+    if (skill.level >= 5) return `Avançado ${skill.title}`;
+    if (skill.level >= 3) return `Intermediário ${skill.title}`;
+    return `Iniciante ${skill.title}`;
+  },
+  
+  // Obter todas as skills de um agente com títulos
+  getAgentSkillsWithTitles(agent) {
+    const skills = [];
+    for (const [id, skill] of Object.entries(agent.skills)) {
+      skills.push({
+        id,
+        ...skill,
+        fullTitle: this.getSkillTitle(skill)
+      });
+    }
+    return skills;
+  },
+  
+  // Comprimir dados de skills para armazenamento
+  compressSkillsData(agent) {
+    const compressed = {};
+    for (const [id, skill] of Object.entries(agent.skills)) {
+      compressed[id] = {
+        l: skill.level,
+        ml: skill.maxLevel,
+        t: skill.title.substring(0, 20), // Título truncado
+        d: skill.description.substring(0, 50) // Descrição truncada
+      };
+    }
+    return compressed;
+  },
+  
+  // Descomprimir dados de skills
+  decompressSkillsData(compressed) {
+    const skills = {};
+    for (const [id, data] of Object.entries(compressed)) {
+      skills[id] = {
+        level: data.l,
+        maxLevel: data.ml,
+        title: data.t,
+        description: data.d
+      };
+    }
+    return skills;
   },
   
   // Spawnar agente no templo
@@ -343,22 +473,32 @@ const Agents = {
     agent.lastActivity = Date.now();
   },
   
-  // Andar aleatoriamente
+  // Andar aleatoriamente com movimentos vetoriais alinhados
   wander(agent) {
     const zone = World.getZoneAt(Math.floor(agent.x), Math.floor(agent.y));
     if (!zone) return;
     
-    const b = zone.bounds;
-    let attempts = 0;
-    let tx, ty;
+    // Usar vetores do octagrama para movimento
+    const vectors = [
+      { x: 0, y: -1 },  // Norte
+      { x: 1, y: -1 },  // Nordeste
+      { x: 1, y: 0 },   // Leste
+      { x: 1, y: 1 },   // Sudeste
+      { x: 0, y: 1 },   // Sul
+      { x: -1, y: 1 },  // Sudoeste
+      { x: -1, y: 0 },  // Oeste
+      { x: -1, y: -1 }  // Noroeste
+    ];
     
-    do {
-      tx = b.x + 2 + Math.floor(Math.random() * (b.w - 4));
-      ty = b.y + 2 + Math.floor(Math.random() * (b.h - 4));
-      attempts++;
-    } while (!World.isWalkable(tx, ty) && attempts < 20);
+    // Escolher direção aleatória
+    const vector = vectors[Math.floor(Math.random() * vectors.length)];
+    const steps = 2 + Math.floor(Math.random() * 3); // 2-4 passos
     
-    if (attempts < 20) {
+    const tx = agent.x + vector.x * steps;
+    const ty = agent.y + vector.y * steps;
+    
+    // Verificar se é walkable
+    if (World.isWalkable(Math.floor(tx), Math.floor(ty))) {
       agent.targetX = tx;
       agent.targetY = ty;
       agent.moving = true;
@@ -493,14 +633,17 @@ const Agents = {
       agent.level++;
       agent.expToNext = Math.floor(agent.expToNext * 1.5);
       
+      // Ganhar skill points a cada nível
+      agent.skillPoints += 2;
+      
       // Adicionar entrada no livro
       agent.book.pages.push({
-        content: `═══════════════════════\n★ EVOLUÇÃO! ★\nNível ${agent.level} alcançado!\nHabilidade ${agent.skill} aprimorada.\n═══════════════════════`
+        content: `═══════════════════════\\n★ EVOLUÇÃO! ★\\nNível ${agent.level} alcançado!\\nHabilidade ${agent.skill} aprimorada.\\n+2 Pontos de Skill ganhos!\\n═══════════════════════`
       });
       
       // Notificar
       if (typeof Interactions !== 'undefined') {
-        Interactions.notify(`${agent.icon} ${agent.name} evoluiu para Nível ${agent.level}!`);
+        Interactions.notify(`${agent.icon} ${agent.name} evoluiu para Nível ${agent.level}! +2 Skill Points`);
       }
     }
     

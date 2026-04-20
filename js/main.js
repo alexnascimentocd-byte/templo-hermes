@@ -1,4 +1,27 @@
-/* ===== MAIN.JS - Inicialização do Templo de Hermes ===== */
+/* ===== MAIN.JS
+// === FUNÇÃO GLOBAL: Toggle de Painéis ===
+function togglePanel(panelId) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  
+  // Fechar outros painéis
+  document.querySelectorAll('.panel').forEach(p => {
+    if (p.id !== panelId) p.classList.add('hidden');
+  });
+  
+  // Toggle do painel atual
+  panel.classList.toggle('hidden');
+  
+  // Se abriu o grimório, carregar dados
+  if (panelId === 'grimoire-panel' && !panel.classList.contains('hidden')) {
+    if (typeof NPCGrimoire !== 'undefined') {
+      NPCGrimoire.load();
+      NPCGrimoire.renderPainel();
+    }
+  }
+}
+
+ - Inicialização do Templo de Hermes ===== */
 
 // === JOGADOR (Zói) ===
 // Player definido em js/player.js
