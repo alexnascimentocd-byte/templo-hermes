@@ -27,6 +27,7 @@ const ASSETS = [
   './js/crystal-ball.js',
   './js/alchemy-economy.js',
   './js/cognitive-cortex.js',
+  './js/npc-grimoire.js',
   './manifest.json'
 ];
 
