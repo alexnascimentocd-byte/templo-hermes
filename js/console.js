@@ -69,6 +69,7 @@ const Console = {
       case 'conversar': case 'conversation': case 'conversa': this.cmdConversar(args); break;
       case '3d': case 'modo3d': case 'minecraft': this.cmd3D(); break;
       case 'rede': case 'network': case 'gateway': this.cmdRede(args); break;
+      case 'vendas': case 'sales': case 'escritorio': case 'escritório': this.cmdVendas(args); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -2012,6 +2013,110 @@ const Console = {
       this.log('  rede missoes        — Ver últimas missões', 'dim');
       this.log('  rede receita        — Relatório de receita por nicho', 'dim');
       this.log('  rede reset          — Resetar gateway', 'dim');
+    }
+  },
+
+  cmdVendas(args) {
+    if (typeof SalesOffice === 'undefined') {
+      this.log('❌ Escritório de Vendas não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'ciclo' || sub === 'cycle' || sub === 'start') {
+      this.log('💼 Iniciando ciclo de vendas...', 'info');
+      SalesOffice.runSalesCycle().then(results => {
+        if (results.length > 0) {
+          this.log(`✅ ${results.length} ações executadas no funil`, 'sucesso');
+          results.forEach(r => {
+            const stage = SalesOffice.stages[r.stage];
+            this.log(`  ${stage?.icon || '❓'} ${r.business}: ${r.action} → ${r.result}`, 'dim');
+          });
+        }
+      });
+    } else if (sub === 'status' || sub === 'stats') {
+      const stats = SalesOffice.getStats();
+      this.log('═══ ESCRITÓRIO DE VENDAS ═══', 'info');
+      this.log(`💼 Agente: ${stats.agent.name} (${stats.agent.role})`, 'dim');
+      this.log(`📊 Pipeline: ${stats.pipeline.total} leads`, 'dim');
+      this.log(`  🎯 Leads novos: ${stats.pipeline.leads}`, 'dim');
+      this.log(`  🤝 Ativos: ${stats.pipeline.active}`, 'dim');
+      this.log(`🏆 Fechados: ${stats.deals.won} | Perdidos: ${stats.deals.lost}`, 'dim');
+      this.log(`📈 Taxa de conversão: ${stats.deals.winRate}%`, 'dim');
+      this.log(`💰 Receita total: R$ ${stats.revenue.total}`, 'dim');
+      this.log(`📊 Ticket médio: R$ ${stats.revenue.avg}`, 'dim');
+      this.log(`🔮 Projeção φ: R$ ${stats.revenue.projected}`, 'dim');
+    } else if (sub === 'pipeline' || sub === 'funil') {
+      const pipeline = SalesOffice.getPipeline();
+      if (pipeline.length === 0) {
+        this.log('📭 Pipeline vazio. Use "vendas ciclo" para gerar leads.', 'aviso');
+      } else {
+        this.log('═══ PIPELINE DE VENDAS ═══', 'info');
+        pipeline.forEach(p => {
+          this.log(`  ${p.icon} ${p.business} [${p.stage}]`, 'dim');
+          this.log(`    💰 ${p.price} | 📱 ${p.channel} | 😣 ${p.pain}`, 'dim');
+          this.log(`    ⏰ ${p.age} | 📞 Follow-ups: ${p.followUps}`, 'dim');
+        });
+      }
+    } else if (sub === 'fechados' || sub === 'closed') {
+      const deals = SalesOffice.getClosedDeals();
+      if (deals.length === 0) {
+        this.log('📭 Nenhuma venda fechada ainda.', 'aviso');
+      } else {
+        this.log('═══ VENDAS FECHADAS ═══', 'info');
+        deals.forEach(d => {
+          this.log(`  🎉 ${d.business} → ${d.price} (${d.closedAt}) via ${d.channel}`, 'dim');
+        });
+      }
+    } else if (sub === 'mensagem' || sub === 'msg' || sub === 'script') {
+      const leadId = args[1];
+      const msgType = args[2] || 'abertura';
+      if (leadId) {
+        const lead = SalesOffice.pipeline.find(l => l.id === leadId || l.business.toLowerCase().includes(leadId.toLowerCase()));
+        if (lead) {
+          const msg = SalesOffice.generateSalesMessage(lead, msgType);
+          this.log(`═══ SCRIPT DE VENDA: ${lead.business} ═══`, 'info');
+          this.log(msg, 'dim');
+        } else {
+          this.log('❌ Lead não encontrado. Use "vendas pipeline" para ver IDs.', 'erro');
+        }
+      } else {
+        this.log('Uso: vendas mensagem <lead_id> [abertura|proposta|fechamento]', 'aviso');
+      }
+    } else if (sub === 'avancar' || sub === 'advance') {
+      const leadId = args[1];
+      const notes = args.slice(2).join(' ');
+      if (leadId) {
+        const result = SalesOffice.advanceLead(leadId, notes);
+        if (result) {
+          const stage = SalesOffice.stages[result.stage];
+          this.log(`${stage?.icon || '❓'} ${result.business} → ${stage?.name || result.stage}`, 'sucesso');
+        } else {
+          this.log('❌ Lead não encontrado.', 'erro');
+        }
+      } else {
+        this.log('Uso: vendas avancar <lead_id> [notas]', 'aviso');
+      }
+    } else if (sub === 'leads') {
+      const newLeads = SalesOffice.identifyLeads(parseInt(args[1]) || 3);
+      this.log(`🎯 ${newLeads.length} novos leads identificados:`, 'sucesso');
+      newLeads.forEach(l => {
+        this.log(`  📌 ${l.business} — ${l.pain} [R$ ${l.price}]`, 'dim');
+      });
+    } else if (sub === 'reset') {
+      SalesOffice.reset();
+      this.log('🔄 Escritório de Vendas resetado.', 'aviso');
+    } else {
+      this.log('Comandos do Escritório de Vendas:', 'info');
+      this.log('  vendas ciclo           — Executar ciclo de vendas completo', 'dim');
+      this.log('  vendas status          — Ver estatísticas do escritório', 'dim');
+      this.log('  vendas pipeline        — Ver funil de vendas', 'dim');
+      this.log('  vendas fechados        — Ver vendas concluídas', 'dim');
+      this.log('  vendas leads [n]       — Gerar n novos leads', 'dim');
+      this.log('  vendas mensagem <id>   — Gerar script de venda para lead', 'dim');
+      this.log('  vendas avancar <id>    — Avançar lead no funil', 'dim');
+      this.log('  vendas reset           — Resetar escritório', 'dim');
     }
   }
 };
