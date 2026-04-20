@@ -171,7 +171,7 @@ const Items = {
         '═══ LEIS HERMÉTICAS ═══\n\n1. Mentalismo — Tudo é mente\n2. Correspondência — Como acima,\n   assim abaixo\n3. Vibração — Tudo vibra\n4. Polaridade — Tudo tem opostos',
         '═══ LEIS HERMÉTICAS (cont.) ═══\n\n5. Ritmo — Tudo flui e reflui\n6. Causa e Efeito — Toda causa\n   tem seu efeito\n7. Gênero — Tudo tem princípio\n   masculino e feminino',
         '═══ O CAMINHO ALQUÍMICO ═══\n\n🌑 Nigredo — Dissolução\n⚪ Albedo — Purificação\n🟡 Citrinitas — Iluminação\n🔴 Rubedo — Realização\n\nA Grande Obra se completa\ncom paciência e fogo.',
-        '═══ REGISTRO DE SESSÕES ═══\n\nAguardando memórias...\n\nAs decisões do Conselho e\nas conversações livres serão\nregistradas aqui automaticamente\nquando os agentes interagirem.'
+        '═══ REGISTRO DE SESSÕES ═══\n\nEste registro é atualizado\nautomaticamente com:\n\n• Decisões do Conselho\n• Sínteses de conversações\n• Transmutações realizadas\n• Eventos especiais\n\nÚltima atualização: ' + new Date().toLocaleString('pt-BR')
       ]
     },
     cartas_rede: {

@@ -1049,6 +1049,26 @@ const Game = {
       chatInp.focus();
       this.chatCtx.msgCount++;
       
+      // Verificar se é uma AÇÃO (comando)
+      const isAcao = this.detectarAcao(msg);
+      
+      if (isAcao && typeof CrystalBall !== 'undefined') {
+        this.chatLog(output, '🔮 Crystal Ball', '⚡ Executando...', 'system');
+        try {
+          const resultadoCrystal = await CrystalBall.processar(msg);
+          this.chatLog(output, '🔮 Resultado', resultadoCrystal, 'system');
+        } catch(e) {
+          this.chatLog(output, '🔮 Erro', 'Falha na execução: ' + e.message, 'system');
+        }
+        const agentes = Agents.active.sort(() => Math.random() - 0.5).slice(0, 3);
+        agentes.forEach((ag, i) => {
+          setTimeout(() => {
+            this.chatLog(output, `${ag.icon} ${ag.name}`, this.gerarComentarioAcao(ag, msg), 'agent');
+          }, (i + 1) * 600);
+        });
+        // Não processar como conversação
+      } else {
+      
       // Extrair temas/palavras-chave
       const temas = this.extrairTemas(msg || file?.name || '');
       this.chatCtx.temas = [...new Set([...this.chatCtx.temas, ...temas])];
@@ -1109,6 +1129,8 @@ const Game = {
         }, respondentes.length * 1000 + 800);
       }
 
+      } // fecha else (não-ação)
+      
       // Inbox
       if (typeof Inbox !== 'undefined') {
         Inbox.addThought(`[Conversação — ${this.chatCtx.estagio}]\n${msg || `[Arquivo: ${file?.name}]`}`);
@@ -1801,6 +1823,7 @@ function initHermesAgent() {
         author: 'Zói'
       };
       
+      this.updateSessionRegistry(title, content);
       this.memories.push(memory);
       this.saveMemories();
       
@@ -1822,6 +1845,22 @@ function initHermesAgent() {
         autoSynthesis: this.memories.filter(m => m.type === 'auto-synthesis').length,
         userMemories: this.memories.filter(m => m.author === 'Zói').length
       };
+    },
+    
+    updateSessionRegistry(title, content) {
+      if (typeof Items === 'undefined' || !Items.list.livro_memoria) return;
+      const livro = Items.list.livro_memoria;
+      const agora = new Date().toLocaleString('pt-BR');
+      const entrada = '[' + agora + '] ' + title + '\n' + (content || '').substring(0, 150);
+      let idx = livro.bookContent.findIndex(p => p.includes('REGISTRO DE SESSÕES'));
+      if (idx < 0) idx = livro.bookContent.length - 1;
+      if (livro.bookContent[idx].includes('Aguardando')) {
+        livro.bookContent[idx] = '═══ REGISTRO DE SESSÕES ═══\n\n' + entrada + '\n---\n';
+      } else if (livro.bookContent[idx].length < 800) {
+        livro.bookContent[idx] += '\n' + entrada;
+      } else {
+        livro.bookContent.push('═══ REGISTRO DE SESSÕES (cont.) ═══\n\n' + entrada);
+      }
     }
   };
   

@@ -54,11 +54,13 @@ const Renderer = {
     ctx.fillStyle = '#0a0a1a';
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     
-    // Calcular tiles visíveis
-    const startTileX = Math.floor(this.camera.x / T) - 2;
-    const startTileY = Math.floor(this.camera.y / T) - 2;
-    const tilesX = Math.ceil(this.canvas.width / T) + 4;
-    const tilesY = Math.ceil(this.canvas.height / T) + 4;
+    // Calcular tiles visíveis (com zoom)
+    const zoom = this.camera.zoom || 1;
+    const effectiveT = T * zoom;
+    const startTileX = Math.floor(this.camera.x / effectiveT) - 2;
+    const startTileY = Math.floor(this.camera.y / effectiveT) - 2;
+    const tilesX = Math.ceil(this.canvas.width / effectiveT) + 4;
+    const tilesY = Math.ceil(this.canvas.height / effectiveT) + 4;
     
     // Renderizar blocos
     for (let y = startTileY; y < startTileY + tilesY; y++) {
@@ -66,10 +68,10 @@ const Renderer = {
         const block = World.getBlock(x, y);
         if (block === World.blocks.AIR) continue;
         
-        const screenX = x * T - this.camera.x;
-        const screenY = y * T - this.camera.y;
+        const screenX = x * effectiveT - this.camera.x;
+        const screenY = y * effectiveT - this.camera.y;
         
-        this.renderBlock(ctx, block, screenX, screenY, T, x, y);
+        this.renderBlock(ctx, block, screenX, screenY, effectiveT, x, y);
       }
     }
     
@@ -166,15 +168,15 @@ const Renderer = {
   renderItems(ctx, T) {
     // Renderizar itens do Items.registry (original)
     for (const item of Object.values(Items.registry)) {
-      const screenX = item.x * T - this.camera.x;
-      const screenY = item.y * T - this.camera.y;
+      const screenX = item.x * effectiveT - this.camera.x;
+      const screenY = item.y * effectiveT - this.camera.y;
       
       // Só renderizar se visível
       if (screenX < -T || screenX > this.canvas.width + T) continue;
       if (screenY < -T || screenY > this.canvas.height + T) continue;
       
       // Ícone do item
-      ctx.font = `${T - 8}px serif`;
+      ctx.font = `${effectiveT - 8}px serif`;
       ctx.textAlign = 'center';
       ctx.fillText(item.icon, screenX + T / 2, screenY + T - 4);
       
@@ -190,8 +192,8 @@ const Renderer = {
     // Renderizar itens da AlchemyEconomy (itens alquímicos no chão)
     if (typeof AlchemyEconomy !== 'undefined') {
       for (const item of AlchemyEconomy.itensNoChao) {
-        const screenX = item.x * T - this.camera.x;
-        const screenY = item.y * T - this.camera.y;
+        const screenX = item.x * effectiveT - this.camera.x;
+        const screenY = item.y * effectiveT - this.camera.y;
 
         if (screenX < -T || screenX > this.canvas.width + T) continue;
         if (screenY < -T || screenY > this.canvas.height + T) continue;
@@ -229,8 +231,8 @@ const Renderer = {
   // Renderizar agentes
   renderAgents(ctx, T) {
     Agents.active.forEach(agent => {
-      const screenX = agent.x * T - this.camera.x;
-      const screenY = agent.y * T - this.camera.y;
+      const screenX = agent.x * effectiveT - this.camera.x;
+      const screenY = agent.y * effectiveT - this.camera.y;
       
       // Só renderizar se visível
       if (screenX < -T * 2 || screenX > this.canvas.width + T * 2) return;
@@ -311,8 +313,8 @@ const Renderer = {
   renderPlayer(ctx, T) {
     if (!Player) return;
     
-    const screenX = Player.x * T - this.camera.x;
-    const screenY = Player.y * T - this.camera.y;
+    const screenX = Player.x * effectiveT - this.camera.x;
+    const screenY = Player.y * effectiveT - this.camera.y;
     
     // Aura dourada do jogador
     const auraGlow = Math.sin(this.animFrame * 0.08) * 0.2 + 0.3;

@@ -531,6 +531,14 @@ ${synthesis.split('\n').map(l => '║ ' + l.padEnd(35) + '║').join('\n')}
       });
     }
 
+    // Atualizar Registro de Sessões no Livro da Memória Coletiva
+    if (typeof HermesAgent !== 'undefined') {
+      HermesAgent.updateSessionRegistry(
+        `Conselho: ${this.topic.title}`,
+        synthesis
+      );
+    }
+
     // Reset
     this.participants = [];
     this.topic = null;

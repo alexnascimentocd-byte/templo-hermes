@@ -13,15 +13,156 @@ const Interactions = {
   init() {
     // Click no canvas
     const canvas = document.getElementById('temple-canvas');
-    canvas.addEventListener('click', (e) => this.onCanvasClick(e));
-    canvas.addEventListener('mousemove', (e) => this.onCanvasHover(e));
+    // Click é tratado pelo sistema de drag (mousedown/mouseup)
     
-    // Touch para mobile
+    // Touch e navegação estilo Google Maps
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let dragThreshold = 5; // Pixels antes de considerar drag vs click
+    let hasDragged = false;
+    let lastTouchDist = 0;
+
+    // Mouse drag para pan
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return; // Só botão esquerdo
+      isDragging = true;
+      hasDragged = false;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      canvas.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      
+      const dx = e.clientX - dragStartX;
+      const dy = e.clientY - dragStartY;
+      
+      // Só considerar drag se passou do threshold
+      if (Math.abs(dx) > dragThreshold || Math.abs(dy) > dragThreshold) {
+        hasDragged = true;
+      }
+      
+      if (hasDragged) {
+        // Mover câmera (inverter direção pra parecer natural)
+        Renderer.camera.targetX -= dx;
+        Renderer.camera.targetY -= dy;
+        Renderer.camera.x -= dx;
+        Renderer.camera.y -= dy;
+        
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+      }
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      if (isDragging) {
+        isDragging = false;
+        canvas.style.cursor = 'default';
+        
+        // Se não arrastou, tratar como click
+        if (!hasDragged) {
+          this.onCanvasClick(e);
+        }
+      }
+    });
+
+    // Mouse wheel para zoom
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      
+      const zoomSpeed = 0.001;
+      const delta = -e.deltaY * zoomSpeed;
+      
+      // Zoom limitado entre 0.5x e 3x
+      Renderer.camera.zoom = Math.max(0.5, Math.min(3, Renderer.camera.zoom + delta));
+      
+      // Zoom centrado no mouse
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      // Ajustar câmera para zoom centrado
+      if (delta > 0) {
+        // Zoom in: aproximar do mouse
+        Renderer.camera.targetX += (mouseX - canvas.width / 2) * 0.02;
+        Renderer.camera.targetY += (mouseY - canvas.height / 2) * 0.02;
+      } else {
+        // Zoom out: distanciar
+        Renderer.camera.targetX -= (mouseX - canvas.width / 2) * 0.01;
+        Renderer.camera.targetY -= (mouseY - canvas.height / 2) * 0.01;
+      }
+    }, { passive: false });
+
+    // Touch para mobile — arrastar
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      const touch = e.touches[0];
-      this.onCanvasClick({ clientX: touch.clientX, clientY: touch.clientY });
-    });
+      
+      if (e.touches.length === 1) {
+        // Um dedo: arrastar
+        isDragging = true;
+        hasDragged = false;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        // Dois dedos: pinch zoom
+        isDragging = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        lastTouchDist = Math.sqrt(dx * dx + dy * dy);
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      
+      if (e.touches.length === 1 && isDragging) {
+        const dx = e.touches[0].clientX - dragStartX;
+        const dy = e.touches[0].clientY - dragStartY;
+        
+        if (Math.abs(dx) > dragThreshold || Math.abs(dy) > dragThreshold) {
+          hasDragged = true;
+        }
+        
+        if (hasDragged) {
+          Renderer.camera.targetX -= dx;
+          Renderer.camera.targetY -= dy;
+          Renderer.camera.x -= dx;
+          Renderer.camera.y -= dy;
+          
+          dragStartX = e.touches[0].clientX;
+          dragStartY = e.touches[0].clientY;
+        }
+      } else if (e.touches.length === 2) {
+        // Pinch zoom
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (lastTouchDist > 0) {
+          const scale = dist / lastTouchDist;
+          Renderer.camera.zoom = Math.max(0.5, Math.min(3, Renderer.camera.zoom * scale));
+        }
+        
+        lastTouchDist = dist;
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      
+      if (e.touches.length === 0) {
+        isDragging = false;
+        lastTouchDist = 0;
+        
+        // Se não arrastou, tratar como click
+        if (!hasDragged && e.changedTouches.length > 0) {
+          const touch = e.changedTouches[0];
+          this.onCanvasClick({ clientX: touch.clientX, clientY: touch.clientY });
+        }
+      }
+    }, { passive: false });
     
     // Botões do painel
     document.getElementById('close-panel').addEventListener('click', () => this.closePanel());
