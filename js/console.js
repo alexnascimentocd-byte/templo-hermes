@@ -68,6 +68,7 @@ const Console = {
       case 'neural': case 'neuronio': case 'neurônio': case 'snippets': this.cmdNeural(args); break;
       case 'conversar': case 'conversation': case 'conversa': this.cmdConversar(args); break;
       case '3d': case 'modo3d': case 'minecraft': this.cmd3D(); break;
+      case 'rede': case 'network': case 'gateway': this.cmdRede(args); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -1908,5 +1909,109 @@ const Console = {
     }
     
     this.log(is3D ? '🎮 Modo 3D ativado — Estilo Minecraft' : '⬅️ Voltando ao modo 2D', 'sucesso');
+  },
+
+  cmdRede(args) {
+    if (typeof NetworkGateway === 'undefined') {
+      this.log('❌ Network Gateway não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'ciclo' || sub === 'cycle' || sub === 'start') {
+      this.log('🌐 Iniciando ciclo de rede...', 'info');
+      NetworkGateway.runCycle().then(results => {
+        if (results.length > 0) {
+          this.log(`✅ ${results.length} missões executadas`, 'sucesso');
+          results.forEach(m => {
+            this.log(`  ${m.agent.icon} ${m.agent.name} → ${m.demand.service} → R$ ${m.revenue}`, 'dim');
+          });
+        }
+      });
+    } else if (sub === 'minerar' || sub === 'mine' || sub === 'mining') {
+      const operation = args[1] || null;
+      this.log('⛏️ Iniciando mineração de valor...', 'info');
+      NetworkGateway.runMining(operation).then(result => {
+        if (result) {
+          this.log(`⛏️ Mineração concluída: ${result.mining.length} operações`, 'sucesso');
+          result.mining.forEach(m => {
+            this.log(`  ${m.icon} ${m.operation}: ${m.itemsFound} oportunidades (qualidade: ${m.quality}%)`, 'dim');
+          });
+        }
+      });
+    } else if (sub === 'status' || sub === 'stats') {
+      const stats = NetworkGateway.getStats();
+      this.log('═══ NETWORK GATEWAY ═══', 'info');
+      this.log(`Missões totais: ${stats.totalMissions}`, 'dim');
+      this.log(`Receita total: R$ ${stats.totalRevenue}`, 'dim');
+      this.log(`Receita média: R$ ${stats.avgRevenue}`, 'dim');
+      this.log(`Agentes ativos: ${stats.activeAgents}`, 'dim');
+      this.log(`Demandas pendentes: ${stats.pendingDemands}`, 'dim');
+      this.log(`Crescimento Fibonacci: ${stats.growthMultiplier}x`, 'dim');
+      this.log(`Proporção Áurea: φ = ${stats.goldenRatio}`, 'dim');
+    } else if (sub === 'projecao' || sub === 'projection') {
+      const proj = NetworkGateway.getEarningsProjection();
+      this.log('═══ PROJEÇÃO DE GANHOS ═══', 'info');
+      this.log('📊 Cenários mensais:', 'dim');
+      this.log(`  Conservador: R$ ${proj.conservador.monthlyRevenue}/mês (${proj.conservador.description})`, 'dim');
+      this.log(`  Moderado: R$ ${proj.moderado.monthlyRevenue}/mês (${proj.moderado.description})`, 'dim');
+      this.log(`  Agressivo: R$ ${proj.agressivo.monthlyRevenue}/mês (${proj.agressivo.description})`, 'dim');
+      this.log('', 'dim');
+      this.log('🏠 Custo de vida (Vila Velha, ES):', 'dim');
+      this.log(`  Básico: R$ ${proj.custoVida.basico}/mês`, 'dim');
+      this.log(`  Confortável: R$ ${proj.custoVida.confortavel}/mês`, 'dim');
+      this.log(`  Bom: R$ ${proj.custoVida.bom}/mês`, 'dim');
+      this.log(`  Ideal: R$ ${proj.custoVida.ideal}/mês`, 'dim');
+      this.log('', 'dim');
+      this.log('📐 Crescimento Fibonacci × Proporção Áurea:', 'dim');
+      proj.fibonacciProjection.slice(0, 6).forEach(p => {
+        this.log(`  Mês ${p.month}: R$ ${p.projectedRevenue} (φ ajustado: R$ ${p.goldenAdjusted})`, 'dim');
+      });
+    } else if (sub === 'demandas' || sub === 'demands') {
+      const demands = NetworkGateway.getPendingDemands();
+      if (demands.length === 0) {
+        this.log('📭 Nenhuma demanda pendente. Use "rede ciclo" para buscar.', 'aviso');
+      } else {
+        this.log('═══ DEMANDAS PENDENTES ═══', 'info');
+        demands.forEach(d => {
+          this.log(`  ${d.icon} ${d.service} — ${d.price} [urgência: ${d.urgency}]`, 'dim');
+        });
+      }
+    } else if (sub === 'missoes' || sub === 'missions') {
+      const missions = NetworkGateway.getRecentMissions(5);
+      if (missions.length === 0) {
+        this.log('📭 Nenhuma missão executada ainda.', 'aviso');
+      } else {
+        this.log('═══ ÚLTIMAS MISSÕES ═══', 'info');
+        missions.forEach(m => {
+          this.log(`  ${m.agent} → ${m.service} — R$ ${m.revenue} [${m.status}]`, 'dim');
+        });
+      }
+    } else if (sub === 'receita' || sub === 'revenue') {
+      const report = NetworkGateway.getRevenueReport();
+      this.log('═══ RELATÓRIO DE RECEITA ═══', 'info');
+      this.log(`Total: R$ ${report.totalRevenue}`, 'dim');
+      if (report.byNiche.length > 0) {
+        this.log('Por nicho:', 'dim');
+        report.byNiche.forEach(n => {
+          this.log(`  ${n.name}: ${n.missions} missões → R$ ${n.revenue}`, 'dim');
+        });
+      }
+      this.log(`Canais de pagamento: ${report.paymentChannels.map(c => c.name).join(', ')}`, 'dim');
+    } else if (sub === 'reset') {
+      NetworkGateway.reset();
+      this.log('🔄 Network Gateway resetado.', 'aviso');
+    } else {
+      this.log('Comandos da Rede:', 'info');
+      this.log('  rede ciclo          — Identificar demandas e executar missões', 'dim');
+      this.log('  rede minerar [op]   — Minerar valor legalmente da rede', 'dim');
+      this.log('  rede status         — Ver estatísticas do gateway', 'dim');
+      this.log('  rede projecao       — Projeção de ganhos (Fibonacci × φ)', 'dim');
+      this.log('  rede demandas       — Ver demandas pendentes', 'dim');
+      this.log('  rede missoes        — Ver últimas missões', 'dim');
+      this.log('  rede receita        — Relatório de receita por nicho', 'dim');
+      this.log('  rede reset          — Resetar gateway', 'dim');
+    }
   }
 };

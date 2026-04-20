@@ -487,13 +487,356 @@
   </div>
 
   <!-- Scripts -->
-    <script src="dist/bundle-world.js"></script>
-  <script src="dist/bundle-core.js"></script>
-  <script src="dist/bundle-ui.js"></script>
-  <script src="dist/bundle-agents.js"></script>
-  <script src="dist/bundle-render.js"></script>
-  <script src="js/agent-conversations.js"></script>
-  <script src="js/renderer-3d.js"></script>
-  <script src="js/network-gateway.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/persistence.js"></script>
+  <script src="js/knowledge-base.js"></script>
+  <script src="js/response-engine.js"></script>
+  <script src="js/items.js"></script>
+  <script src="js/runes.js"></script>
+  <script src="js/mcp_tools.js"></script>
+  <script src="js/inbox.js"></script>
+  <script src="js/console.js"></script>
+  <script src="js/agents.js"></script>
+  <script src="js/council.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/interactions.js"></script>
+  <script src="js/initiation.js"></script>
+  <script src="js/main.js"></script>
+<script src="js/system-admin.js"></script>
+<script src="js/remote-admin.js"></script>
+<script src="js/parallel-engine.js"></script>
+<script src="js/agent-trainer.js"></script>
+<script src="js/crystal-ball.js"></script>
+<script src="js/alchemy-economy.js"></script>
+<script src="js/cognitive-cortex.js"></script>
+<script src="js/npc-grimoire.js"></script>
+<script src="js/mental-health.js"></script>
+<script src="js/neural-snippets.js"></script>
+<script src="js/agent-conversations.js"></script>
+<script src="js/renderer-3d.js"></script>
+
+<!-- Painel Remoto -->
+<div id="remote-panel" class="panel hidden">
+  <div class="panel-header">
+    <span>🌍 Admin Remoto</span>
+    <button onclick="togglePanel('remote-panel')" class="btn-close">✕</button>
+  </div>
+  <div class="panel-body">
+    <div id="remote-status" class="remote-status-box">
+      <div class="status-indicator" id="remote-indicator">●</div>
+      <span id="remote-status-text">Verificando...</span>
+    </div>
+    
+    <div class="remote-section">
+      <h4>🔧 Modo de Conexão</h4>
+      <div class="remote-modes">
+        <button class="mode-btn active" onclick="setRemoteMode('local')" id="mode-local">
+          📡 Local
+        </button>
+        <button class="mode-btn" onclick="setRemoteMode('remote')" id="mode-remote">
+          🌐 Remoto (GitHub)
+        </button>
+        <button class="mode-btn" onclick="setRemoteMode('github-cloud')" id="mode-cloud">
+          ☁️ Cloud
+        </button>
+      </div>
+    </div>
+    
+    <div class="remote-section" id="remote-config-section">
+      <h4>⚙️ Configuração GitHub</h4>
+      <div class="config-field">
+        <label>Token:</label>
+        <input type="password" id="remote-token" placeholder="ghp_xxxxx" class="config-input">
+      </div>
+      <div class="config-field">
+        <label>Owner:</label>
+        <input type="text" id="remote-owner" placeholder="alexnascimentocd-byte" class="config-input">
+      </div>
+      <div class="config-field">
+        <label>Repo:</label>
+        <input type="text" id="remote-repo" placeholder="templo-hermes" class="config-input">
+      </div>
+      <button class="btn-action" onclick="saveRemoteConfig()">💾 Salvar Conexão</button>
+    </div>
+    
+    <div class="remote-section">
+      <h4>⚡ Execução Rápida</h4>
+      <div class="quick-commands">
+        <button onclick="remoteQuickCmd('whoami')" class="quick-cmd">👤 Who</button>
+        <button onclick="remoteQuickCmd('pwd')" class="quick-cmd">📁 Dir</button>
+        <button onclick="remoteQuickCmd('df -h')" class="quick-cmd">💿 Disco</button>
+        <button onclick="remoteQuickCmd('free -m')" class="quick-cmd">🧠 RAM</button>
+        <button onclick="remoteQuickCmd('uptime')" class="quick-cmd">⏱️ Up</button>
+        <button onclick="remoteQuickCmd('ps aux | head -20')" class="quick-cmd">📋 Proc</button>
+      </div>
+    </div>
+    
+    <div class="remote-section">
+      <h4>📜 Histórico</h4>
+      <div id="remote-history" class="remote-history"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Painel Grimório dos NPCs -->
+<div id="grimoire-panel" class="panel hidden">
+  <div class="panel-header">
+    <span>📜 Grimório dos NPCs</span>
+    <button onclick="togglePanel('grimoire-panel')" class="btn-close">✕</button>
+  </div>
+  <div class="panel-body">
+    <!-- Abas -->
+    <div class="grimoire-tabs">
+      <button class="grimoire-tab active" onclick="NPCGrimoire.switchTab('comandos')">⚡ Comandos</button>
+      <button class="grimoire-tab" onclick="NPCGrimoire.switchTab('diario')">📖 Diário</button>
+    </div>
+    
+    <!-- Seletor de NPCs (apenas na aba diário) -->
+    <div id="npc-selector" class="npc-selector-bar" style="display:none;"></div>
+    <div id="diario-header" class="diario-header-bar" style="display:none;">
+      <span id="diario-npc-name">Selecione um NPC</span>
+    </div>
+    
+    <!-- Conteúdo -->
+    <div id="grimoire-commands" class="grimoire-content">
+      <div class="grimoire-empty">
+        <span class="grimoire-empty-icon">📜</span>
+        <p>Nenhum comando pendente</p>
+        <p class="grimoire-hint">Os NPCs enviarão comandos automaticamente</p>
+      </div>
+    </div>
+    <div id="grimoire-diario" class="grimoire-content" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- Painel Saúde Mental -->
+<div id="mental-health-panel" class="panel hidden">
+  <div class="panel-header">
+    <h2>🏥 Saúde Mental das IAs</h2>
+    <button id="close-mental-health-btn" onclick="document.getElementById('mental-health-panel').classList.add('hidden')" class="btn-close">✕</button>
+  </div>
+  <div class="mh-content">
+    <div class="mh-empty">📋 Inicializando monitoramento...</div>
+  </div>
+</div>
+
+</body>
+  <script>
+  (function bootstrap() {
+    // Wait for all modules to load
+    const check = setInterval(() => {
+      if (typeof Agents === 'undefined' || typeof Interactions === 'undefined') return;
+      clearInterval(check);
+      
+      // Init persistence
+      if (typeof Persistence !== 'undefined') {
+        Persistence.init();
+        // Patch Agents.saveAll
+        if (!Agents.saveAll) {
+          Agents.saveAll = function() {
+            if (typeof Persistence !== 'undefined') {
+              Persistence.saveAgents(this.roster);
+            }
+          };
+        }
+        // Load saved state
+        const saved = Persistence.loadAgents();
+        if (saved && saved.length > 0) {
+          saved.forEach(s => {
+            const a = Agents.roster.find(r => r.type === s.type);
+            if (a && s.level > 1) {
+              a.level = s.level;
+              a.experience = s.experience || 0;
+              a.expToNext = s.expToNext || 100;
+            }
+          });
+        }
+        // Auto-save every 30s
+        setInterval(() => Agents.saveAll(), 30000);
+        // Patch gainExperience for auto-save
+        const orig = Agents.gainExperience.bind(Agents);
+        let st = null;
+        Agents.gainExperience = function(agent, xp) {
+          orig(agent, xp);
+          if (st) clearTimeout(st);
+          st = setTimeout(() => this.saveAll(), 3000);
+        };
+      }
+      
+      // Init KnowledgeBase
+      if (typeof KnowledgeBase !== 'undefined') KnowledgeBase.init();
+      
+      // Init SystemAdmin
+      if (typeof SystemAdmin !== 'undefined') SystemAdmin.init();
+      
+      // Init CrystalBall
+      if (typeof CrystalBall !== 'undefined') CrystalBall.init();
+      
+      // Init CognitiveCortex
+      if (typeof CognitiveCortex !== 'undefined') {
+        console.log('🧠 CognitiveCortex carregado');
+      }
+      
+      // Init AlchemyEconomy
+      if (typeof AlchemyEconomy !== 'undefined') {
+        AlchemyEconomy.init();
+        // Tick autônomo a cada 30s
+        setInterval(() => AlchemyEconomy.tickAgentes(), 30000);
+      }
+      
+      // Init RemoteAdmin
+      if (typeof RemoteAdmin !== 'undefined') {
+        RemoteAdmin.init().then(() => {
+          updateRemoteStatus();
+          RemoteAdmin.startPolling(15000);
+        });
+      }
+      
+      // Patch response engine into conversation
+      if (typeof ResponseEngine !== 'undefined' && typeof Game !== 'undefined') {
+        const origResp = Game.gerarRespostaAlquimica?.bind(Game);
+        if (origResp) {
+          Game.gerarRespostaAlquimica = function(agent, msg, temas) {
+            try {
+              const r = ResponseEngine.generate(agent, msg, temas);
+              if (r && r.length > 10) return r;
+            } catch(e) {}
+            return origResp(agent, msg, temas);
+          };
+        }
+      }
+      
+      console.log('🔧 Bootstrap: persistência + KB + response engine carregados');
+    }, 500);
+  })();
+  
+  // ===== REMOTE PANEL FUNCTIONS =====
+  function updateRemoteStatus() {
+    const indicator = document.getElementById('remote-indicator');
+    const text = document.getElementById('remote-status-text');
+    if (!RemoteAdmin) return;
+    
+    const status = RemoteAdmin.status();
+    if (status.connected) {
+      indicator.style.color = '#4ade80';
+      text.textContent = `Conectado (${status.mode})`;
+      if (status.mode === 'remote') {
+        text.textContent += ` — ${status.github}`;
+      }
+    } else {
+      indicator.style.color = '#f87171';
+      text.textContent = 'Desconectado';
+    }
+    
+    // Update mode buttons
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(`mode-${status.mode === 'github-cloud' ? 'cloud' : status.mode}`);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    // Load config into fields
+    if (RemoteAdmin.config.token) {
+      document.getElementById('remote-token').placeholder = '••••••••';
+    }
+    if (RemoteAdmin.config.owner) {
+      document.getElementById('remote-owner').value = RemoteAdmin.config.owner;
+    }
+    if (RemoteAdmin.config.repo) {
+      document.getElementById('remote-repo').value = RemoteAdmin.config.repo;
+    }
+  }
+  
+  function setRemoteMode(mode) {
+    if (!RemoteAdmin) return;
+    const msg = RemoteAdmin.setMode(mode);
+    updateRemoteStatus();
+    if (typeof notify === 'function') notify(msg);
+  }
+  
+  async function saveRemoteConfig() {
+    const token = document.getElementById('remote-token').value;
+    const owner = document.getElementById('remote-owner').value;
+    const repo = document.getElementById('remote-repo').value;
+    
+    if (!token || !owner || !repo) {
+      if (typeof notify === 'function') notify('⚠️ Preencha todos os campos');
+      return;
+    }
+    
+    const result = await RemoteAdmin.connectRemote(token, owner, repo);
+    if (typeof notify === 'function') notify(result.message);
+    updateRemoteStatus();
+  }
+  
+  async function remoteQuickCmd(cmd) {
+    if (!RemoteAdmin || !RemoteAdmin.connected) {
+      if (typeof notify === 'function') notify('⚠️ Não conectado');
+      return;
+    }
+    
+    const historyDiv = document.getElementById('remote-history');
+    const entry = document.createElement('div');
+    entry.className = 'history-entry';
+    entry.innerHTML = `<span class="history-cmd">$ ${cmd}</span><span class="history-result">⏳ Executando...</span>`;
+    historyDiv.prepend(entry);
+    
+    const result = await RemoteAdmin.execute(cmd);
+    const resultSpan = entry.querySelector('.history-result');
+    
+    if (result.pending) {
+      resultSpan.textContent = '📤 Enviado! Aguardando resultado...';
+      resultSpan.className = 'history-result pending';
+      
+      // Listen for result
+      const handler = (e) => {
+        resultSpan.textContent = e.detail.output.substring(0, 200);
+        resultSpan.className = 'history-result done';
+        window.removeEventListener('remote-result', handler);
+      };
+      window.addEventListener('remote-result', handler);
+    } else {
+      resultSpan.textContent = result.output.substring(0, 200);
+      resultSpan.className = result.success ? 'history-result done' : 'history-result error';
+    }
+  }
+  
+  // Mobile menu handler for remote
+  document.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-action="remote"]');
+    if (item) {
+      document.querySelectorAll('.panel').forEach(p => {
+        if (p.id !== 'remote-panel') p.classList.add('hidden');
+      });
+      document.getElementById('remote-panel').classList.toggle('hidden');
+      updateRemoteStatus();
+      document.getElementById('mobile-menu').classList.add('hidden');
+      document.getElementById('mobile-menu-overlay').classList.add('hidden');
+    }
+  });
+
+  // Grimório NPC - desktop
+  document.getElementById('btn-grimoire').addEventListener('click', () => {
+    document.querySelectorAll('.panel').forEach(p => {
+      if (p.id !== 'grimoire-panel') p.classList.add('hidden');
+    });
+    document.getElementById('grimoire-panel').classList.toggle('hidden');
+    NPCGrimoire.load();
+    NPCGrimoire.renderPainel();
+  });
+
+  // Grimório NPC - mobile
+  document.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-action="grimoire"]');
+    if (item) {
+      document.querySelectorAll('.panel').forEach(p => {
+        if (p.id !== 'grimoire-panel') p.classList.add('hidden');
+      });
+      document.getElementById('grimoire-panel').classList.toggle('hidden');
+      NPCGrimoire.renderPainel();
+      document.getElementById('mobile-menu').classList.add('hidden');
+      document.getElementById('mobile-menu-overlay').classList.add('hidden');
+    }
+  });
+  </script>
 </body>
 </html>
