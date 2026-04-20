@@ -73,6 +73,7 @@ const Console = {
       case 'campanha': case 'campaign': case 'campanhas': this.cmdCampanha(args); break;
       case 'cloud': case 'nuvem': this.cmdCloud(args); break;
       case 'diversificar': case 'diversificacao': case 'leads': this.cmdDiversificar(args); break;
+      case 'devweb': case 'webdev': case 'desenvolvimento': this.cmdDevWeb(args); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -2346,6 +2347,107 @@ const Console = {
       this.log('  diversificar reset         — Resetar departamento', 'dim');
       this.log('', 'dim');
       this.log('Perfis: impulsivo, pesquisador, oportunista, profissional, iniciante, recorrente', 'dim');
+    }
+  },
+
+  cmdDevWeb(args) {
+    if (typeof WebDevDepartment === 'undefined') {
+      this.log('❌ Departamento de Desenvolvimento Web não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'ciclo' || sub === 'run' || sub === 'start') {
+      this.log('🏗️ Iniciando ciclo de desenvolvimento web...', 'info');
+      WebDevDepartment.runDevCycle().then(result => {
+        if (result) {
+          this.log(`✅ ${result.trends} tendências analisadas | ${result.created} projetos criados | ${result.published} publicados`, 'sucesso');
+        }
+      });
+    } else if (sub === 'status' || sub === 'stats') {
+      const stats = WebDevDepartment.getStats();
+      this.log('═══ 🏗️ DEPARTAMENTO DE DESENVOLVIMENTO WEB ═══', 'info');
+      this.log(`📦 Projetos: ${stats.projects.total} (${stats.projects.published} publicados)`, 'dim');
+      this.log(`📊 Tendências: ${stats.trends.total} detectadas`, 'dim');
+      this.log(`💰 Receita: R$ ${stats.revenue}`, 'dim');
+      this.log('', 'dim');
+      this.log('🔥 Nichos quentes (herméticos):', 'info');
+      stats.trends.hotNiches.forEach(n => {
+        this.log(`  ${n.icon} ${n.name} [${n.principle}] — força: ${n.strength}`, 'dim');
+      });
+      this.log('', 'dim');
+      this.log('📦 Tipos de produto:', 'info');
+      stats.productTypes.forEach(p => {
+        this.log(`  ${p.icon} ${p.name}: ${p.count} projetos`, 'dim');
+      });
+    } else if (sub === 'projetos' || sub === 'projects') {
+      const projects = WebDevDepartment.getProjects();
+      if (projects.length === 0) {
+        this.log('📭 Nenhum projeto criado. Use "devweb ciclo" para gerar.', 'aviso');
+      } else {
+        this.log('═══ PROJETOS WEB ═══', 'info');
+        projects.forEach(p => {
+          this.log(`  ${p.icon} ${p.name} [${p.status}]`, 'dim');
+          this.log(`    📂 ${p.type} | ${p.niche} | ⚖️ ${p.principle}`, 'dim');
+          this.log(`    💰 ${p.price} | 📋 ${p.features} features`, 'dim');
+        });
+      }
+    } else if (sub === 'publicados' || sub === 'published') {
+      const pubs = WebDevDepartment.getPublications();
+      if (pubs.length === 0) {
+        this.log('📭 Nenhuma publicação ainda.', 'aviso');
+      } else {
+        this.log('═══ PUBLICAÇÕES ═══', 'info');
+        pubs.forEach(p => {
+          this.log(`  🚀 ${p.name} → ${p.price} [${p.principle}]`, 'dim');
+          this.log(`    🔗 ${p.url}`, 'dim');
+        });
+      }
+    } else if (sub === 'tendencias' || sub === 'trends') {
+      const trends = WebDevDepartment.getTrends();
+      if (trends.length === 0) {
+        this.log('📭 Nenhuma tendência detectada ainda.', 'aviso');
+      } else {
+        this.log('═══ TENDÊNCIAS DE MERCADO ═══', 'info');
+        trends.forEach(t => {
+          this.log(`  ${t.icon} ${t.niche} [${t.principle}] — força: ${t.strength}`, 'dim');
+          this.log(`    📝 ${t.description} (fonte: ${t.source})`, 'dim');
+        });
+      }
+    } else if (sub === 'criar' || sub === 'create') {
+      const niche = args[1] || 'vibracao_marketing';
+      const type = args[2] || null;
+      const trend = { niche, strength: 70 };
+      const project = WebDevDepartment.createProject(trend, type);
+      if (project) {
+        this.log(`✅ Projeto criado: ${project.typeIcon} ${project.name}`, 'sucesso');
+        this.log(`   ⚖️ Princípio: ${project.hermeticPrinciple} | 💰 R$ ${project.price}`, 'dim');
+      }
+    } else if (sub === 'nichos' || sub === 'niches') {
+      const stats = WebDevDepartment.getStats();
+      this.log('═══ NICHOS HERMÉTICOS ═══', 'info');
+      stats.hermeticNiches.forEach(n => {
+        const status = n.trending ? '🔥' : '❄️';
+        this.log(`  ${n.icon} ${n.name} ${status} — ${n.principle} (${n.count} projetos)`, 'dim');
+      });
+    } else if (sub === 'reset') {
+      WebDevDepartment.reset();
+      this.log('🔄 Departamento resetado.', 'aviso');
+    } else {
+      this.log('Comandos de Desenvolvimento Web:', 'info');
+      this.log('  devweb ciclo        — Analisar tendências e criar projetos', 'dim');
+      this.log('  devweb status       — Ver estatísticas do departamento', 'dim');
+      this.log('  devweb projetos     — Listar projetos criados', 'dim');
+      this.log('  devweb publicados   — Ver projetos publicados', 'dim');
+      this.log('  devweb tendencias   — Ver tendências de mercado', 'dim');
+      this.log('  devweb nichos       — Ver nichos herméticos', 'dim');
+      this.log('  devweb criar [niche] [tipo] — Criar projeto manualmente', 'dim');
+      this.log('  devweb reset        — Resetar departamento', 'dim');
+      this.log('', 'dim');
+      this.log('Nichos: transformacao_pessoal, equilibrio_financas, conhecimento_aplicado,', 'dim');
+      this.log('  ritmo_produtividade, causa_efeito_negocio, vibracao_marketing,', 'dim');
+      this.log('  mentalismo_vendas, genero_criatividade', 'dim');
     }
   }
 };
