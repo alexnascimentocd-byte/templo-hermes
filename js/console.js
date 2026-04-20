@@ -54,6 +54,7 @@ const Console = {
       case 'alquimia': case 'alchemy': case 'item': case 'inventario': case 'inventário': this.cmdAlchemy(args); break;
       case 'transmutar': case 'transmute': this.cmdTransmutar(args); break;
       case 'cortex': case 'cérebro': case 'cerebro': this.cmdCortex(args); break;
+      case 'neural': case 'neuronio': case 'neurônio': case 'snippets': this.cmdNeural(args); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -1404,6 +1405,109 @@ const Console = {
         this.log('  ler <arquivo>         — Ler arquivo do PC', 'info');
         this.log('  escrever <arq> <txt>  — Escrever arquivo', 'info');
         this.log('  ideia <descrição>     — Do pensamento ao código', 'info');
+    }
+  },
+
+
+  // Comando: neural
+  cmdNeural(args) {
+    if (typeof NeuralSystem === 'undefined') {
+      this.log('⚠️ Sistema Neural não disponível', 'error');
+      return;
+    }
+    
+    const sub = args[0];
+    const agent = args.slice(1).join(' ');
+    
+    if (!sub || sub === 'status') {
+      // Relatório geral
+      const report = NeuralSystem.generateReport();
+      this.log('🧠 ═══ SISTEMA NEURAL ═══', 'info');
+      this.log(`Agentes ativos: ${report.activeAgents}/${report.totalAgents}`, 'info');
+      this.log(`Evolução média: ${report.averageEvolution}%`, 'info');
+      this.log(`Cap máximo: 60%`, 'info');
+      this.log('', 'info');
+      
+      if (report.topAgents.length > 0) {
+        this.log('🏆 Top Agentes:', 'success');
+        report.topAgents.forEach(a => {
+          this.log(`  ${a.icon} ${a.name}: ${a.evolution}% (${a.snippets} snippets)`, 'success');
+        });
+      }
+      
+      if (report.needsAttention.length > 0) {
+        this.log('', 'info');
+        this.log('⚠️ Precisam de atenção:', 'warning');
+        report.needsAttention.forEach(a => {
+          this.log(`  ${a.icon} ${a.name}: ${a.issue}`, 'warning');
+        });
+      }
+      
+    } else if (sub === 'perfil' && agent) {
+      // Perfil específico
+      const profile = NeuralSystem.getProfile(agent);
+      if (!profile) {
+        this.log(`❌ Agente "${agent}" não encontrado`, 'error');
+        return;
+      }
+      
+      const progress = NeuralSystem.getProgress(agent);
+      this.log(`${profile.icon} ═══ ${agent} ═══`, 'info');
+      this.log(`Especialidade: ${profile.specialty}`, 'info');
+      this.log(`Tipo Neural: ${profile.neuralType}`, 'info');
+      this.log(`Evolução: ${progress.current}% / ${progress.cap}% (${progress.percentage}% do potencial)`, 'info');
+      this.log('', 'info');
+      this.log('📌 Snippets Ativos:', 'success');
+      profile.snippets.filter(s => s.active).forEach(s => {
+        this.log(`  ✓ ${s.name} (Poder: ${Math.round(s.power * 100)}%)`, 'success');
+      });
+      this.log('', 'info');
+      this.log('🔒 Snippets Bloqueados:', 'warning');
+      profile.snippets.filter(s => !s.active).forEach(s => {
+        this.log(`  ✗ ${s.name} (Poder: ${Math.round(s.power * 100)}%)`, 'warning');
+      });
+      
+    } else if (sub === 'lista') {
+      // Lista todos os perfis
+      const profiles = NeuralSystem.listProfiles();
+      this.log('🧠 ═══ PERFIS NEURAIS ═══', 'info');
+      profiles.forEach(p => {
+        const bar = '█'.repeat(Math.round(p.evolution / 5)) + '░'.repeat(12 - Math.round(p.evolution / 5));
+        this.log(`${p.icon} ${p.name.padEnd(12)} [${bar}] ${p.evolution}% (${p.activeSnippets}/${p.totalSnippets})`, 'info');
+      });
+      
+    } else if (sub === 'carta' && agent) {
+      // Criar carta para agente
+      const message = args.slice(2).join(' ') || 'Bônus de reconhecimento pelo trabalho excelente!';
+      const letter = NeuralSystem.createLetter(agent, 'bonus', message);
+      if (letter) {
+        this.log(`📨 Carta enviada para ${agent}!`, 'success');
+      } else {
+        this.log(`❌ Agente "${agent}" não encontrado`, 'error');
+      }
+      
+    } else if (sub === 'evoluir' && agent) {
+      // Forçar evolução
+      const result = NeuralSystem.evolveAgent(agent, 0.05);
+      if (result.capped) {
+        this.log(`⚠️ ${agent} já atingiu o cap de 60%!`, 'warning');
+      } else if (result.success) {
+        this.log(`⬆️ ${agent} evoluiu para ${Math.round(result.evolution * 100)}%`, 'success');
+        if (result.unlocked) {
+          this.log(`🔓 Novo snippet desbloqueado: ${result.unlocked}`, 'success');
+        }
+      } else {
+        this.log(`❌ Erro ao evoluir ${agent}`, 'error');
+      }
+      
+    } else {
+      // Ajuda
+      this.log('🧠 ═══ COMANDOS NEURAIS ═══', 'info');
+      this.log('  neural status — Relatório geral', 'info');
+      this.log('  neural lista — Todos os perfis', 'info');
+      this.log('  neural perfil [nome] — Perfil específico', 'info');
+      this.log('  neural carta [nome] [mensagem] — Enviar carta', 'info');
+      this.log('  neural evoluir [nome] — Forçar evolução', 'info');
     }
   },
 

@@ -158,6 +158,11 @@ const Game = {
       NPCGrimoire.loadDiarios();
       NPCGrimoire.init();
     }
+
+    // Inicializar Sistema Neural (Coração da Máquina)
+    if (typeof NeuralSystem !== 'undefined') {
+      NeuralSystem.init();
+    }
     
     // Configurar controles
     this.setupControls();
