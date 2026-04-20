@@ -196,11 +196,11 @@ if (typeof MentalHealth !== 'undefined') {
 // Configurar controles
     this.setupControls();
     
-    // Posicionar jogador
-    Player.x = 20;
-    Player.y = 5;
-    Player.targetX = 20;
-    Player.targetY = 5;
+    // Posicionar jogador no centro do templo
+    Player.x = World.CENTER_X;
+    Player.y = World.CENTER_Y - 7;
+    Player.targetX = World.CENTER_X;
+    Player.targetY = World.CENTER_Y - 7;
     
     // Centralizar câmera
     Renderer.centerCamera(Player.x, Player.y);
@@ -210,6 +210,8 @@ if (typeof MentalHealth !== 'undefined') {
     setTimeout(() => {
       document.getElementById('loading-screen').style.display = 'none';
       document.getElementById('dashboard').classList.remove('hidden');
+      // CRITICAL: resize canvas after dashboard becomes visible
+      Renderer.resize();
     }, 1000);
     
     // Iniciar loop
@@ -1741,6 +1743,7 @@ if (typeof MentalHealth !== 'undefined') {
     Renderer.updateCamera();
     
     // Renderizar
+    Renderer.resize(); // Ensure canvas matches container (mobile fix)
     Renderer.render();
     
     // Próximo frame

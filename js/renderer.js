@@ -36,13 +36,17 @@ const Renderer = {
     return this;
   },
   
-  // Redimensionar
+  // Redimensionar (only if changed)
   resize() {
     const container = document.getElementById('temple-container');
     if (!container) return;
     
-    this.canvas.width = container.clientWidth;
-    this.canvas.height = container.clientHeight;
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    if (this.canvas.width !== w || this.canvas.height !== h) {
+      this.canvas.width = w;
+      this.canvas.height = h;
+    }
   },
   
   // Renderizar frame
