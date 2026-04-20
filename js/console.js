@@ -75,6 +75,9 @@ const Console = {
       case 'diversificar': case 'diversificacao': case 'leads': this.cmdDiversificar(args); break;
       case 'devweb': case 'webdev': case 'desenvolvimento': this.cmdDevWeb(args); break;
       case 'presenca': case 'presence': case 'notificacao': case 'notif': this.cmdPresenca(args); break;
+      case 'painel': case 'dashboard': this.cmdPainel(); break;
+      case 'landing': case 'pagina': this.cmdLanding(args); break;
+      case 'persist': case 'salvar': this.cmdPersist(args); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -2514,6 +2517,109 @@ const Console = {
       this.log('Eventos de notificação:', 'dim');
       this.log('  venda_fechada, pagamento_recebido, lead_quente, campanha_resultado,', 'dim');
       this.log('  tendencia_detectada, sistema_erro, projeto_publicado, meta_atingida', 'dim');
+    }
+  },
+
+  cmdPainel() {
+    if (typeof UnifiedDashboard !== 'undefined') {
+      UnifiedDashboard.toggle();
+      this.log('📊 Painel de Controle aberto!', 'sucesso');
+    } else {
+      this.log('❌ Dashboard não disponível.', 'erro');
+    }
+  },
+
+  cmdLanding(args) {
+    if (typeof LandingPageGenerator === 'undefined') {
+      this.log('❌ Gerador de Landing Pages não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'gerar' || sub === 'create') {
+      const config = {
+        name: args.slice(1).join(' ') || 'Minha Landing Page',
+        title: args.slice(1).join(' ') || 'Oferta Especial',
+        subtitle: 'Não perca essa oportunidade única!',
+        price: '19.90',
+        pixKey: '58af96e5-9949-41be-9546-c074b206cbcf'
+      };
+      const page = LandingPageGenerator.generate(config);
+      this.log(`✅ Landing page gerada: ${page.name} (${Math.round(page.html.length / 1024)}KB)`, 'sucesso');
+      this.log('📝 Use "landing abrir <id>" para ver/download', 'dim');
+    } else if (sub === 'abrir' || sub === 'open') {
+      const pageId = args[1];
+      if (pageId) {
+        const html = LandingPageGenerator.getPageHTML(pageId);
+        if (html) {
+          const blob = new Blob([html], { type: 'text/html' });
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+          this.log('🌐 Landing page aberta em nova aba!', 'sucesso');
+        } else {
+          this.log('❌ Página não encontrada.', 'erro');
+        }
+      } else {
+        // Abrir a última
+        const last = LandingPageGenerator.pages[LandingPageGenerator.pages.length - 1];
+        if (last) {
+          const blob = new Blob([last.html], { type: 'text/html' });
+          window.open(URL.createObjectURL(blob), '_blank');
+          this.log('🌐 Última landing page aberta!', 'sucesso');
+        }
+      }
+    } else if (sub === 'listar' || sub === 'list' || sub === '') {
+      const pages = LandingPageGenerator.getPages();
+      if (pages.length === 0) {
+        this.log('📭 Nenhuma landing page gerada. Use "landing gerar <nome>"', 'aviso');
+      } else {
+        this.log('═══ LANDING PAGES ═══', 'info');
+        pages.forEach(p => {
+          this.log(`  📄 ${p.name} [${p.template}] — ${p.price} (${p.size})`, 'dim');
+          this.log(`    ID: ${p.id} | ${p.createdAt}`, 'dim');
+        });
+      }
+    } else {
+      this.log('Comandos Landing Page:', 'info');
+      this.log('  landing gerar <nome>  — Gerar nova landing page HTML', 'dim');
+      this.log('  landing listar        — Listar páginas geradas', 'dim');
+      this.log('  landing abrir [id]    — Abrir página no browser', 'dim');
+    }
+  },
+
+  cmdPersist(args) {
+    if (typeof GitHubPersistence === 'undefined') {
+      this.log('❌ Persistência GitHub não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'config' || sub === 'token') {
+      const token = args[1];
+      if (token) {
+        localStorage.setItem('github_persist_token', token);
+        this.log('✅ Token GitHub configurado para persistência.', 'sucesso');
+      } else {
+        this.log('Uso: persist config <token_github>', 'aviso');
+      }
+    } else if (sub === 'salvar' || sub === 'save') {
+      this.log('💾 Salvando dados no GitHub...', 'info');
+      GitHubPersistence.saveAll().then(result => {
+        this.log(`✅ ${result.saved}/${result.total} módulos salvos no GitHub!`, 'sucesso');
+      });
+    } else if (sub === 'status' || sub === '') {
+      const status = GitHubPersistence.getStatus();
+      this.log('═══ PERSISTÊNCIA GITHUB ═══', 'info');
+      this.log(`Configurado: ${status.configured ? '✅' : '❌ (use "persist config TOKEN")'}`, 'dim');
+      this.log(`Repositório: ${status.repo}`, 'dim');
+      this.log(`Caminho: ${status.dataPath}`, 'dim');
+    } else {
+      this.log('Comandos de Persistência:', 'info');
+      this.log('  persist config <token> — Configurar token GitHub', 'dim');
+      this.log('  persist salvar         — Salvar todos os dados no GitHub', 'dim');
+      this.log('  persist status         — Ver status da persistência', 'dim');
     }
   }
 };
