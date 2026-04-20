@@ -1785,6 +1785,18 @@ if (typeof MentalHealth !== 'undefined') {
 
 // === INICIAR ===
 window.addEventListener('load', () => {
+  // FAILSAFE: Esconder loading screen após 8s mesmo se init falhar
+  setTimeout(() => {
+    const ls = document.getElementById('loading-screen');
+    const dash = document.getElementById('dashboard');
+    if (ls && ls.style.display !== 'none') {
+      console.warn('[FAILSAFE] Loading screen ainda visível — forçando exibição');
+      ls.style.display = 'none';
+      if (dash) dash.classList.remove('hidden');
+      if (typeof Renderer !== 'undefined') Renderer.resize();
+    }
+  }, 8000);
+
   Game.init();
   // Registrar Service Worker (PWA)
   if ('serviceWorker' in navigator) {
