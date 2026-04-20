@@ -72,6 +72,7 @@ const Console = {
       case 'vendas': case 'sales': case 'escritorio': case 'escritório': this.cmdVendas(args); break;
       case 'campanha': case 'campaign': case 'campanhas': this.cmdCampanha(args); break;
       case 'cloud': case 'nuvem': this.cmdCloud(args); break;
+      case 'diversificar': case 'diversificacao': case 'leads': this.cmdDiversificar(args); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -2269,6 +2270,82 @@ const Console = {
       this.log('  cloud stop      — Parar motor cloud', 'dim');
       this.log('', 'dim');
       this.log('💡 O sistema roda 100% na nuvem. Pode desligar o PC!', 'info');
+    }
+  },
+
+  cmdDiversificar(args) {
+    if (typeof LeadDiversification === 'undefined') {
+      this.log('❌ Departamento de Diversificação não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'ciclo' || sub === 'run' || sub === 'start') {
+      this.log('🏢 Executando ciclo de diversificação...', 'info');
+      LeadDiversification.runDiversificationCycle().then(result => {
+        if (result) {
+          this.log(`✅ ${result.total} perfis analisados | ${result.qualified} qualificados | ${result.distributed} distribuídos`, 'sucesso');
+        }
+      });
+    } else if (sub === 'status' || sub === 'stats') {
+      const stats = LeadDiversification.getStats();
+      this.log('═══ 🏢 DEPARTAMENTO DE DIVERSIFICAÇÃO ═══', 'info');
+      this.log(`📊 Perfis totais: ${stats.totalProfiles}`, 'dim');
+      this.log(`📤 Distribuídos: ${stats.totalDistributed}`, 'dim');
+      this.log(`📡 Sinais capturados: ${stats.totalSignals}`, 'dim');
+      this.log(`🎯 Score médio de intenção: ${stats.avgIntentScore}`, 'dim');
+      this.log(`💰 Potencial de conversão: R$ ${stats.conversionPotential}`, 'dim');
+      this.log('', 'dim');
+      this.log('👤 Perfis de comprador:', 'info');
+      stats.profiles.forEach(p => {
+        this.log(`  ${p.icon} ${p.name}: ${p.count} leads | Conversão: ${p.conversionRate} | Ticket: ${p.avgTicket}`, 'dim');
+      });
+    } else if (sub === 'leads') {
+      const leads = LeadDiversification.getRecentLeads(10);
+      if (leads.length === 0) {
+        this.log('📭 Nenhum lead diversificado ainda.', 'aviso');
+      } else {
+        this.log('═══ LEADS DIVERSIFICADOS ═══', 'info');
+        leads.forEach(l => {
+          this.log(`  ${l.profile} | Score: ${l.score} | ${l.channel} | ${l.probability} → ${l.ticket} | ${l.time}`, 'dim');
+        });
+      }
+    } else if (sub === 'distribuicao' || sub === 'distribution') {
+      const log = LeadDiversification.getDistributionLog(10);
+      if (log.length === 0) {
+        this.log('📭 Nenhuma distribuição registrada.', 'aviso');
+      } else {
+        this.log('═══ LOG DE DISTRIBUIÇÃO ═══', 'info');
+        log.forEach(l => {
+          this.log(`  ${l.icon} ${l.profile} → ${l.channel} [score: ${l.score}, ${l.probability}, ${l.ticket}]`, 'dim');
+        });
+      }
+    } else if (sub === 'oferta' || sub === 'offer') {
+      const profileType = args[1] || 'impulsivo';
+      const offer = LeadDiversification.generateOffer(profileType);
+      if (offer) {
+        this.log(`═══ OFERTA PARA: ${profileType.toUpperCase()} ═══`, 'info');
+        this.log(`📢 ${offer.title}`, 'dim');
+        this.log(`💬 ${offer.subtitle}`, 'dim');
+        this.log(`👉 CTA: ${offer.cta}`, 'dim');
+        this.log(`🎯 Gatilho: ${offer.trigger}`, 'dim');
+      } else {
+        this.log('Perfis: impulsivo, pesquisador, oportunista, profissional, iniciante, recorrente', 'aviso');
+      }
+    } else if (sub === 'reset') {
+      LeadDiversification.reset();
+      this.log('🔄 Departamento resetado.', 'aviso');
+    } else {
+      this.log('Comandos de Diversificação:', 'info');
+      this.log('  diversificar ciclo         — Analisar perfis e distribuir leads', 'dim');
+      this.log('  diversificar status        — Ver estatísticas do departamento', 'dim');
+      this.log('  diversificar leads         — Ver leads diversificados', 'dim');
+      this.log('  diversificar distribuicao  — Ver log de distribuições', 'dim');
+      this.log('  diversificar oferta [tipo] — Gerar oferta para perfil', 'dim');
+      this.log('  diversificar reset         — Resetar departamento', 'dim');
+      this.log('', 'dim');
+      this.log('Perfis: impulsivo, pesquisador, oportunista, profissional, iniciante, recorrente', 'dim');
     }
   }
 };
