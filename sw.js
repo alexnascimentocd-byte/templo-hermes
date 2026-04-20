@@ -1,17 +1,18 @@
 /* Service Worker do Templo de Hermes — PWA Offline */
-const CACHE_NAME = 'templo-hermes-v3';
+const CACHE_NAME = 'templo-hermes-v4';
 const ASSETS = [
   './',
   './index.html',
   './css/templo.css',
+  './js/world.js',
   './js/persistence.js',
   './js/knowledge-base.js',
   './js/response-engine.js',
-  './js/world.js',
   './js/items.js',
   './js/runes.js',
   './js/mcp_tools.js',
   './js/inbox.js',
+  './js/console.js',
   './js/agents.js',
   './js/council.js',
   './js/player.js',
@@ -19,6 +20,13 @@ const ASSETS = [
   './js/interactions.js',
   './js/initiation.js',
   './js/main.js',
+  './js/system-admin.js',
+  './js/remote-admin.js',
+  './js/parallel-engine.js',
+  './js/agent-trainer.js',
+  './js/crystal-ball.js',
+  './js/alchemy-economy.js',
+  './js/cognitive-cortex.js',
   './manifest.json'
 ];
 
@@ -40,9 +48,16 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch — cache first, fallback network
+// Fetch — network first, fallback cache (sempre pega versão nova)
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((response) => {
+        // Atualizar cache com versão nova
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
