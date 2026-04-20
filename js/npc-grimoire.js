@@ -558,13 +558,21 @@ const NPCGrimoire = {
   
   // === PERSISTÊNCIA ===
   
-  // Alternar entre abas
+  // Alternar entre abas (via click)
   switchTab(tab) {
+    this.switchTabDirect(tab);
+  },
+  
+  // Alternar direto (programático)
+  switchTabDirect(tab) {
     // Atualizar botões
     document.querySelectorAll('.grimoire-tab').forEach(btn => {
       btn.classList.remove('active');
+      if ((tab === 'comandos' && btn.textContent.includes('Comandos')) ||
+          (tab === 'diario' && btn.textContent.includes('Diário'))) {
+        btn.classList.add('active');
+      }
     });
-    event.target.classList.add('active');
     
     // Mostrar/esconder conteúdo
     const commands = document.getElementById('grimoire-commands');
@@ -573,21 +581,17 @@ const NPCGrimoire = {
     const diarioHeader = document.getElementById('diario-header');
     
     if (tab === 'comandos') {
-      commands.style.display = 'block';
-      diario.style.display = 'none';
-      selector.style.display = 'none';
-      diarioHeader.style.display = 'none';
+      if (commands) commands.style.display = 'block';
+      if (diario) diario.style.display = 'none';
+      if (selector) selector.style.display = 'none';
+      if (diarioHeader) diarioHeader.style.display = 'none';
       this.renderPainel();
     } else {
-      commands.style.display = 'none';
-      diario.style.display = 'block';
-      selector.style.display = 'flex';
-      diarioHeader.style.display = 'block';
+      if (commands) commands.style.display = 'none';
+      if (diario) diario.style.display = 'block';
+      if (selector) selector.style.display = 'flex';
+      if (diarioHeader) diarioHeader.style.display = 'block';
       this.renderSeletorNPC();
-      // Selecionar primeiro NPC por padrão
-      if (Agents.roster?.length > 0) {
-        this.selecionarNPC(Agents.roster[0].type);
-      }
     }
   },
   

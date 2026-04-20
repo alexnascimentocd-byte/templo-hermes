@@ -623,7 +623,27 @@ const Interactions = {
   
   // Mostrar info do agente
   showAgentInfo(agent) {
-    this.notify(`${agent.icon} ${agent.name} — Nível ${agent.level} | ${agent.skill} | ${agent.currentAction}`);
+    // Abrir grimório com diário do NPC (como pegar o livro na mão)
+    if (typeof NPCGrimoire !== 'undefined') {
+      // Fechar outros painéis
+      document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+      
+      // Abrir grimório
+      const panel = document.getElementById('grimoire-panel');
+      if (panel) {
+        panel.classList.remove('hidden');
+        
+        // Ir pra aba de diário
+        NPCGrimoire.switchTabDirect('diario');
+        
+        // Selecionar o NPC clicado
+        NPCGrimoire.selecionarNPC(agent.type);
+      }
+      
+      this.notify(`📖 Abrindo grimório de ${agent.icon} ${agent.name}...`);
+    } else {
+      this.notify(`${agent.icon} ${agent.name} — Nível ${agent.level} | ${agent.skill} | ${agent.currentAction}`);
+    }
   },
   
   // Navegar para zona
@@ -663,6 +683,7 @@ const Interactions = {
     Agents.active.forEach(agent => {
       const card = document.createElement('div');
       card.className = 'agent-card';
+      card.style.cursor = 'pointer';
       card.innerHTML = `
         <div class="agent-header">
           <div class="agent-avatar">${agent.icon}</div>
@@ -677,7 +698,12 @@ const Interactions = {
         <div style="margin-top:6px;font-size:0.75rem;color:#8a8a8a">
           XP: ${agent.experience}/${agent.expToNext} | Runas: ${agent.runes.length} | Cartas: ${agent.inbox.length}
         </div>
+        <div style="text-align:center;margin-top:6px;font-size:0.7rem;color:#d4a547">📖 Abrir Grimório</div>
       `;
+      // Click pra abrir grimório do NPC
+      card.addEventListener('click', () => {
+        this.showAgentInfo(agent);
+      });
       list.appendChild(card);
     });
 
