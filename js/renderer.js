@@ -168,15 +168,15 @@ const Renderer = {
   renderItems(ctx, T) {
     // Renderizar itens do Items.registry (original)
     for (const item of Object.values(Items.registry)) {
-      const screenX = item.x * effectiveT - this.camera.x;
-      const screenY = item.y * effectiveT - this.camera.y;
-      
+      const screenX = item.x * T - this.camera.x;
+      const screenY = item.y * T - this.camera.y;
+
       // Só renderizar se visível
       if (screenX < -T || screenX > this.canvas.width + T) continue;
       if (screenY < -T || screenY > this.canvas.height + T) continue;
-      
+
       // Ícone do item
-      ctx.font = `${effectiveT - 8}px serif`;
+      ctx.font = `${T - 8}px serif`;
       ctx.textAlign = 'center';
       ctx.fillText(item.icon, screenX + T / 2, screenY + T - 4);
       
@@ -192,8 +192,8 @@ const Renderer = {
     // Renderizar itens da AlchemyEconomy (itens alquímicos no chão)
     if (typeof AlchemyEconomy !== 'undefined') {
       for (const item of AlchemyEconomy.itensNoChao) {
-        const screenX = item.x * effectiveT - this.camera.x;
-        const screenY = item.y * effectiveT - this.camera.y;
+        const screenX = item.x * T - this.camera.x;
+        const screenY = item.y * T - this.camera.y;
 
         if (screenX < -T || screenX > this.canvas.width + T) continue;
         if (screenY < -T || screenY > this.canvas.height + T) continue;
@@ -231,8 +231,8 @@ const Renderer = {
   // Renderizar agentes
   renderAgents(ctx, T) {
     Agents.active.forEach(agent => {
-      const screenX = agent.x * effectiveT - this.camera.x;
-      const screenY = agent.y * effectiveT - this.camera.y;
+      const screenX = agent.x * T - this.camera.x;
+      const screenY = agent.y * T - this.camera.y;
       
       // Só renderizar se visível
       if (screenX < -T * 2 || screenX > this.canvas.width + T * 2) return;
@@ -313,8 +313,8 @@ const Renderer = {
   renderPlayer(ctx, T) {
     if (!Player) return;
     
-    const screenX = Player.x * effectiveT - this.camera.x;
-    const screenY = Player.y * effectiveT - this.camera.y;
+    const screenX = Player.x * T - this.camera.x;
+    const screenY = Player.y * T - this.camera.y;
     
     // Aura dourada do jogador
     const auraGlow = Math.sin(this.animFrame * 0.08) * 0.2 + 0.3;
