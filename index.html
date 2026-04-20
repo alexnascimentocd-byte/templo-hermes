@@ -46,6 +46,7 @@
           <button id="btn-agents" title="Mentes">👥</button>
           <button id="btn-council" title="Reunião">☤</button>
           <button id="btn-inbox" title="Recados">📬</button>
+          <button id="btn-grimoire" title="Grimório" style="position:relative">📜<span id="grimoire-badge"></span></button>
           <button id="btn-console" title="Console">⌨️</button>
           <button id="btn-settings" title="Configurações">⚙️</button>
         </div>
@@ -66,6 +67,7 @@
       <button class="mobile-menu-item" data-action="agents">👥 Mentes do Templo</button>
       <button class="mobile-menu-item" data-action="chat">💬 Conversação Livre</button>
       <button class="mobile-menu-item" data-action="remote">🌍 Admin Remoto</button>
+      <button class="mobile-menu-item" data-action="grimoire">📜 Grimório NPCs</button>
       <button class="mobile-menu-item" data-action="minimap">🗺️ Minimapa</button>
       <button class="mobile-menu-item" data-action="fullscreen">⛶ Tela Cheia</button>
       <button class="mobile-menu-item" data-action="settings">⚙️ Configurações</button>
@@ -499,6 +501,7 @@
 <script src="js/crystal-ball.js"></script>
 <script src="js/alchemy-economy.js"></script>
 <script src="js/cognitive-cortex.js"></script>
+<script src="js/npc-grimoire.js"></script>
 
 <!-- Painel Remoto -->
 <div id="remote-panel" class="panel hidden">
@@ -560,6 +563,37 @@
       <h4>📜 Histórico</h4>
       <div id="remote-history" class="remote-history"></div>
     </div>
+  </div>
+</div>
+
+<!-- Painel Grimório dos NPCs -->
+<div id="grimoire-panel" class="panel hidden">
+  <div class="panel-header">
+    <span>📜 Grimório dos NPCs</span>
+    <button onclick="togglePanel('grimoire-panel')" class="btn-close">✕</button>
+  </div>
+  <div class="panel-body">
+    <!-- Abas -->
+    <div class="grimoire-tabs">
+      <button class="grimoire-tab active" onclick="NPCGrimoire.switchTab('comandos')">⚡ Comandos</button>
+      <button class="grimoire-tab" onclick="NPCGrimoire.switchTab('diario')">📖 Diário</button>
+    </div>
+    
+    <!-- Seletor de NPCs (apenas na aba diário) -->
+    <div id="npc-selector" class="npc-selector-bar" style="display:none;"></div>
+    <div id="diario-header" class="diario-header-bar" style="display:none;">
+      <span id="diario-npc-name">Selecione um NPC</span>
+    </div>
+    
+    <!-- Conteúdo -->
+    <div id="grimoire-commands" class="grimoire-content">
+      <div class="grimoire-empty">
+        <span class="grimoire-empty-icon">📜</span>
+        <p>Nenhum comando pendente</p>
+        <p class="grimoire-hint">Os NPCs enviarão comandos automaticamente</p>
+      </div>
+    </div>
+    <div id="grimoire-diario" class="grimoire-content" style="display:none;"></div>
   </div>
 </div>
 
@@ -751,6 +785,30 @@
       });
       document.getElementById('remote-panel').classList.toggle('hidden');
       updateRemoteStatus();
+      document.getElementById('mobile-menu').classList.add('hidden');
+      document.getElementById('mobile-menu-overlay').classList.add('hidden');
+    }
+  });
+
+  // Grimório NPC - desktop
+  document.getElementById('btn-grimoire').addEventListener('click', () => {
+    document.querySelectorAll('.panel').forEach(p => {
+      if (p.id !== 'grimoire-panel') p.classList.add('hidden');
+    });
+    document.getElementById('grimoire-panel').classList.toggle('hidden');
+    NPCGrimoire.load();
+    NPCGrimoire.renderPainel();
+  });
+
+  // Grimório NPC - mobile
+  document.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-action="grimoire"]');
+    if (item) {
+      document.querySelectorAll('.panel').forEach(p => {
+        if (p.id !== 'grimoire-panel') p.classList.add('hidden');
+      });
+      document.getElementById('grimoire-panel').classList.toggle('hidden');
+      NPCGrimoire.renderPainel();
       document.getElementById('mobile-menu').classList.add('hidden');
       document.getElementById('mobile-menu-overlay').classList.add('hidden');
     }

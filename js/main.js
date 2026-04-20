@@ -152,6 +152,13 @@ const Game = {
     this.setupMobileMenu();
     this.setupChatMode();
     
+    // Inicializar Grimório dos NPCs
+    if (typeof NPCGrimoire !== 'undefined') {
+      NPCGrimoire.load();
+      NPCGrimoire.loadDiarios();
+      NPCGrimoire.init();
+    }
+    
     // Configurar controles
     this.setupControls();
     

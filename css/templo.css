@@ -2228,3 +2228,302 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ===== GRIMÓRIO DOS NPCs ===== */
+#grimoire-panel {
+  width: 380px;
+  max-height: 85vh;
+}
+
+#grimoire-panel .panel-body {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Abas do Grimório */
+.grimoire-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--gold-dark);
+  background: rgba(26, 26, 46, 0.8);
+}
+
+.grimoire-tab {
+  flex: 1;
+  padding: 10px 8px;
+  background: none;
+  border: none;
+  color: var(--gold-light);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Cinzel', serif;
+}
+
+.grimoire-tab:hover {
+  background: rgba(212, 165, 71, 0.1);
+}
+
+.grimoire-tab.active {
+  background: rgba(212, 165, 71, 0.2);
+  border-bottom: 2px solid var(--gold);
+  color: var(--gold);
+}
+
+/* Seletor de NPCs */
+.npc-selector-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(26, 26, 46, 0.6);
+  border-bottom: 1px solid rgba(212, 165, 71, 0.2);
+}
+
+.npc-select-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(212, 165, 71, 0.3);
+  background: rgba(26, 26, 46, 0.8);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.npc-select-btn:hover {
+  border-color: var(--gold);
+  transform: scale(1.1);
+}
+
+.npc-select-btn.active {
+  border-color: var(--gold);
+  background: rgba(212, 165, 71, 0.3);
+  box-shadow: 0 0 8px rgba(212, 165, 71, 0.5);
+}
+
+/* Conteúdo das abas */
+.grimoire-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  max-height: 55vh;
+}
+
+/* Comandos */
+.grimoire-cmd {
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(212, 165, 71, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.grimoire-cmd:hover {
+  border-color: var(--gold-dark);
+}
+
+.grimoire-cmd.unread {
+  border-left: 3px solid var(--gold);
+  background: rgba(212, 165, 71, 0.05);
+}
+
+.grimoire-cmd.priority-high {
+  border-left-color: #f87171;
+}
+
+.grimoire-cmd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.grimoire-cmd-npc {
+  font-weight: 600;
+  color: var(--gold);
+  font-size: 0.85rem;
+}
+
+.grimoire-cmd-time {
+  color: var(--gold-light);
+  opacity: 0.6;
+  font-size: 0.75rem;
+}
+
+.grimoire-cmd-title {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.grimoire-cmd-desc {
+  color: var(--gold-light);
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.grimoire-cmd-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.grimoire-action-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--gold-dark);
+  border-radius: 16px;
+  background: rgba(212, 165, 71, 0.1);
+  color: var(--gold);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.grimoire-action-btn:hover {
+  background: rgba(212, 165, 71, 0.3);
+  border-color: var(--gold);
+}
+
+.grimoire-action-btn.code {
+  border-color: #4ade80;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.grimoire-action-btn.code:hover {
+  background: rgba(74, 222, 128, 0.2);
+}
+
+/* Estado vazio */
+.grimoire-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gold-light);
+  opacity: 0.6;
+}
+
+.grimoire-empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.grimoire-hint {
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+/* Diário */
+.diario-entrada {
+  background: rgba(26, 26, 46, 0.6);
+  border: 1px solid rgba(212, 165, 71, 0.15);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.diario-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.diario-cat {
+  font-size: 0.8rem;
+  color: var(--gold);
+  text-transform: capitalize;
+}
+
+.diario-data {
+  font-size: 0.75rem;
+  color: var(--gold-light);
+  opacity: 0.5;
+}
+
+.diario-titulo {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.diario-conteudo {
+  color: var(--gold-light);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.diario-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.diario-tag {
+  padding: 2px 8px;
+  background: rgba(212, 165, 71, 0.1);
+  border-radius: 10px;
+  font-size: 0.7rem;
+  color: var(--gold-light);
+}
+
+/* Header do diário */
+.diario-header-bar {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(212, 165, 71, 0.2);
+  text-align: center;
+}
+
+.diario-header-bar span {
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Badge */
+#grimoire-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  background: #f87171;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 10px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  padding: 0 3px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  #grimoire-panel {
+    width: 100%;
+    max-height: 80vh;
+  }
+  
+  .npc-selector-bar {
+    justify-content: center;
+  }
+  
+  .npc-select-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+}
