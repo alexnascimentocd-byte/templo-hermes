@@ -47,6 +47,7 @@
           <button id="btn-council" title="Reunião">☤</button>
           <button id="btn-inbox" title="Recados">📬</button>
           <button id="btn-grimoire" title="Grimório" style="position:relative">📜<span id="grimoire-badge"></span></button>
+          <button id="btn-mental-health" title="Saúde Mental" style="position:relative">🏥<span id="mh-badge"></span></button>
           <button id="btn-console" title="Console">⌨️</button>
           <button id="btn-settings" title="Configurações">⚙️</button>
         </div>
@@ -68,6 +69,7 @@
       <button class="mobile-menu-item" data-action="chat">💬 Conversação Livre</button>
       <button class="mobile-menu-item" data-action="remote">🌍 Admin Remoto</button>
       <button class="mobile-menu-item" data-action="grimoire">📜 Grimório NPCs</button>
+      <button class="mobile-menu-item" data-action="mental-health">🏥 Saúde Mental</button>
       <button class="mobile-menu-item" data-action="minimap">🗺️ Minimapa</button>
       <button class="mobile-menu-item" data-action="fullscreen">⛶ Tela Cheia</button>
       <button class="mobile-menu-item" data-action="settings">⚙️ Configurações</button>
@@ -502,6 +504,7 @@
 <script src="js/alchemy-economy.js"></script>
 <script src="js/cognitive-cortex.js"></script>
 <script src="js/npc-grimoire.js"></script>
+<script src="js/mental-health.js"></script>
 <script src="js/neural-snippets.js"></script>
 
 <!-- Painel Remoto -->
@@ -595,6 +598,17 @@
       </div>
     </div>
     <div id="grimoire-diario" class="grimoire-content" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- Painel Saúde Mental -->
+<div id="mental-health-panel" class="panel hidden">
+  <div class="panel-header">
+    <h2>🏥 Saúde Mental das IAs</h2>
+    <button id="close-mental-health-btn" onclick="document.getElementById('mental-health-panel').classList.add('hidden')" class="btn-close">✕</button>
+  </div>
+  <div class="mh-content">
+    <div class="mh-empty">📋 Inicializando monitoramento...</div>
   </div>
 </div>
 

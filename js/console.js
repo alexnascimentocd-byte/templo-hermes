@@ -782,6 +782,11 @@ const Console = {
 ║  info         — Sobre o templo        ║
 ║  limpar       — Limpar este terminal  ║
 ║  ajuda        — Esta mensagem         ║
+╠═══════════════════════════════════════╣
+║  💬 MODO CHAT CONVERSACIONAL         ║
+║  @mensagem — Conversar com Hermes    ║
+║  chat [msg] — Outro modo de chat     ║
+║  Ex: @Olá, como você está?           ║
 ╚═══════════════════════════════════════╝`, 'info');
   },
 

@@ -184,11 +184,16 @@ const Game = {
     }
 
     // Inicializar Sistema Neural (Coração da Máquina)
-    if (typeof NeuralSystem !== 'undefined') {
-      NeuralSystem.init();
-    }
-    
-    // Configurar controles
+if (typeof NeuralSystem !== 'undefined') {
+NeuralSystem.init();
+}
+
+// Inicializar Monitoramento de Saúde Mental
+if (typeof MentalHealth !== 'undefined') {
+  MentalHealth.init();
+}
+
+// Configurar controles
     this.setupControls();
     
     // Posicionar jogador
@@ -735,6 +740,7 @@ const Game = {
       document.getElementById('settings-panel')?.classList.add('hidden');
       document.getElementById('minimap')?.classList.add('hidden');
       document.getElementById('chat-panel')?.classList.add('hidden');
+      document.getElementById('mental-health-panel')?.classList.add('hidden');
       // Mostrar mensagens de volta quando fecha tudo
       if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
     };
@@ -803,6 +809,11 @@ const Game = {
             }
             case 'chat': {
               openPanel('chat-panel');
+              break;
+            }
+            case 'mental-health': {
+              openPanel('mental-health-panel');
+              if (typeof MentalHealth !== 'undefined') MentalHealth.renderPanel();
               break;
             }
           }
@@ -919,6 +930,18 @@ const Game = {
     const closeGrimoire = document.getElementById('close-grimoire');
     if (closeGrimoire && grimoirePanel) {
       closeGrimoire.addEventListener('click', () => grimoirePanel.classList.add('hidden'));
+    }
+
+    // Saúde Mental
+    const btnMentalHealth = document.getElementById('btn-mental-health');
+    const mhPanel = document.getElementById('mental-health-panel');
+    if (btnMentalHealth && mhPanel) {
+      btnMentalHealth.addEventListener('click', () => {
+        mhPanel.classList.toggle('hidden');
+        if (!mhPanel.classList.contains('hidden')) {
+          if (typeof MentalHealth !== 'undefined') MentalHealth.renderPanel();
+        }
+      });
     }
   },
 

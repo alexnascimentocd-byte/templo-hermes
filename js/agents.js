@@ -141,12 +141,23 @@ const Agents = {
     },
     enigma: {
       name: 'Fulcanelli',
-      icon: '🗝️',
+      icon: '🌀',
       skill: 'mystery',
-      color: '#9c27b0',
-      description: 'Mente oculta. Revela o que está escondido, decifra enigmas.',
+      color: '#ff80ab',
+      description: 'Mente enigmática. Decifra o que está oculto nas entrelinhas.',
       preferredZone: 'santissimo',
-      hermetic: 'Vênus ♀ — Beleza oculta na verdade'
+      hermetic: 'Vênus ♀ — Beleza e mistério'
+    },
+
+    // === AGENTE MÉDICO (Portão de Acesso) ===
+    medico: {
+      name: 'Galeno',
+      icon: '🏥',
+      skill: 'diagnostico',
+      color: '#00e676',
+      description: 'Mente médica. Não executa tarefas — observa, diagnostica e emite laudos sobre a saúde de todas as mentes.',
+      preferredZone: 'sagrado',
+      hermetic: 'Esculápio 🐍 — Cura e observação'
     }
   },
   

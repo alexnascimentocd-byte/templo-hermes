@@ -2635,3 +2635,427 @@ body {
   will-change: transform;
   transform: translateZ(0);
 }
+
+/* ===== SAÚDE MENTAL DAS IAs ===== */
+#mental-health-panel {
+  position: fixed;
+  top: 50px;
+  right: 10px;
+  width: 420px;
+  max-height: calc(100vh - 70px);
+  background: linear-gradient(135deg, #0a1a0a 0%, #1a0a1a 100%);
+  border: 2px solid #00e676;
+  border-radius: 12px;
+  z-index: 140;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(0,230,118,0.2);
+}
+
+.mh-content {
+  overflow-y: auto;
+  max-height: calc(100vh - 130px);
+  padding: 12px;
+}
+
+.mh-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+  font-size: 14px;
+}
+
+/* Score coletivo */
+.mh-collective {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(0,230,118,0.05);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.mh-score-ring {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #00e676;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mh-score-number {
+  font-size: 28px;
+  font-weight: bold;
+  color: #00e676;
+}
+
+.mh-score-label {
+  font-size: 9px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.mh-collective-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+/* Alertas */
+.mh-alerts {
+  margin-bottom: 12px;
+}
+
+.mh-alert {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.mh-alert-critical {
+  background: rgba(255,82,82,0.15);
+  border-left: 3px solid #ff5252;
+  color: #ff8a80;
+}
+
+.mh-alert-warning {
+  background: rgba(255,171,64,0.15);
+  border-left: 3px solid #ffab40;
+  color: #ffd43b;
+}
+
+/* Cards dos agentes */
+.mh-agents-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mh-agent-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mh-agent-card:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(0,230,118,0.3);
+  transform: translateX(2px);
+}
+
+.mh-agent-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.mh-agent-icon {
+  font-size: 18px;
+}
+
+.mh-agent-name {
+  font-weight: bold;
+  color: #e0e0e0;
+  flex: 1;
+  font-size: 14px;
+}
+
+.mh-agent-mood {
+  font-size: 18px;
+}
+
+/* Score bar */
+.mh-agent-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.mh-score-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.mh-score-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.mh-score-text {
+  font-size: 11px;
+  color: #aaa;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Reflexão */
+.mh-agent-reflection {
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+/* Dimensões */
+.mh-agent-dimensions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+}
+
+.mh-dim {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+}
+
+.mh-dim-icon {
+  font-size: 11px;
+  width: 16px;
+  text-align: center;
+}
+
+.mh-dim-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.mh-dim-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+}
+
+.mh-dim-val {
+  color: #888;
+  font-size: 10px;
+  min-width: 18px;
+  text-align: right;
+}
+
+/* Necessidades */
+.mh-needs {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mh-need {
+  font-size: 10px;
+  background: rgba(255,171,64,0.15);
+  color: #ffd43b;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Recomendações */
+.mh-recommendations {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(0,230,118,0.05);
+  border-radius: 8px;
+}
+
+.mh-recommendations h3 {
+  color: #00e676;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.mh-rec {
+  font-size: 12px;
+  color: #ccc;
+  padding: 4px 0;
+}
+
+/* Histórico */
+.mh-history {
+  margin-top: 12px;
+}
+
+.mh-history h3 {
+  color: #aaa;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.mh-history-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #888;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Detalhe do agente */
+.mh-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.mh-detail-mood {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mh-mood-big {
+  font-size: 36px;
+}
+
+.mh-score-big {
+  font-size: 36px;
+  font-weight: bold;
+  color: #00e676;
+}
+
+.mh-reflection-full {
+  font-size: 14px;
+  color: #ccc;
+  font-style: italic;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  border-left: 3px solid #00e676;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.mh-dimensions-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.mh-dim-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mh-dim-label {
+  width: 140px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.mh-dim-bar-full {
+  flex: 1;
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mh-dim-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.mh-dim-value {
+  width: 40px;
+  text-align: right;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.mh-needs-list {
+  margin-bottom: 16px;
+}
+
+.mh-need-item {
+  font-size: 12px;
+  color: #ffd43b;
+  padding: 3px 0;
+}
+
+.mh-reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mh-report-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.mh-report-time {
+  color: #666;
+  min-width: 60px;
+}
+
+.mh-report-mood {
+  font-size: 14px;
+}
+
+.mh-report-reflection {
+  color: #999;
+  font-style: italic;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Botão voltar */
+#mh-back {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #ccc;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  #mental-health-panel {
+    width: calc(100% - 20px);
+    left: 10px;
+    right: 10px;
+    max-height: 70vh;
+    top: auto;
+    bottom: 60px;
+  }
+  
+  .mh-agent-dimensions {
+    grid-template-columns: 1fr;
+  }
+}
