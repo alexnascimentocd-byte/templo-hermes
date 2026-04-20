@@ -74,6 +74,7 @@ const Console = {
       case 'cloud': case 'nuvem': this.cmdCloud(args); break;
       case 'diversificar': case 'diversificacao': case 'leads': this.cmdDiversificar(args); break;
       case 'devweb': case 'webdev': case 'desenvolvimento': this.cmdDevWeb(args); break;
+      case 'presenca': case 'presence': case 'notificacao': case 'notif': this.cmdPresenca(args); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -2448,6 +2449,71 @@ const Console = {
       this.log('Nichos: transformacao_pessoal, equilibrio_financas, conhecimento_aplicado,', 'dim');
       this.log('  ritmo_produtividade, causa_efeito_negocio, vibracao_marketing,', 'dim');
       this.log('  mentalismo_vendas, genero_criatividade', 'dim');
+    }
+  },
+
+  cmdPresenca(args) {
+    if (typeof PresenceEngine === 'undefined') {
+      this.log('❌ Motor de Presença não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'status' || sub === '') {
+      const status = PresenceEngine.getStatus();
+      this.log('═══ 📱 MOTOR DE PRESENÇA ═══', 'info');
+      this.log(`Status: ${status.active ? '🟢 Ativo' : '🔴 Inativo'}`, 'dim');
+      this.log(`Dispositivo: ${status.device.type} | ${status.device.cores} cores | ${status.device.memory}`, 'dim');
+      this.log(`GPU: ${status.device.gpu}`, 'dim');
+      this.log(`Online: ${status.device.online ? 'Sim' : 'Não'}`, 'dim');
+      this.log(`Criptografia: ${status.encryption.enabled ? '🔐 AES-256-GCM ativa' : '❌ Desativada'}`, 'dim');
+      this.log(`Fila de processamento: ${status.processing.queueLength} tarefas`, 'dim');
+      this.log('', 'dim');
+      this.log('🔔 Notificações:', 'info');
+      this.log(`  Total: ${status.notifications.total} | Não lidas: ${status.notifications.unread}`, 'dim');
+      this.log(`  Suprimidas: ${status.notifications.suppressed} (prioridade < ${status.notifications.minPriority})`, 'dim');
+      this.log(`  Cooldown: ${status.notifications.cooldown} entre notificações`, 'dim');
+    } else if (sub === 'notifs' || sub === 'notificacoes' || sub === 'notifications') {
+      const unread = args[1] === 'unread' || args[1] === 'naolidas';
+      const notifs = PresenceEngine.getNotifications(unread);
+      if (notifs.length === 0) {
+        this.log('📭 Nenhuma notificação.', 'aviso');
+      } else {
+        this.log('═══ 🔔 NOTIFICAÇÕES ═══', 'info');
+        notifs.forEach(n => {
+          const readIcon = n.read ? '  ' : '🔴';
+          this.log(`  ${readIcon} ${n.icon} [P${n.priority}] ${n.title} — ${n.timeAgo}`, 'dim');
+          if (n.body) this.log(`    ${n.body}`, 'dim');
+        });
+      }
+    } else if (sub === 'ler' || sub === 'read') {
+      PresenceEngine.markAllRead();
+      this.log('✅ Todas as notificações marcadas como lidas.', 'sucesso');
+    } else if (sub === 'testar' || sub === 'test') {
+      const eventType = args[1] || 'lead_quente';
+      PresenceEngine.notify(eventType, {
+        title: 'Teste de notificação',
+        body: 'Esta é uma notificação de teste do sistema.'
+      });
+      this.log(`🔔 Notificação de teste enviada: ${eventType}`, 'info');
+    } else if (sub === 'processar' || sub === 'process') {
+      const taskType = args[1] || 'analyze_leads';
+      PresenceEngine.addToQueue({ type: taskType });
+      this.log(`⚙️ Tarefa adicionada à fila: ${taskType}`, 'info');
+      this.log('O processamento acontece no seu dispositivo (CPU/GPU local)', 'dim');
+    } else {
+      this.log('Comandos de Presença:', 'info');
+      this.log('  presenca status              — Ver status do dispositivo e notificações', 'dim');
+      this.log('  presenca notifs              — Ver todas as notificações', 'dim');
+      this.log('  presenca notifs unread       — Só não lidas', 'dim');
+      this.log('  presenca ler                 — Marcar todas como lidas', 'dim');
+      this.log('  presenca testar [evento]     — Testar notificação', 'dim');
+      this.log('  presenca processar [tipo]    — Adicionar tarefa ao processamento local', 'dim');
+      this.log('', 'dim');
+      this.log('Eventos de notificação:', 'dim');
+      this.log('  venda_fechada, pagamento_recebido, lead_quente, campanha_resultado,', 'dim');
+      this.log('  tendencia_detectada, sistema_erro, projeto_publicado, meta_atingida', 'dim');
     }
   }
 };
