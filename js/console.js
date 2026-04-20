@@ -70,6 +70,7 @@ const Console = {
       case '3d': case 'modo3d': case 'minecraft': this.cmd3D(); break;
       case 'rede': case 'network': case 'gateway': this.cmdRede(args); break;
       case 'vendas': case 'sales': case 'escritorio': case 'escritório': this.cmdVendas(args); break;
+      case 'campanha': case 'campaign': case 'campanhas': this.cmdCampanha(args); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -2117,6 +2118,103 @@ const Console = {
       this.log('  vendas mensagem <id>   — Gerar script de venda para lead', 'dim');
       this.log('  vendas avancar <id>    — Avançar lead no funil', 'dim');
       this.log('  vendas reset           — Resetar escritório', 'dim');
+    }
+  },
+
+  cmdCampanha(args) {
+    if (typeof CampaignEngine === 'undefined') {
+      this.log('❌ Motor de Campanhas não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'executar' || sub === 'run' || sub === 'start') {
+      this.log('🚀 Executando todas as campanhas...', 'info');
+      CampaignEngine.runAllCampaigns().then(result => {
+        if (result) {
+          this.log(`✅ Campanhas executadas: ${result.campaigns.length}`, 'sucesso');
+          this.log(`🎯 Leads capturados: ${result.newLeads}`, 'dim');
+          this.log(`💰 Conversões: ${result.conversions}`, 'dim');
+        }
+      });
+    } else if (sub === 'criar' || sub === 'create') {
+      const type = args[1] || 'whatsapp_vendas';
+      const name = args.slice(2).join(' ') || null;
+      const campaign = CampaignEngine.createCampaign(type, name ? { name } : {});
+      if (campaign) {
+        this.log(`✅ Campanha criada: ${campaign.icon} ${campaign.name}`, 'sucesso');
+      } else {
+        this.log('Tipos disponíveis: whatsapp_vendas, instagram_conteudo, google_seo, telegram_grupo, email_leads', 'aviso');
+      }
+    } else if (sub === 'status' || sub === 'stats') {
+      const stats = CampaignEngine.getStats();
+      this.log('═══ MOTOR DE CAMPANHAS ═══', 'info');
+      this.log(`📊 Campanhas: ${stats.campaigns.total} (${stats.campaigns.active} ativas)`, 'dim');
+      this.log(`📤 Enviados: ${stats.metrics.sent}`, 'dim');
+      this.log(`📬 Abertos: ${stats.metrics.opened} (${stats.metrics.openRate}%)`, 'dim');
+      this.log(`🖱️ Cliques: ${stats.metrics.clicked} (${stats.metrics.clickRate}%)`, 'dim');
+      this.log(`💰 Conversões: ${stats.metrics.converted} (${stats.metrics.conversionRate}%)`, 'dim');
+      this.log(`🎯 Leads: ${stats.leads.total} (${stats.leads.new} novos, ${stats.leads.converted} convertidos)`, 'dim');
+      this.log(`💵 Receita: R$ ${stats.revenue.total} | Projeção φ: R$ ${stats.revenue.projected}`, 'dim');
+      this.log(`🔑 Pix: ${stats.payment.pixKey}`, 'dim');
+    } else if (sub === 'listar' || sub === 'list') {
+      const campaigns = CampaignEngine.getCampaigns();
+      if (campaigns.length === 0) {
+        this.log('📭 Nenhuma campanha criada. Use "campanha criar" ou "campanha executar".', 'aviso');
+      } else {
+        this.log('═══ CAMPANHAS ═══', 'info');
+        campaigns.forEach(c => {
+          this.log(`  ${c.icon} ${c.name} [${c.status}] — ${c.channel} (${c.frequency})`, 'dim');
+          this.log(`    📤 ${c.sent} enviados | 💰 ${c.converted} conversões → ${c.revenue}`, 'dim');
+        });
+      }
+    } else if (sub === 'leads') {
+      const leads = CampaignEngine.getRecentLeads(10);
+      if (leads.length === 0) {
+        this.log('📭 Nenhum lead capturado ainda.', 'aviso');
+      } else {
+        this.log('═══ LEADS RECENTES ═══', 'info');
+        leads.forEach(l => {
+          const scoreColor = l.score > 70 ? '🔥' : l.score > 40 ? '⚡' : '❄️';
+          this.log(`  ${scoreColor} ${l.segment} — ${l.interest} [score: ${l.score}] via ${l.source}`, 'dim');
+          this.log(`    📦 ${l.product} | Status: ${l.status}`, 'dim');
+        });
+      }
+    } else if (sub === 'conversoes' || sub === 'conversions') {
+      const conversions = CampaignEngine.getConversions();
+      if (conversions.length === 0) {
+        this.log('📭 Nenhuma conversão registrada.', 'aviso');
+      } else {
+        this.log('═══ CONVERSÕES ═══', 'info');
+        conversions.forEach(c => {
+          this.log(`  💰 ${c.product} → ${c.amount} via ${c.method} (${c.date})`, 'dim');
+        });
+      }
+    } else if (sub === 'conteudo' || sub === 'content') {
+      const type = args[1] || 'whatsapp_vendas';
+      const content = CampaignEngine.generateContent(type);
+      if (content) {
+        this.log(`═══ CONTEÚDO GERADO: ${content.type} ═══`, 'info');
+        this.log(content.content, 'dim');
+      } else {
+        this.log('Tipos: whatsapp_vendas, instagram_conteudo, telegram_grupo', 'aviso');
+      }
+    } else if (sub === 'reset') {
+      CampaignEngine.reset();
+      this.log('🔄 Motor de Campanhas resetado.', 'aviso');
+    } else {
+      this.log('Comandos de Campanha:', 'info');
+      this.log('  campanha executar        — Rodar todas as campanhas ativas', 'dim');
+      this.log('  campanha criar [tipo]    — Criar nova campanha', 'dim');
+      this.log('  campanha status          — Ver métricas do motor', 'dim');
+      this.log('  campanha listar          — Listar campanhas criadas', 'dim');
+      this.log('  campanha leads           — Ver leads capturados', 'dim');
+      this.log('  campanha conversoes      — Ver conversões realizadas', 'dim');
+      this.log('  campanha conteudo [tipo] — Gerar conteúdo para campanha', 'dim');
+      this.log('  campanha reset           — Resetar motor', 'dim');
+      this.log('', 'dim');
+      this.log('Tipos: whatsapp_vendas, instagram_conteudo, google_seo, telegram_grupo, email_leads', 'dim');
     }
   }
 };
