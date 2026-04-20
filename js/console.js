@@ -78,6 +78,7 @@ const Console = {
       case 'painel': case 'dashboard': this.cmdPainel(); break;
       case 'landing': case 'pagina': this.cmdLanding(args); break;
       case 'persist': case 'salvar': this.cmdPersist(args); break;
+      case 'anuncio': case 'ads': case 'agencia': this.cmdAnuncio(args); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -2620,6 +2621,63 @@ const Console = {
       this.log('  persist config <token> — Configurar token GitHub', 'dim');
       this.log('  persist salvar         — Salvar todos os dados no GitHub', 'dim');
       this.log('  persist status         — Ver status da persistência', 'dim');
+    }
+  },
+
+  cmdAnuncio(args) {
+    if (typeof AdAgency === 'undefined') {
+      this.log('❌ Agência de Anúncios não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'ciclo' || sub === 'run' || sub === 'start') {
+      this.log('📢 Iniciando ciclo da Agência de Anúncios...', 'info');
+      AdAgency.runAgencyCycle().then(result => {
+        if (result) {
+          this.log(`✅ ${result.opportunities} oportunidades | ${result.campaigns} campanhas criadas`, 'sucesso');
+        }
+      });
+    } else if (sub === 'status' || sub === 'stats' || sub === '') {
+      const stats = AdAgency.getStats();
+      this.log('═══ 📢 AGÊNCIA DE ANÚNCIOS ═══', 'info');
+      this.log(`📊 Padrões detectados: ${stats.patterns.total} (${stats.patterns.unique} únicos)`, 'dim');
+      this.log(`🎯 Score de intenção: ${stats.patterns.score}`, 'dim');
+      this.log('', 'dim');
+      this.log('📢 Anúncios:', 'info');
+      this.log(`  Impressões: ${stats.ads.impressions} | Cliques: ${stats.ads.clicks} | CTR: ${stats.ads.ctr}%`, 'dim');
+      this.log('', 'dim');
+      this.log('💰 Conversões:', 'info');
+      this.log(`  Total: ${stats.conversions.total} | Receita: R$ ${stats.conversions.revenue}`, 'dim');
+      this.log(`  👀 Awareness: ${stats.conversions.byStage.awareness}`, 'dim');
+      this.log(`  🤔 Consideration: ${stats.conversions.byStage.consideration}`, 'dim');
+      this.log(`  💰 Decision: ${stats.conversions.byStage.decision}`, 'dim');
+      this.log(`  🔄 Recovery: ${stats.conversions.byStage.recovery}`, 'dim');
+      this.log('', 'dim');
+      this.log(`🚀 Campanhas: ${stats.campaigns.total} (${stats.campaigns.active} ativas)`, 'dim');
+    } else if (sub === 'padroes' || sub === 'patterns') {
+      const patterns = AdAgency.getRecentPatterns(10);
+      if (patterns.length === 0) {
+        this.log('📭 Nenhum padrão detectado ainda.', 'aviso');
+      } else {
+        this.log('═══ PADRÕES DETECTADOS ═══', 'info');
+        patterns.forEach(p => {
+          this.log(`  ${p.signal} [${p.category}] +${p.weight}pts — ${p.time}`, 'dim');
+        });
+      }
+    } else if (sub === 'reset') {
+      AdAgency.reset();
+      this.log('🔄 Agência de Anúncios resetada.', 'aviso');
+    } else {
+      this.log('Comandos da Agência de Anúncios:', 'info');
+      this.log('  anuncio ciclo      — Executar ciclo completo (targeting + conversão)', 'dim');
+      this.log('  anuncio status     — Ver métricas da agência', 'dim');
+      this.log('  anuncio padroes    — Ver padrões de comportamento detectados', 'dim');
+      this.log('  anuncio reset      — Resetar agência', 'dim');
+      this.log('', 'dim');
+      this.log('💡 O sistema detecta padrões automaticamente e mostra anúncios', 'dim');
+      this.log('   baseados no nível de intenção do visitante.', 'dim');
     }
   }
 };
