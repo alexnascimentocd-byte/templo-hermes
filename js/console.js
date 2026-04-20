@@ -71,6 +71,7 @@ const Console = {
       case 'rede': case 'network': case 'gateway': this.cmdRede(args); break;
       case 'vendas': case 'sales': case 'escritorio': case 'escritório': this.cmdVendas(args); break;
       case 'campanha': case 'campaign': case 'campanhas': this.cmdCampanha(args); break;
+      case 'cloud': case 'nuvem': this.cmdCloud(args); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -2215,6 +2216,59 @@ const Console = {
       this.log('  campanha reset           — Resetar motor', 'dim');
       this.log('', 'dim');
       this.log('Tipos: whatsapp_vendas, instagram_conteudo, google_seo, telegram_grupo, email_leads', 'dim');
+    }
+  },
+
+  cmdCloud(args) {
+    if (typeof CloudEngine === 'undefined') {
+      this.log('❌ Motor Cloud não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'status' || sub === '') {
+      const status = CloudEngine.getStatus();
+      this.log('═══ ☁️ MOTOR CLOUD ═══', 'info');
+      this.log(`Status: ${status.status === 'online' ? '🟢 Online' : '🔴 Offline'}`, 'dim');
+      this.log(`PC necessário: ${status.requiresPC ? 'Sim' : '❌ NÃO — 100% nuvem'}`, 'dim');
+      
+      if (status.heartbeat) {
+        this.log(`Último heartbeat: ${status.heartbeat.time}`, 'dim');
+      }
+
+      this.log('', 'dim');
+      this.log('📊 Módulos cloud:', 'info');
+      status.modules.forEach(m => {
+        const statusIcon = m.status === 'completed' ? '✅' : m.status === 'running' ? '🔄' : m.status === 'error' ? '❌' : '⏳';
+        this.log(`  ${m.icon} ${m.name} ${statusIcon}`, 'dim');
+        this.log(`    Última execução: ${m.lastRun}`, 'dim');
+        this.log(`    Próxima: ${m.nextRun} (a cada ${m.intervalMinutes}min)`, 'dim');
+      });
+    } else if (sub === 'executar' || sub === 'run' || sub === 'force') {
+      this.log('☁️ Forçando execução de todos os módulos...', 'info');
+      CloudEngine.forceRunAll().then(results => {
+        if (results) {
+          this.log('✅ Todos os módulos executados!', 'sucesso');
+          results.forEach(r => {
+            this.log(`  ${r.icon} ${r.module}: ${r.status}`, 'dim');
+          });
+        }
+      });
+    } else if (sub === 'start' || sub === 'iniciar') {
+      CloudEngine.init();
+      this.log('☁️ Motor Cloud iniciado!', 'sucesso');
+    } else if (sub === 'stop' || sub === 'parar') {
+      CloudEngine.stop();
+      this.log('☁️ Motor Cloud parado.', 'aviso');
+    } else {
+      this.log('Comandos Cloud:', 'info');
+      this.log('  cloud status    — Ver status de todos os módulos cloud', 'dim');
+      this.log('  cloud executar  — Forçar execução de todos', 'dim');
+      this.log('  cloud start     — Iniciar motor cloud', 'dim');
+      this.log('  cloud stop      — Parar motor cloud', 'dim');
+      this.log('', 'dim');
+      this.log('💡 O sistema roda 100% na nuvem. Pode desligar o PC!', 'info');
     }
   }
 };

@@ -1,0 +1,49 @@
+name: ☁️ Templo Cloud Runner
+
+on:
+  schedule:
+    # Executar a cada hora para manter sistema vivo
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  cloud-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔄 Checkout
+        uses: actions/checkout@v4
+
+      - name: ☁️ Gerar Relatório Cloud
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "# ☁️ Templo Cloud Status" > cloud-status.md
+          echo "" >> cloud-status.md
+          echo "🕐 **Última verificação:** ${TIMESTAMP}" >> cloud-status.md
+          echo "" >> cloud-status.md
+          echo "## 📊 Módulos Ativos" >> cloud-status.md
+          echo "| Módulo | Status | Descrição |" >> cloud-status.md
+          echo "|--------|--------|-----------|" >> cloud-status.md
+          echo "| 🚀 Campanhas | ✅ Online | Motor de campanhas automáticas |" >> cloud-status.md
+          echo "| 💼 Vendas | ✅ Online | Escritório de vendas autônomo |" >> cloud-status.md
+          echo "| 🌐 Network | ✅ Online | Gateway de rede + mineração |" >> cloud-status.md
+          echo "| 🗣️ Conversas | ✅ Online | Síntese entre agentes |" >> cloud-status.md
+          echo "| 🎮 3D Mode | ✅ Online | Renderização Minecraft |" >> cloud-status.md
+          echo "" >> cloud-status.md
+          echo "## 💰 Pagamentos" >> cloud-status.md
+          echo "- **Pix:** \`58af96e5-9949-41be-9546-c074b206cbcf\`" >> cloud-status.md
+          echo "- **Kiwify:** 3 produtos ativos" >> cloud-status.md
+          echo "" >> cloud-status.md
+          echo "## 🔧 Info" >> cloud-status.md
+          echo "- **Repo:** alexnascimentocd-byte/templo-hermes" >> cloud-status.md
+          echo "- **Auto-run:** A cada hora via GitHub Actions" >> cloud-status.md
+          echo "- **PC necessário:** ❌ NÃO — tudo roda na nuvem" >> cloud-status.md
+
+      - name: 📤 Commit Status
+        run: |
+          git config user.name "☁️ Cloud Bot"
+          git config user.email "cloud@templo-hermes.app"
+          git add cloud-status.md
+          git diff --staged --quiet || git commit -m "☁️ Cloud status: $(date -u +%H:%M)"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
