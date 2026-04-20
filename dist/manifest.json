@@ -1,0 +1,70 @@
+{
+  "core": {
+    "file": "bundle-core.js",
+    "hash": "a99f66ac",
+    "size": 79549,
+    "original": 88982,
+    "files": [
+      "main.js",
+      "player.js",
+      "runes.js",
+      "persistence.js",
+      "initiation.js"
+    ]
+  },
+  "render": {
+    "file": "bundle-render.js",
+    "hash": "5d0f1484",
+    "size": 38214,
+    "original": 44491,
+    "files": [
+      "renderer.js",
+      "renderer-3d.js"
+    ]
+  },
+  "agents": {
+    "file": "bundle-agents.js",
+    "hash": "db8c6eba",
+    "size": 94484,
+    "original": 106430,
+    "files": [
+      "agents.js",
+      "agent-conversations.js",
+      "agent-trainer.js",
+      "mental-health.js",
+      "neural-snippets.js"
+    ]
+  },
+  "world": {
+    "file": "bundle-world.js",
+    "hash": "f150edb0",
+    "size": 82056,
+    "original": 92699,
+    "files": [
+      "world.js",
+      "interactions.js",
+      "items.js",
+      "alchemy-economy.js"
+    ]
+  },
+  "ui": {
+    "file": "bundle-ui.js",
+    "hash": "ec9758a4",
+    "size": 232405,
+    "original": 249146,
+    "files": [
+      "console.js",
+      "council.js",
+      "inbox.js",
+      "npc-grimoire.js",
+      "knowledge-base.js",
+      "response-engine.js",
+      "crystal-ball.js",
+      "cognitive-cortex.js",
+      "mcp_tools.js",
+      "remote-admin.js",
+      "system-admin.js",
+      "parallel-engine.js"
+    ]
+  }
+}

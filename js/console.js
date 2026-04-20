@@ -66,6 +66,8 @@ const Console = {
       case 'transmutar': case 'transmute': this.cmdTransmutar(args); break;
       case 'cortex': case 'cérebro': case 'cerebro': this.cmdCortex(args); break;
       case 'neural': case 'neuronio': case 'neurônio': case 'snippets': this.cmdNeural(args); break;
+      case 'conversar': case 'conversation': case 'conversa': this.cmdConversar(args); break;
+      case '3d': case 'modo3d': case 'minecraft': this.cmd3D(); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -1791,5 +1793,120 @@ const Console = {
   clearChatHistory() {
     localStorage.removeItem('hermes_chat_history');
     this.log('🧹 Histórico de chat limpo!', 'sucesso');
+  },
+
+  // === COMANDOS DE CONVERSAS E 3D ===
+
+  cmdConversar(args) {
+    if (typeof AgentConversations === 'undefined') {
+      this.log('❌ Sistema de conversas não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'iniciar' || sub === 'start' || sub === '') {
+      const maxPairs = parseInt(args[1]) || 4;
+      this.log(`🗣️ Iniciando ${maxPairs} conversas entre agentes...`, 'info');
+      this.log(`📖 Tema atual: ${AgentConversations.themes[AgentConversations.currentTheme].icon} ${AgentConversations.themes[AgentConversations.currentTheme].name}`, 'dim');
+      
+      AgentConversations.runFullSequence(maxPairs).then(result => {
+        if (result) {
+          this.log(`✅ Sequência concluída: ${result.conversations.length} conversas realizadas.`, 'sucesso');
+          this.log(`📝 Síntese: ${result.finalSynthesis.summary.substring(0, 120)}...`, 'dim');
+        }
+      });
+    } else if (sub === 'par' || sub === 'pair') {
+      this.log('🗣️ Executando conversa individual...', 'info');
+      AgentConversations.runConversation().then(conv => {
+        if (conv) {
+          this.log(`✅ ${conv.participants.map(p => p.name).join(' & ')} conversaram!`, 'sucesso');
+          this.log(`📝 ${conv.synthesis.summary.substring(0, 100)}...`, 'dim');
+          conv.synthesis.learning.forEach(l => {
+            this.log(`  • ${l}`, 'dim');
+          });
+        }
+      });
+    } else if (sub === 'tema' || sub === 'theme') {
+      const newTheme = args[1];
+      if (newTheme && AgentConversations.themes[newTheme]) {
+        AgentConversations.currentTheme = newTheme;
+        AgentConversations.saveState();
+        this.log(`📖 Tema alterado para: ${AgentConversations.themes[newTheme].icon} ${AgentConversations.themes[newTheme].name}`, 'sucesso');
+      } else {
+        const stats = AgentConversations.getStats();
+        this.log(`📖 Tema atual: ${stats.currentThemeName}`, 'info');
+        this.log('Temas disponíveis:', 'dim');
+        Object.entries(AgentConversations.themes).forEach(([key, theme]) => {
+          this.log(`  ${theme.icon} ${key}: ${theme.name} — ${theme.description}`, 'dim');
+        });
+      }
+    } else if (sub === 'status' || sub === 'stats') {
+      const stats = AgentConversations.getStats();
+      this.log('═══ STATUS DAS CONVERSAS ═══', 'info');
+      this.log(`Total de conversas: ${stats.totalConversations}`, 'dim');
+      this.log(`Sínteses geradas: ${stats.totalSyntheses}`, 'dim');
+      this.log(`Temas explorados: ${stats.themesExplored}`, 'dim');
+      this.log(`Tema atual: ${stats.currentThemeName}`, 'dim');
+      this.log(`Ativo: ${stats.isActive ? 'Sim' : 'Não'}`, 'dim');
+      
+      if (stats.topAgents.length > 0) {
+        this.log('Top contribuidores:', 'info');
+        stats.topAgents.forEach(a => {
+          this.log(`  ${a.icon} ${a.name}: ${a.conversations} conversas`, 'dim');
+        });
+      }
+    } else if (sub === 'historico' || sub === 'history') {
+      const recent = AgentConversations.getRecentConversations(5);
+      if (recent.length === 0) {
+        this.log('📭 Nenhuma conversa registrada ainda.', 'aviso');
+      } else {
+        this.log('═══ ÚLTIMAS CONVERSAS ═══', 'info');
+        recent.forEach(c => {
+          this.log(`${c.participants} [${c.theme}]`, 'dim');
+          this.log(`  "${c.prompt}"`, 'dim');
+          this.log(`  Qualidade: ${c.quality}% | Aprendizados: ${c.learningCount}`, 'dim');
+        });
+      }
+    } else if (sub === 'sinteses' || sub === 'syntheses') {
+      const syntheses = AgentConversations.getSyntheses();
+      if (syntheses.length === 0) {
+        this.log('📭 Nenhuma síntese registrada.', 'aviso');
+      } else {
+        this.log('═══ SÍNTESES ═══', 'info');
+        syntheses.forEach(s => {
+          this.log(`${s.theme} [${s.conversations} conversas, qualidade: ${s.quality.toFixed(0)}%]`, 'dim');
+          this.log(`  ${s.summary}`, 'dim');
+        });
+      }
+    } else if (sub === 'reset') {
+      AgentConversations.reset();
+      this.log('🔄 Estado das conversas resetado.', 'aviso');
+    } else {
+      this.log('Comandos de conversa:', 'info');
+      this.log('  conversar [n]        — Iniciar sequência de conversas (padrão: 4)', 'dim');
+      this.log('  conversar par        — Uma conversa individual', 'dim');
+      this.log('  conversar tema [id]  — Ver/alterar tema atual', 'dim');
+      this.log('  conversar status     — Ver estatísticas', 'dim');
+      this.log('  conversar historico  — Últimas conversas', 'dim');
+      this.log('  conversar sinteses   — Ver sínteses geradas', 'dim');
+      this.log('  conversar reset      — Resetar estado', 'dim');
+    }
+  },
+
+  cmd3D() {
+    if (typeof Renderer3D === 'undefined') {
+      this.log('❌ Renderer 3D não disponível. Verifique se Three.js está carregado.', 'erro');
+      return;
+    }
+    
+    const is3D = Renderer3D.toggle();
+    const btn3D = document.getElementById('btn-3d');
+    if (btn3D) {
+      btn3D.style.background = is3D ? 'rgba(212,165,71,0.3)' : '';
+      btn3D.title = is3D ? 'Voltar ao 2D' : 'Modo 3D';
+    }
+    
+    this.log(is3D ? '🎮 Modo 3D ativado — Estilo Minecraft' : '⬅️ Voltando ao modo 2D', 'sucesso');
   }
 };

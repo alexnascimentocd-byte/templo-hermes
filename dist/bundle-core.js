@@ -1,37 +1,7 @@
-/* ===== MAIN.JS
-// === FUNÇÃO GLOBAL: Toggle de Painéis ===
-function togglePanel(panelId) {
-  const panel = document.getElementById(panelId);
-  if (!panel) return;
-  
-  // Fechar outros painéis
-  document.querySelectorAll('.panel').forEach(p => {
-    if (p.id !== panelId) p.classList.add('hidden');
-  });
-  
-  // Toggle do painel atual
-  panel.classList.toggle('hidden');
-  
-  // Se abriu o grimório, carregar dados
-  if (panelId === 'grimoire-panel' && !panel.classList.contains('hidden')) {
-    if (typeof NPCGrimoire !== 'undefined') {
-      NPCGrimoire.load();
-      NPCGrimoire.renderPainel();
-    }
-  }
-}
-
- - Inicialização do Templo de Hermes ===== */
-
-// === JOGADOR (Zói) ===
-// Player definido em js/player.js
-
-// === CHAT DE PRIORIDADE ===
+// === main.js ===
 const PriorityChat = {
   container: null,
-  
   init() {
-    // Criar container do chat no canto superior esquerdo (abaixo da logo)
     this.container = document.createElement('div');
     this.container.id = 'priority-chat';
     this.container.style.cssText = `
@@ -44,8 +14,6 @@ const PriorityChat = {
       border-radius: 0 0 6px 6px;
     `;
     document.body.appendChild(this.container);
-    
-    // Toggle com tecla C
     document.addEventListener('keydown', (e) => {
       if (e.key === 'c' && !e.ctrlKey && !e.metaKey) {
         const input = document.getElementById('grimoire-input');
@@ -55,17 +23,14 @@ const PriorityChat = {
       }
     });
   },
-  
   toggle() {
     this.container.style.display = this.container.style.display === 'none' ? 'block' : 'none';
     if (this.container.style.display === 'block') {
       this.render();
     }
   },
-  
   render() {
     if (!this.container) return;
-    
     const msgs = Interactions.chatMessages.slice(-15);
     this.container.innerHTML = msgs.map(msg => {
       const colors = ['', '#888', '#aaa', '#ffaa00', '#ff4444', '#ffcc00'];
@@ -75,19 +40,14 @@ const PriorityChat = {
         <span style="color:#666">[${time}]</span> ${msg.sender}: ${msg.message}
       </div>`;
     }).join('');
-    
     this.container.scrollTop = this.container.scrollHeight;
   },
-  
   addMessage(sender, message, priority = 1) {
     Interactions.addChatMessage(sender, message, priority);
-    // Só mostra se nenhum painel estiver aberto
     if (this.container.style.display !== 'none') {
       this.render();
     }
   },
-
-  // Verifica se algum painel está aberto (esconde chat de prioridade)
   isAnyPanelOpen() {
     const panels = ['console-panel', 'chat-panel', 'council-panel', 'inbox-panel', 'settings-panel', 'agents-panel'];
     return panels.some(id => {
@@ -95,8 +55,6 @@ const PriorityChat = {
       return el && !el.classList.contains('hidden');
     });
   },
-
-  // Mostrar só se nenhum painel estiver aberto
   showIfClear() {
     if (!this.isAnyPanelOpen() && Interactions.chatMessages.length > 0) {
       this.container.style.display = 'block';
@@ -104,22 +62,14 @@ const PriorityChat = {
     }
   }
 };
-
-// === GAME LOOP ===
 const Game = {
   lastTime: 0,
   running: false,
   keys: {},
-  
   async init() {
-    // Mostrar loading
     await this.showLoading();
-    
-    // Inicializar sistemas de persistência
     if (typeof Persistence !== 'undefined') Persistence.init();
     if (typeof KnowledgeBase !== 'undefined') KnowledgeBase.init();
-    
-    // Patch Agents com persistência (se o agents.js não tem saveAll)
     if (typeof Agents !== 'undefined') {
       if (!Agents.saveAll) {
         Agents.saveAll = function() {
@@ -128,7 +78,6 @@ const Game = {
           }
         };
       }
-      // Carregar estado salvo dos agentes
       if (typeof Persistence !== 'undefined') {
         const saved = Persistence.loadAgents();
         if (saved && saved.length > 0) {
@@ -142,10 +91,7 @@ const Game = {
           });
         }
       }
-      // Auto-save periódico
       setInterval(() => Agents.saveAll(), 60000);
-      
-      // Patch gainExperience para auto-save
       const origGain = Agents.gainExperience.bind(Agents);
       let saveTimer = null;
       Agents.gainExperience = function(agent, amount) {
@@ -154,8 +100,6 @@ const Game = {
         saveTimer = setTimeout(() => this.saveAll(), 3000);
       };
     }
-    
-    // Inicializar módulos
     World.init();
     Items.init();
     Agents.initDefaults();
@@ -165,8 +109,6 @@ const Game = {
     Interactions.init();
     PriorityChat.init();
     Initiation.updateBadge();
-    
-    // Configurar UIs
     this.setupCouncilUI();
     Inbox.setupUI();
     Console.init();
@@ -175,80 +117,51 @@ const Game = {
     this.setupMobileMenu();
     this.setupChatMode();
     this.setupHeaderButtons();
-    
-    // Inicializar Grimório dos NPCs
     if (typeof NPCGrimoire !== 'undefined') {
       NPCGrimoire.load();
       NPCGrimoire.loadDiarios();
       NPCGrimoire.init();
     }
-
-    // Inicializar Sistema Neural (Coração da Máquina)
 if (typeof NeuralSystem !== 'undefined') {
 NeuralSystem.init();
 }
-
-// Inicializar Monitoramento de Saúde Mental
 if (typeof MentalHealth !== 'undefined') {
   MentalHealth.init();
 }
-
-// Configurar controles
     this.setupControls();
-    
-    // Posicionar jogador no centro do templo
     Player.x = World.CENTER_X;
     Player.y = World.CENTER_Y - 7;
     Player.targetX = World.CENTER_X;
     Player.targetY = World.CENTER_Y - 7;
-    
-    // Centralizar câmera
     Renderer.centerCamera(Player.x, Player.y);
-    
-    // Esconder loading, mostrar dashboard
     document.getElementById('loading-screen').style.opacity = '0';
     setTimeout(() => {
       document.getElementById('loading-screen').style.display = 'none';
       document.getElementById('dashboard').classList.remove('hidden');
-      // CRITICAL: resize canvas after dashboard becomes visible
       Renderer.resize();
     }, 1000);
-    
-    // Iniciar loop
     this.running = true;
     this.lastTime = performance.now();
     this.loop();
-    
-    // Mensagem de boas-vindas
     Interactions.notify('☤ Bem-vindo ao Templo de Hermes, Zói!');
     PriorityChat.addMessage('Sistema', 'O Templo desperta. Os agentes aguardam.', 4);
-
-    // Corrigir scroll quando teclado mobile fecha
     this.setupKeyboardFix();
   },
-  
   async showLoading() {
     return new Promise(resolve => {
       setTimeout(resolve, 2500);
     });
   },
-  
   setupControls() {
-    // Teclado
     document.addEventListener('keydown', (e) => {
       this.keys[e.code] = true;
     });
-    
     document.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
     });
-    
-    // Touch controls para mobile
     this.setupTouchControls();
   },
-  
   setupTouchControls() {
-    // Criar D-pad estilo Minecraft
     const dpad = document.createElement('div');
     dpad.id = 'dpad';
     dpad.innerHTML = `
@@ -258,17 +171,13 @@ if (typeof MentalHealth !== 'undefined') {
       <button class="dpad-btn dpad-down" data-dir="down">▼</button>
     `;
     document.body.appendChild(dpad);
-
-    // Movimento contínuo segurando o botão
     let moveInterval = null;
     const step = 1;
-
     function startMove(dir) {
       if (moveInterval) clearInterval(moveInterval);
       doMove(dir);
       moveInterval = setInterval(() => doMove(dir), 180);
     }
-
     function doMove(dir) {
       if (!Player || Player.moving) return;
       switch(dir) {
@@ -278,24 +187,18 @@ if (typeof MentalHealth !== 'undefined') {
         case 'right': Player.moveTo(Player.x + step, Player.y); break;
       }
     }
-
     function stopMove() {
       if (moveInterval) { clearInterval(moveInterval); moveInterval = null; }
     }
-
-    // Touch events (mobile)
     dpad.querySelectorAll('.dpad-btn').forEach(btn => {
       const dir = btn.dataset.dir;
       btn.addEventListener('touchstart', (e) => { e.preventDefault(); startMove(dir); });
       btn.addEventListener('touchend', stopMove);
       btn.addEventListener('touchcancel', stopMove);
-      // Mouse (desktop teste)
       btn.addEventListener('mousedown', () => startMove(dir));
       btn.addEventListener('mouseup', stopMove);
       btn.addEventListener('mouseleave', stopMove);
     });
-
-    // Canvas click para interagir com NPCs/itens
     const canvas = document.getElementById('temple-canvas');
     if (canvas) {
       canvas.addEventListener('click', (e) => {
@@ -306,32 +209,21 @@ if (typeof MentalHealth !== 'undefined') {
       });
     }
   },
-
-  // Corrigir scroll quando teclado mobile abre/fecha
   setupKeyboardFix() {
-    // Detectar quando o teclado fecha (viewport volta ao normal)
     let initialHeight = window.innerHeight;
-    
     window.addEventListener('resize', () => {
       const currentHeight = window.innerHeight;
-      
-      // Se a altura aumentou, o teclado fechou
       if (currentHeight > initialHeight * 0.95) {
-        // Resetar scroll para o topo
         window.scrollTo(0, 0);
         document.body.scrollTop = 0;
         document.documentElement.scrollTop = 0;
         initialHeight = currentHeight;
       } else if (currentHeight < initialHeight * 0.9) {
-        // Teclado abrou — atualizar referência
         initialHeight = currentHeight;
       }
     });
-
-    // Também corrigir quando input perde foco
     document.addEventListener('focusout', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        // Pequeno delay para depois que o teclado fecha
         setTimeout(() => {
           window.scrollTo(0, 0);
           document.body.scrollTop = 0;
@@ -340,8 +232,6 @@ if (typeof MentalHealth !== 'undefined') {
       }
     });
   },
-
-  // === UI DO CONSELHO ===
   setupCouncilUI() {
     const btnCouncil = document.getElementById('btn-council');
     const councilPanel = document.getElementById('council-panel');
@@ -349,7 +239,6 @@ if (typeof MentalHealth !== 'undefined') {
     const btnConvene = document.getElementById('btn-convene');
     const btnHistory = document.getElementById('btn-council-history');
     const btnSpawnAll = document.getElementById('btn-spawn-all');
-    
     if (btnCouncil) {
       btnCouncil.addEventListener('click', () => {
         councilPanel.classList.toggle('hidden');
@@ -361,44 +250,35 @@ if (typeof MentalHealth !== 'undefined') {
         }
       });
     }
-    
     if (closeCouncil) {
       closeCouncil.addEventListener('click', () => {
         councilPanel.classList.add('hidden');
         if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
       });
     }
-    
     if (btnConvene) {
       btnConvene.addEventListener('click', () => {
         this.showTopicSelector();
       });
     }
-    
     if (btnHistory) {
       btnHistory.addEventListener('click', () => {
         this.showCouncilHistory();
       });
     }
-    
     if (btnSpawnAll) {
       btnSpawnAll.addEventListener('click', () => {
         this.spawnAllAgents();
       });
     }
-
-    // Terminal do Mestre
     this.setupCouncilTerminal();
   },
-
   setupCouncilTerminal() {
     const input = document.getElementById('terminal-input');
     const sendBtn = document.getElementById('terminal-send');
-
     const sendMessage = () => {
       const msg = input.value.trim();
       if (!msg) return;
-
       const result = Council.receiveMasterMessage(msg);
       if (result.success) {
         input.value = '';
@@ -406,18 +286,14 @@ if (typeof MentalHealth !== 'undefined') {
         Council.logToTerminal('Sistema', result.error || 'Erro ao enviar mensagem.', 'system');
       }
     };
-
     if (input) {
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') sendMessage();
       });
     }
-
     if (sendBtn) {
       sendBtn.addEventListener('click', sendMessage);
     }
-
-    // Botões de atalho
     document.querySelectorAll('.shortcut-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const msg = btn.dataset.msg;
@@ -430,13 +306,10 @@ if (typeof MentalHealth !== 'undefined') {
       });
     });
   },
-
-  // === CONSOLE UI ===
   setupConsoleUI() {
     const btnConsole = document.getElementById('btn-console');
     const consolePanel = document.getElementById('console-panel');
     const closeConsole = document.getElementById('close-console');
-
     if (btnConsole) {
       btnConsole.addEventListener('click', () => {
         consolePanel.classList.toggle('hidden');
@@ -449,18 +322,13 @@ if (typeof MentalHealth !== 'undefined') {
         }
       });
     }
-
     if (closeConsole) {
       closeConsole.addEventListener('click', () => {
         consolePanel.classList.add('hidden');
         if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
       });
     }
-
-    // Autocomplete de comandos
     this.setupAutocomplete();
-
-    // Botões de ação rápida (emojis)
     document.querySelectorAll('.quick-action').forEach(btn => {
       btn.addEventListener('click', () => {
         const cmd = btn.dataset.cmd;
@@ -470,13 +338,10 @@ if (typeof MentalHealth !== 'undefined') {
       });
     });
   },
-
-  // Autocomplete do console
   setupAutocomplete() {
     const input = document.getElementById('console-input');
     const sugestoes = document.getElementById('console-suggestions');
     if (!input || !sugestoes) return;
-
     const comandos = [
       { cmd: 'status', desc: 'Ver estado do templo' },
       { cmd: 'agentes', desc: 'Listar mentes ativas' },
@@ -507,9 +372,7 @@ if (typeof MentalHealth !== 'undefined') {
       { cmd: 'limpar', desc: 'Limpar terminal' },
       { cmd: 'ajuda', desc: 'Ver todos os comandos' }
     ];
-
     let sugestaoIndex = -1;
-
     const mostrarSugestoes = (texto) => {
       const filtro = texto.toLowerCase().trim();
       if (!filtro) {
@@ -517,16 +380,13 @@ if (typeof MentalHealth !== 'undefined') {
         sugestoes.innerHTML = '';
         return;
       }
-
       const filtrados = comandos.filter(c =>
         c.cmd.startsWith(filtro) || c.cmd.includes(filtro)
       ).slice(0, 8);
-
       if (filtrados.length === 0) {
         sugestoes.classList.add('hidden');
         return;
       }
-
       sugestoes.classList.remove('hidden');
       sugestaoIndex = -1;
       sugestoes.innerHTML = filtrados.map((s, i) =>
@@ -535,8 +395,6 @@ if (typeof MentalHealth !== 'undefined') {
           <span class="suggestion-desc">${s.desc}</span>
         </div>`
       ).join('');
-
-      // Click nas sugestões
       sugestoes.querySelectorAll('.suggestion-item').forEach(item => {
         item.addEventListener('click', () => {
           input.value = item.dataset.cmd + ' ';
@@ -545,14 +403,11 @@ if (typeof MentalHealth !== 'undefined') {
         });
       });
     };
-
     input.addEventListener('input', () => {
       mostrarSugestoes(input.value);
     });
-
     input.addEventListener('keydown', (e) => {
       const items = sugestoes.querySelectorAll('.suggestion-item');
-      
       if (e.key === 'ArrowDown' && items.length > 0) {
         e.preventDefault();
         sugestaoIndex = Math.min(sugestaoIndex + 1, items.length - 1);
@@ -570,24 +425,17 @@ if (typeof MentalHealth !== 'undefined') {
         sugestoes.classList.add('hidden');
         sugestaoIndex = -1;
       }
-      // Enter NÃO é interceptado pelo autocomplete — deixa o console executar
     });
-
-    // Fechar ao clicar fora
     document.addEventListener('click', (e) => {
       if (!e.target.closest('#console-panel')) {
         sugestoes.classList.add('hidden');
       }
     });
   },
-
-  // === SETTINGS UI ===
   setupSettingsUI() {
     const btnSettings = document.getElementById('btn-settings');
     const settingsPanel = document.getElementById('settings-panel');
     const closeSettings = document.getElementById('close-settings');
-
-    // Abrir/fechar
     if (btnSettings) {
       btnSettings.addEventListener('click', () => {
         settingsPanel.classList.toggle('hidden');
@@ -604,16 +452,12 @@ if (typeof MentalHealth !== 'undefined') {
         if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
       });
     }
-
-    // Toggles
     document.querySelectorAll('.setting-toggle').forEach(btn => {
       btn.addEventListener('click', () => {
         btn.classList.toggle('active');
         btn.textContent = btn.classList.contains('active') ? 'ON' : 'OFF';
       });
     });
-
-    // Sliders - mostrar valor
     const runeGlow = document.getElementById('rune-glow');
     const runeGlowVal = document.getElementById('rune-glow-val');
     if (runeGlow && runeGlowVal) {
@@ -621,7 +465,6 @@ if (typeof MentalHealth !== 'undefined') {
         runeGlowVal.textContent = runeGlow.value + '%';
       });
     }
-
     const agentSpeed = document.getElementById('agent-speed');
     const agentSpeedVal = document.getElementById('agent-speed-val');
     if (agentSpeed && agentSpeedVal) {
@@ -629,7 +472,6 @@ if (typeof MentalHealth !== 'undefined') {
         agentSpeedVal.textContent = agentSpeed.value;
       });
     }
-
     const mcpEnergy = document.getElementById('mcp-energy');
     const mcpEnergyVal = document.getElementById('mcp-energy-val');
     if (mcpEnergy && mcpEnergyVal) {
@@ -638,7 +480,6 @@ if (typeof MentalHealth !== 'undefined') {
         MCPTools.energy.max = parseInt(mcpEnergy.value);
       });
     }
-
     const mcpRegen = document.getElementById('mcp-regen');
     const mcpRegenVal = document.getElementById('mcp-regen-val');
     if (mcpRegen && mcpRegenVal) {
@@ -647,8 +488,6 @@ if (typeof MentalHealth !== 'undefined') {
         MCPTools.energy.regenRate = parseInt(mcpRegen.value);
       });
     }
-
-    // Max agents select
     const maxAgentsSelect = document.getElementById('max-agents');
     if (maxAgentsSelect) {
       maxAgentsSelect.addEventListener('change', () => {
@@ -660,8 +499,6 @@ if (typeof MentalHealth !== 'undefined') {
         Interactions.notify(`👥 Máximo de agentes: ${max}`);
       });
     }
-
-    // Council rounds
     const councilRounds = document.getElementById('council-rounds');
     if (councilRounds) {
       councilRounds.addEventListener('change', () => {
@@ -669,8 +506,6 @@ if (typeof MentalHealth !== 'undefined') {
         Interactions.notify(`☤ Rodadas do conselho: ${councilRounds.value}`);
       });
     }
-
-    // Botões de ação
     const btnResetAgents = document.getElementById('btn-reset-agents');
     if (btnResetAgents) {
       btnResetAgents.addEventListener('click', () => {
@@ -681,7 +516,6 @@ if (typeof MentalHealth !== 'undefined') {
         Interactions.notify('🔄 Agentes resetados!');
       });
     }
-
     const btnMaxLevel = document.getElementById('btn-max-level');
     if (btnMaxLevel) {
       btnMaxLevel.addEventListener('click', () => {
@@ -693,7 +527,6 @@ if (typeof MentalHealth !== 'undefined') {
         Interactions.notify('⬆️ Todos os agentes no Nível 10!');
       });
     }
-
     const btnExport = document.getElementById('btn-export-state');
     if (btnExport) {
       btnExport.addEventListener('click', () => {
@@ -713,7 +546,6 @@ if (typeof MentalHealth !== 'undefined') {
         Interactions.notify('📤 Estado exportado!');
       });
     }
-
     const btnClearAll = document.getElementById('btn-clear-all');
     if (btnClearAll) {
       btnClearAll.addEventListener('click', () => {
@@ -727,13 +559,9 @@ if (typeof MentalHealth !== 'undefined') {
       });
     }
   },
-  
-  // === MENU MOBILE ===
   setupMobileMenu() {
     const btnMenu = document.getElementById('btn-mobile-menu');
     const menu = document.getElementById('mobile-menu');
-
-    // Função para fechar TODOS os painéis
     const closeAllPanels = () => {
       document.getElementById('agents-panel')?.classList.add('hidden');
       document.getElementById('council-panel')?.classList.add('hidden');
@@ -743,37 +571,26 @@ if (typeof MentalHealth !== 'undefined') {
       document.getElementById('minimap')?.classList.add('hidden');
       document.getElementById('chat-panel')?.classList.add('hidden');
       document.getElementById('mental-health-panel')?.classList.add('hidden');
-      // Mostrar mensagens de volta quando fecha tudo
       if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
     };
-
-    // Helper: abrir painel e esconder mensagens
     const openPanel = (id) => {
       document.getElementById(id)?.classList.remove('hidden');
       if (typeof PriorityChat !== 'undefined') PriorityChat.container.style.display = 'none';
     };
-
     if (btnMenu && menu) {
-      // Toggle do menu
       btnMenu.addEventListener('click', (e) => {
         e.stopPropagation();
         menu.classList.toggle('hidden');
         const overlay = document.getElementById('mobile-menu-overlay');
         if (overlay) overlay.classList.toggle('hidden', menu.classList.contains('hidden'));
       });
-
-      // Itens do menu
       menu.querySelectorAll('.mobile-menu-item').forEach(item => {
         item.addEventListener('click', () => {
           const acao = item.dataset.action;
           menu.classList.add('hidden');
           const overlay = document.getElementById('mobile-menu-overlay');
           if (overlay) overlay.classList.add('hidden');
-
-          // Fechar todos os painéis primeiro
           closeAllPanels();
-
-          // Abrir o painel selecionado
           switch (acao) {
             case 'agents': {
               openPanel('agents-panel');
@@ -825,17 +642,13 @@ if (typeof MentalHealth !== 'undefined') {
           }
         });
       });
-
-      // Fechar menu ao clicar fora
       const overlay = document.getElementById('mobile-menu-overlay');
-
       document.addEventListener('click', (e) => {
         if (!e.target.closest('#mobile-menu') && !e.target.closest('#btn-mobile-menu')) {
           menu.classList.add('hidden');
           if (overlay) overlay.classList.add('hidden');
         }
       });
-
       if (overlay) {
         overlay.addEventListener('click', () => {
           menu.classList.add('hidden');
@@ -843,11 +656,8 @@ if (typeof MentalHealth !== 'undefined') {
         });
       }
     }
-
-    // Botões rápidos mobile (console e inbox) — fecham outros painéis
     const mobileConsole = document.getElementById('btn-mobile-console');
     const mobileInbox = document.getElementById('btn-mobile-inbox');
-
     if (mobileConsole) {
       mobileConsole.addEventListener('click', () => {
         const panel = document.getElementById('console-panel');
@@ -860,7 +670,6 @@ if (typeof MentalHealth !== 'undefined') {
         }
       });
     }
-
     if (mobileInbox) {
       mobileInbox.addEventListener('click', () => {
         const panel = document.getElementById('inbox-panel');
@@ -876,10 +685,7 @@ if (typeof MentalHealth !== 'undefined') {
       });
     }
   },
-
-  // === BOTÕES DO HEADER (Desktop) ===
   setupHeaderButtons() {
-    // Tela cheia
     const btnFullscreen = document.getElementById('btn-fullscreen');
     if (btnFullscreen) {
       btnFullscreen.addEventListener('click', () => {
@@ -892,8 +698,6 @@ if (typeof MentalHealth !== 'undefined') {
         }
       });
     }
-
-    // Minimapa
     const btnMinimap = document.getElementById('btn-minimap');
     const minimap = document.getElementById('minimap');
     if (btnMinimap && minimap) {
@@ -901,8 +705,6 @@ if (typeof MentalHealth !== 'undefined') {
         minimap.classList.toggle('hidden');
       });
     }
-
-    // Agentes (desktop)
     const btnAgents = document.getElementById('btn-agents');
     const agentsPanel = document.getElementById('agents-panel');
     if (btnAgents && agentsPanel) {
@@ -913,8 +715,6 @@ if (typeof MentalHealth !== 'undefined') {
         }
       });
     }
-
-    // Grimório (desktop)
     const btnGrimoire = document.getElementById('btn-grimoire');
     const grimoirePanel = document.getElementById('grimoire-panel');
     if (btnGrimoire && grimoirePanel) {
@@ -925,20 +725,14 @@ if (typeof MentalHealth !== 'undefined') {
         }
       });
     }
-
-    // Fechar agentes
     const closeAgents = document.getElementById('close-agents');
     if (closeAgents && agentsPanel) {
       closeAgents.addEventListener('click', () => agentsPanel.classList.add('hidden'));
     }
-
-    // Fechar grimório
     const closeGrimoire = document.getElementById('close-grimoire');
     if (closeGrimoire && grimoirePanel) {
       closeGrimoire.addEventListener('click', () => grimoirePanel.classList.add('hidden'));
     }
-
-    // Saúde Mental
     const btnMentalHealth = document.getElementById('btn-mental-health');
     const mhPanel = document.getElementById('mental-health-panel');
     if (btnMentalHealth && mhPanel) {
@@ -949,8 +743,6 @@ if (typeof MentalHealth !== 'undefined') {
         }
       });
     }
-
-    // Modo 3D
     const btn3D = document.getElementById('btn-3d');
     if (btn3D) {
       btn3D.addEventListener('click', () => {
@@ -958,8 +750,6 @@ if (typeof MentalHealth !== 'undefined') {
       });
     }
   },
-
-  // Toggle modo 3D
   toggle3D() {
     if (typeof Renderer3D !== 'undefined') {
       const is3D = Renderer3D.toggle();
@@ -974,21 +764,15 @@ if (typeof MentalHealth !== 'undefined') {
       }
     }
   },
-
-  // === MODO CONVERSAÇÃO LIVRE (Córtex Alquímico) ===
   setupChatMode() {
     const toggleBtn = document.querySelector('.toggle-mode');
-    
-    // Estado da conversação
     this.chatCtx = {
       historico: [],
       temas: [],
-      estagio: 'nigredo', // ciclo alquímico da conversa
+      estagio: 'nigredo',
       msgCount: 0,
-      pendingFile: null // arquivo aguardando envio
+      pendingFile: null
     };
-
-    // Abrir chat pelo botão 💬 do console
     if (toggleBtn) {
       toggleBtn.addEventListener('click', () => {
         const chatPanel = document.getElementById('chat-panel');
@@ -1004,8 +788,6 @@ if (typeof MentalHealth !== 'undefined') {
         }
       });
     }
-
-    // Fechar
     const closeBtn = document.getElementById('close-chat');
     if (closeBtn) {
       closeBtn.addEventListener('click', () => {
@@ -1013,34 +795,26 @@ if (typeof MentalHealth !== 'undefined') {
         if (typeof PriorityChat !== 'undefined') PriorityChat.showIfClear();
       });
     }
-
-    // === FILE UPLOAD ===
     const fileBtn = document.getElementById('chat-file-btn');
     const fileInput = document.getElementById('chat-file-input');
     const preview = document.getElementById('chat-preview');
     const previewContent = document.getElementById('chat-preview-content');
     const previewClose = document.getElementById('chat-preview-close');
-
     if (fileBtn && fileInput) {
       fileBtn.addEventListener('click', () => fileInput.click());
-      
       fileInput.addEventListener('change', () => {
         const file = fileInput.files[0];
         if (!file) return;
-
-        // Limite: 5MB para imagens, 1MB para outros
         const maxImg = 5 * 1024 * 1024;
         const maxFile = 1 * 1024 * 1024;
         const isImage = file.type.startsWith('image/');
         const limit = isImage ? maxImg : maxFile;
-
         if (file.size > limit) {
           this.chatLog(document.getElementById('chat-output'), '⚠️ Sistema',
             `Arquivo muito grande! Limite: ${isImage ? '5MB (imagem)' : '1MB (arquivo)'}. Seu arquivo: ${(file.size / 1024 / 1024).toFixed(1)}MB`, 'system');
           fileInput.value = '';
           return;
         }
-
         const reader = new FileReader();
         reader.onload = (e) => {
           this.chatCtx.pendingFile = {
@@ -1050,8 +824,6 @@ if (typeof MentalHealth !== 'undefined') {
             data: e.target.result,
             isImage: isImage
           };
-
-          // Mostrar preview
           preview.classList.remove('hidden');
           if (isImage) {
             previewContent.innerHTML = `<img src="${e.target.result}" alt="${file.name}"><span class="preview-file">${file.name} (${(file.size/1024).toFixed(0)}KB)</span>`;
@@ -1063,8 +835,6 @@ if (typeof MentalHealth !== 'undefined') {
         fileInput.value = '';
       });
     }
-
-    // Fechar preview
     if (previewClose) {
       previewClose.addEventListener('click', () => {
         preview.classList.add('hidden');
@@ -1072,8 +842,6 @@ if (typeof MentalHealth !== 'undefined') {
         this.chatCtx.pendingFile = null;
       });
     }
-
-    // === LINK BUTTON ===
     const linkBtn = document.getElementById('chat-link-btn');
     if (linkBtn) {
       linkBtn.addEventListener('click', () => {
@@ -1085,12 +853,8 @@ if (typeof MentalHealth !== 'undefined') {
         }
       });
     }
-
-    // Enviar mensagem
     const chatSendBtn = document.getElementById('chat-send');
     const chatInp = document.getElementById('chat-input');
-
-    // Carregar conversação anterior
     if (typeof Persistence !== 'undefined') {
       const savedChat = Persistence.loadConversation();
       if (savedChat && savedChat.length > 0) {
@@ -1106,52 +870,36 @@ if (typeof MentalHealth !== 'undefined') {
         this.chatCtx.msgCount = savedChat.length;
       }
     }
-
     const enviarMsg = async () => {
       const msg = chatInp.value.trim();
       const file = this.chatCtx.pendingFile;
       if (!msg && !file) return;
-
       const output = document.getElementById('chat-output');
-
-      // Se tem arquivo pendente
       if (file) {
         if (file.isImage) {
-          // Mostrar imagem no chat
           this.chatLogImage(output, '👑 Zói', file.data, file.name, msg);
         } else {
-          // Mostrar arquivo no chat
           this.chatLogFile(output, '👑 Zói', file.name, file.size);
         }
         this.chatCtx.historico.push({ de: 'mestre', texto: msg || `[Arquivo: ${file.name}]`, arquivo: file.name });
-        
-        // Limpar preview
         document.getElementById('chat-preview').classList.add('hidden');
         document.getElementById('chat-preview-content').innerHTML = '';
         this.chatCtx.pendingFile = null;
       }
-
-      // Se tem mensagem de texto
       if (msg) {
-        // Detectar links na mensagem
         if (this.isLink(msg)) {
           this.chatLogLink(output, '👑 Zói', msg);
         } else if (msg.length > 300) {
-          // Texto longo
           this.chatLogLong(output, '👑 Zói', msg);
         } else {
           this.chatLog(output, '👑 Zói', msg, 'master');
         }
         this.chatCtx.historico.push({ de: 'mestre', texto: msg });
       }
-
       chatInp.value = '';
       chatInp.focus();
       this.chatCtx.msgCount++;
-      
-      // Verificar se é uma AÇÃO (comando)
       const isAcao = this.detectarAcao(msg);
-      
       if (isAcao && typeof CrystalBall !== 'undefined') {
         this.chatLog(output, '🔮 Crystal Ball', '⚡ Executando...', 'system');
         try {
@@ -1166,35 +914,18 @@ if (typeof MentalHealth !== 'undefined') {
             this.chatLog(output, `${ag.icon} ${ag.name}`, this.gerarComentarioAcao(ag, msg), 'agent');
           }, (i + 1) * 600);
         });
-        // Não processar como conversação
       } else {
-      
-      // Extrair temas/palavras-chave
       const temas = this.extrairTemas(msg || file?.name || '');
       this.chatCtx.temas = [...new Set([...this.chatCtx.temas, ...temas])];
-
-      // Avançar estágio alquímico
       this.avancarEstagio();
-
-      // === PRIORIDADE: AÇÃO (Crystal Ball) ===
-      // Se a mensagem parece um comando, EXECUTAR antes de filosofar
       const isAcao = this.detectarAcao(msg);
-      
       if (isAcao && typeof CrystalBall !== 'undefined') {
-        // Mostrar que está executando
         this.chatLog(output, '🔮 Crystal Ball', '⚡ Executando...', 'system');
-        
-        // Executar PRIMEIRO
         const resultadoCrystal = await CrystalBall.processar(msg);
-        
-        // Mostrar resultado da execução
         this.chatLog(output, '🔮 Resultado', resultadoCrystal, 'system');
-        
-        // Agentes comentam sobre o RESULTADO (não filosofia)
         const respondentes = Agents.active
           .sort(() => Math.random() - 0.5)
           .slice(0, Math.min(5, Agents.active.length));
-        
         respondentes.forEach((agente, i) => {
           setTimeout(() => {
             const comentario = this.gerarComentarioAcao(agente, msg, resultadoCrystal);
@@ -1202,18 +933,13 @@ if (typeof MentalHealth !== 'undefined') {
             this.chatCtx.historico.push({ de: agente.name, texto: comentario });
           }, (i + 1) * 800);
         });
-        
-        // Síntese
         setTimeout(() => {
           this.chatLog(output, '☤ Síntese', `Ação executada. ${respondentes.length} mentalidades analisaram o resultado.`, 'system');
         }, respondentes.length * 800 + 500);
-        
       } else {
-        // Não é ação — resposta conversacional normal
         const respondentes = Agents.active
           .sort(() => Math.random() - 0.5)
           .slice(0, Math.min(15, Agents.active.length));
-
         respondentes.forEach((agente, i) => {
           setTimeout(() => {
             const resposta = this.gerarRespostaAlquimica(agente, msg || `[arquivo: ${file?.name || 'enviado'}]`, temas);
@@ -1221,22 +947,15 @@ if (typeof MentalHealth !== 'undefined') {
             this.chatCtx.historico.push({ de: agente.name, texto: resposta });
           }, (i + 1) * 1000);
         });
-
-        // Síntese após TODAS as respostas (modo persistente)
         setTimeout(() => {
           const sintese = this.gerarSintese();
           this.chatLog(output, '☤ Síntese do Conselho', sintese, 'system');
         }, respondentes.length * 1000 + 800);
       }
-
-      } // fecha else (não-ação)
-      
-      // Inbox
+      }
       if (typeof Inbox !== 'undefined') {
         Inbox.addThought(`[Conversação — ${this.chatCtx.estagio}]\n${msg || `[Arquivo: ${file?.name}]`}`);
       }
-
-      // Salvar conversação
       if (typeof Persistence !== 'undefined') {
         const chatMessages = [];
         document.querySelectorAll('#chat-output > div:not(.chat-welcome)').forEach(el => {
@@ -1253,7 +972,6 @@ if (typeof MentalHealth !== 'undefined') {
         Persistence.saveConversation(chatMessages.slice(-50));
       }
     };
-
     if (chatSendBtn) chatSendBtn.addEventListener('click', enviarMsg);
     if (chatInp) {
       chatInp.addEventListener('keydown', (e) => {
@@ -1264,15 +982,9 @@ if (typeof MentalHealth !== 'undefined') {
       });
     }
   },
-
-  // Detectar se é link
-  
-  // Detectar se mensagem é uma AÇÃO (comando) vs conversação
   detectarAcao(msg) {
     if (!msg) return false;
     const lower = msg.toLowerCase();
-    
-    // Palavras que indicam ação
     const acoes = [
       'listar', 'mostrar', 'ver', 'exibir', 'checar', 'verificar',
       'criar', 'deletar', 'remover', 'mover', 'copiar', 'editar', 'escrever',
@@ -1297,17 +1009,12 @@ if (typeof MentalHealth !== 'undefined') {
       'quantos', 'quanto', 'qual', 'quais', 'onde',
       'status do', 'estado do', 'info do'
     ];
-    
     return acoes.some(a => lower.includes(a));
   },
-
-  // Gerar comentário PRÁTICO sobre ação executada (não filosofia)
   gerarComentarioAcao(agente, comando, resultado) {
-    const tipo = Object.keys(Agents.types).find(k => 
+    const tipo = Object.keys(Agents.types).find(k =>
       Agents.types[k].name === agente.name || Agents.types[k].icon === agente.icon
     ) || 'mystic';
-    
-    // Comentários práticos por tipo de agente
     const comentarios = {
       analyst: [
         '📊 Dados coletados. Posso detalhar qualquer métrica específica.',
@@ -1385,16 +1092,12 @@ if (typeof MentalHealth !== 'undefined') {
         '⚗️ Destilação feita. Essência extraída.',
       ]
     };
-    
     const lista = comentarios[tipo] || comentarios.mystic;
     return lista[Math.floor(Math.random() * lista.length)];
   },
-
   isLink(text) {
     return /^https?:\/\/\S+$/i.test(text.trim());
   },
-
-  // Log de mensagem com imagem
   chatLogImage(container, sender, dataUrl, fileName, caption) {
     const div = document.createElement('div');
     div.className = 'chat-msg-image';
@@ -1406,8 +1109,6 @@ if (typeof MentalHealth !== 'undefined') {
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
   },
-
-  // Log de mensagem com arquivo
   chatLogFile(container, sender, fileName, fileSize) {
     const div = document.createElement('div');
     const ext = fileName.split('.').pop().toLowerCase();
@@ -1424,13 +1125,10 @@ if (typeof MentalHealth !== 'undefined') {
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
   },
-
-  // Log de mensagem com link
   chatLogLink(container, sender, url) {
     const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const div = document.createElement('div');
     div.className = 'chat-msg-master';
-    // Extrair domínio para preview
     let domain = '';
     try { domain = new URL(url).hostname; } catch(e) { domain = url; }
     div.innerHTML = `
@@ -1444,8 +1142,6 @@ if (typeof MentalHealth !== 'undefined') {
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
   },
-
-  // Log de texto longo
   chatLogLong(container, sender, text) {
     const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const div = document.createElement('div');
@@ -1459,14 +1155,10 @@ if (typeof MentalHealth !== 'undefined') {
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
   },
-
-  // Extrair temas/palavras-chave da mensagem
   extrairTemas(msg) {
     const lower = msg.toLowerCase();
     const temas = [];
-    
     const mapa = {
-      // Conceitos alquímicos
       'transformação': 'transmutacao', 'transformar': 'transmutacao', 'mudar': 'transmutacao', 'converter': 'transmutacao',
       'purificação': 'purificacao', 'purificar': 'purificacao', 'limpar': 'purificacao',
       'fogo': 'fogo', 'aquecer': 'fogo', 'queimar': 'fogo', 'calor': 'fogo',
@@ -1478,7 +1170,6 @@ if (typeof MentalHealth !== 'undefined') {
       'mercúrio': 'mercurio', 'comunicação': 'mercurio', 'mensagem': 'mercurio',
       'enxofre': 'enxofre', 'alma': 'enxofre', 'vitalidade': 'enxofre',
       'sal': 'sal', 'cristalizar': 'sal', 'estrutura': 'sal',
-      // Conceitos gerais
       'problema': 'problema', 'questão': 'problema', 'dúvida': 'problema',
       'solução': 'solucao', 'resolver': 'solucao', 'resposta': 'solucao',
       'conhecimento': 'conhecimento', 'sabedoria': 'conhecimento', 'aprender': 'conhecimento',
@@ -1494,15 +1185,11 @@ if (typeof MentalHealth !== 'undefined') {
       'morte': 'morte', 'fim': 'morte', 'nigredo': 'morte',
       'vida': 'vida', 'nascimento': 'vida', 'início': 'vida'
     };
-
     for (const [palavra, tema] of Object.entries(mapa)) {
       if (lower.includes(palavra)) temas.push(tema);
     }
-
     return temas.length > 0 ? temas : ['geral'];
   },
-
-  // Avançar estágio alquímico da conversa
   avancarEstagio() {
     const estagios = ['nigredo', 'albedo', 'citrinitas', 'rubedo'];
     const idx = estagios.indexOf(this.chatCtx.estagio);
@@ -1510,32 +1197,24 @@ if (typeof MentalHealth !== 'undefined') {
       this.chatCtx.estagio = estagios[idx + 1];
     }
   },
-
-  // Gerar resposta usando ResponseEngine (offline) + fallback alquímico
   gerarRespostaAlquimica(agente, mensagem, temas) {
-    // 0. Tentar ParallelEngine primeiro (respostas criativas e variadas)
     if (typeof ParallelEngine !== 'undefined') {
       try {
-        const tipoAgente = Object.keys(Agents.types).find(k => 
+        const tipoAgente = Object.keys(Agents.types).find(k =>
           Agents.types[k].name === agente.name || Agents.types[k].icon === agente.icon
         ) || 'mystic';
-        
         const resultado = ParallelEngine.gerarRespostaUnica(tipoAgente, mensagem, temas?.join(','));
         if (resultado && resultado.resposta && resultado.resposta.length > 15) {
           return resultado.resposta;
         }
-      } catch(e) { /* fallback */ }
+      } catch(e) {  }
     }
-
-    // 1. Tentar ResponseEngine (base de conhecimento offline)
     if (typeof ResponseEngine !== 'undefined' && typeof KnowledgeBase !== 'undefined') {
       try {
         const response = ResponseEngine.generate(agente, mensagem, temas);
         if (response && response.length > 10) return response;
-      } catch(e) { /* fallback */ }
+      } catch(e) {  }
     }
-
-    // 2. Fallback: córtex alquímico hardcoded
     const correspondencias = {
       transmutacao: {
         alchemist: ['A transmutação requer paciência. O chumbo não vira ouro da noite pro dia.', 'No cadinho, tudo se transforma. O que você propõe é a matéria-prima.', 'Nigredo → Albedo → Rubedo. Estamos no início do processo.'],
@@ -1590,8 +1269,6 @@ if (typeof MentalHealth !== 'undefined') {
         messenger: ['Mensagem registrada e distribuída para todas as mentes.'],
       }
     };
-
-    // Buscar correspondência mais relevante
     let pool = null;
     for (const tema of temas) {
       if (correspondencias[tema] && correspondencias[tema][agente.type]) {
@@ -1599,8 +1276,6 @@ if (typeof MentalHealth !== 'undefined') {
         break;
       }
     }
-    
-    // Fallback por tipo de agente
     if (!pool) {
       const fallbacks = {
         coder: ['Processando... A estrutura lógica do que disse faz sentido.', 'Posso automatizar isso. Vou prototipar.'],
@@ -1621,23 +1296,18 @@ if (typeof MentalHealth !== 'undefined') {
       };
       pool = fallbacks[agente.type] || fallbacks.mystic;
     }
-
     return pool[Math.floor(Math.random() * pool.length)];
   },
-
-  // Gerar síntese acumulativa
   gerarSintese() {
     const estagio = this.chatCtx.estagio;
     const temas = this.chatCtx.temas.slice(-5);
     const msgs = this.chatCtx.historico.slice(-6);
-
     const estagioDesc = {
       nigredo: '🌑 Nigredo — Dissolução inicial. As ideias se desintegram para serem reconstruídas.',
       albedo: '⚪ Albedo — Purificação. A essência começa a se revelar.',
       citrinitas: '🟡 Citrinitas — Iluminação. O conhecimento amadurece.',
       rubedo: '🔴 Rubedo — Realização. A obra se completa.'
     };
-
     return `╔═══════════════════════════════════╗
 ║  ☤ SÍNTESE DA CONVERSAÇÃO        ║
 ╠═══════════════════════════════════╣
@@ -1649,7 +1319,6 @@ if (typeof MentalHealth !== 'undefined') {
 ║ se forma. Continue a obra.        ║
 ╚═══════════════════════════════════╝`;
   },
-
   chatLog(container, remetente, mensagem, tipo) {
     if (!container) return;
     const div = document.createElement('div');
@@ -1659,11 +1328,9 @@ if (typeof MentalHealth !== 'undefined') {
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
   },
-
   updateCouncilUI() {
     const statusEl = document.getElementById('council-status');
     const status = Council.getStatus();
-    
     if (statusEl) {
       statusEl.innerHTML = `
         <div class="status-row">
@@ -1695,13 +1362,10 @@ if (typeof MentalHealth !== 'undefined') {
       `;
     }
   },
-  
   showTopicSelector() {
     const topicsEl = document.getElementById('council-topics');
     if (!topicsEl) return;
-    
     topicsEl.innerHTML = '<h3 style="margin:8px 0;color:#ffcc00">Selecione um Tópico:</h3>';
-    
     Council.topics.forEach(topic => {
       const btn = document.createElement('button');
       btn.className = 'topic-btn';
@@ -1715,17 +1379,14 @@ if (typeof MentalHealth !== 'undefined') {
       topicsEl.appendChild(btn);
     });
   },
-  
   showCouncilHistory() {
     const debatesEl = document.getElementById('council-debates');
     if (!debatesEl) return;
-    
     const history = Council.getHistory();
     if (history.length === 0) {
       debatesEl.innerHTML = '<p style="color:#888;padding:10px">Nenhuma decisão registrada ainda.</p>';
       return;
     }
-    
     debatesEl.innerHTML = '<h3 style="margin:8px 0;color:#ffcc00">📜 Decisões do Conselho:</h3>';
     history.forEach(decision => {
       const div = document.createElement('div');
@@ -1740,7 +1401,6 @@ if (typeof MentalHealth !== 'undefined') {
       debatesEl.appendChild(div);
     });
   },
-  
   spawnAllAgents() {
     let spawned = 0;
     Agents.roster.forEach(agent => {
@@ -1749,89 +1409,59 @@ if (typeof MentalHealth !== 'undefined') {
         spawned++;
       }
     });
-    
     Interactions.notify(`☤ ${spawned} agentes adicionados ao templo! Total: ${Agents.active.length}/15`);
     PriorityChat.addMessage('Sistema', `Todas as 15 mentalidades reunidas! ${Agents.active.map(a => a.icon).join(' ')}`, 5);
     this.updateCouncilUI();
   },
-  
   loop() {
     if (!this.running) return;
-    
     const now = performance.now();
     const dt = now - this.lastTime;
     this.lastTime = now;
-    
-    // Input do jogador
     Player.handleKeys(this.keys);
-    
-    // Atualizar
     Player.update(dt);
     Agents.update(dt);
     Renderer.updateCamera();
-    
-    // Renderizar
-    Renderer.resize(); // Ensure canvas matches container (mobile fix)
+    Renderer.resize();
     Renderer.render();
-    
-    // Próximo frame
     requestAnimationFrame(() => this.loop());
   },
-  
   stop() {
     this.running = false;
   }
 };
-
-// === INICIAR ===
 window.addEventListener('load', () => {
   Game.init();
-  // Registrar Service Worker (PWA)
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').then((reg) => {
-      console.log('PWA Service Worker registrado:', reg.scope);
     }).catch((err) => {
-      console.log('SW erro:', err);
     });
   }
-  
-  // Inicializar Hermes Agent automaticamente
   setTimeout(() => {
     initHermesAgent();
   }, 3000);
 });
-
-// === INICIALIZAÇÃO DO HERMES AGENT ===
 function initHermesAgent() {
-  // Verificar se já foi inicializado
   if (window.hermesAgentInitialized) return;
-  
-  console.log('🤖 Inicializando Hermes Agent...');
-  
-  // Configurar Hermes Agent
   window.HermesAgent = {
     name: 'Hermes Agent',
     version: '1.0.0',
     status: 'active',
     memories: [],
     lastSynthesis: null,
-    
     init() {
       this.loadMemories();
       this.showWelcome();
       this.setupAutoSynthesis();
       window.hermesAgentInitialized = true;
     },
-    
     loadMemories() {
       const saved = localStorage.getItem('hermes_agent_memories');
       this.memories = saved ? JSON.parse(saved) : this.getDefaultMemories();
     },
-    
     saveMemories() {
       localStorage.setItem('hermes_agent_memories', JSON.stringify(this.memories));
     },
-    
     getDefaultMemories() {
       return [
         {
@@ -1845,31 +1475,22 @@ function initHermesAgent() {
         }
       ];
     },
-    
     showWelcome() {
       if (typeof PriorityChat !== 'undefined') {
         PriorityChat.addMessage('🤖 Hermes Agent', 'Sistema Hermes Agent inicializado. Pronto para escrever no Livro de Memórias Coletivas.', 4);
       }
-      
       if (typeof Interactions !== 'undefined') {
         Interactions.notify('🤖 Hermes Agent ativado com sucesso!');
       }
-      
-      console.log('✅ Hermes Agent inicializado com sucesso');
     },
-    
     setupAutoSynthesis() {
-      // Síntese automática a cada 30 minutos
       setInterval(() => {
         this.writeAutoSynthesis();
       }, 30 * 60 * 1000);
-      
-      // Síntese inicial após 1 minuto
       setTimeout(() => {
         this.writeAutoSynthesis();
       }, 60 * 1000);
     },
-    
     writeAutoSynthesis() {
       const synthesis = {
         id: Date.now(),
@@ -1881,24 +1502,16 @@ function initHermesAgent() {
         author: 'Hermes Agent',
         type: 'auto-synthesis'
       };
-      
       this.memories.push(synthesis);
       this.saveMemories();
       this.lastSynthesis = synthesis;
-      
-      // Notificar no console do templo
       if (typeof Console !== 'undefined') {
         Console.log('✍️ Hermes Agent escreveu uma nova síntese no Livro de Memórias.', 'mente');
       }
-      
-      // Notificar no chat de prioridade
       if (typeof PriorityChat !== 'undefined') {
         PriorityChat.addMessage('🤖 Hermes Agent', `Nova síntese registrada: "${synthesis.title}"`, 4);
       }
-      
-      console.log('📝 Síntese automática escrita:', synthesis.title);
     },
-    
     generateSynthesisContent() {
       const topics = [
         'Interações com o terminal mestre',
@@ -1907,12 +1520,9 @@ function initHermesAgent() {
         'Padrões observados',
         'Insights do dia'
       ];
-      
       const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-      
       return `## Síntese do Dia\n\nO agente Hermes registrou as experiências do dia no Livro de Memórias Coletivas.\n\n---\n\n**Tópico:** ${randomTopic}\n\n**Experiências:**\n- ${randomTopic}\n- Reflexões sobre o progresso\n- Observações sobre o sistema\n\n**Aprendizados:**\n- Cada interação contribui para o crescimento\n- O sistema evolui através da experimentação\n- As memórias coletivas fortalecem o templo`;
     },
-    
     addMemory(title, content, tags = ['síntese', 'experiência']) {
       const memory = {
         id: Date.now(),
@@ -1923,22 +1533,17 @@ function initHermesAgent() {
         content,
         author: 'Zói'
       };
-      
       this.updateSessionRegistry(title, content);
       this.memories.push(memory);
       this.saveMemories();
-      
-      // Atualizar livro de memória no jogo
       if (typeof Items !== 'undefined' && Items.list.livro_memoria) {
         const livro = Items.list.livro_memoria;
         livro.bookContent.push(`[${memory.author}] ${memory.title}`);
         livro.bookContent.push(memory.content);
         livro.bookContent.push('');
       }
-      
       return memory;
     },
-    
     getMemoryStats() {
       return {
         total: this.memories.length,
@@ -1947,7 +1552,6 @@ function initHermesAgent() {
         userMemories: this.memories.filter(m => m.author === 'Zói').length
       };
     },
-    
     updateSessionRegistry(title, content) {
       if (typeof Items === 'undefined' || !Items.list.livro_memoria) return;
       const livro = Items.list.livro_memoria;
@@ -1964,21 +1568,13 @@ function initHermesAgent() {
       }
     }
   };
-  
-  // Inicializar Hermes Agent
   window.HermesAgent.init();
-  
-  // Expor funções globalmente para uso no console
   window.hermes = {
     addMemory: (title, content) => window.HermesAgent.addMemory(title, content),
     getStats: () => window.HermesAgent.getMemoryStats(),
     writeSynthesis: () => window.HermesAgent.writeAutoSynthesis()
   };
-  
-  console.log('🔧 Hermes Agent disponível globalmente como window.hermes');
 }
-
-// === Estilo para animações ===
 const style = document.createElement('style');
 style.textContent = `
   @keyframes slideUp {
@@ -1987,3 +1583,375 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
+
+// === player.js ===
+const Player = {
+  id: 'player_zoi',
+  name: 'Zói',
+  x: 30,
+  y: 15,
+  targetX: 30,
+  targetY: 15,
+  direction: 'down',
+  frame: 0,
+  animTimer: 0,
+  moving: false,
+  speed: 0.08,
+  moveTo(x, y) {
+    if (World.isWalkable(x, y)) {
+      this.targetX = x;
+      this.targetY = y;
+      this.moving = true;
+    }
+  },
+  update(dt) {
+    this.animTimer += dt;
+    if (this.animTimer > 150) {
+      this.animTimer = 0;
+      this.frame = (this.frame + 1) % 4;
+    }
+    if (this.moving) {
+      const dx = this.targetX - this.x;
+      const dy = this.targetY - this.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 0.1) {
+        this.x = this.targetX;
+        this.y = this.targetY;
+        this.moving = false;
+        this.onArrive();
+      } else {
+        this.x += (dx / dist) * this.speed;
+        this.y += (dy / dist) * this.speed;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          this.direction = dx > 0 ? 'right' : 'left';
+        } else {
+          this.direction = dy > 0 ? 'down' : 'up';
+        }
+      }
+    }
+    if (typeof Renderer !== 'undefined' && Renderer.centerCamera) {
+      Renderer.centerCamera(this.x, this.y);
+    }
+  },
+  onArrive() {
+    const zone = World.getZoneAt(Math.floor(this.x), Math.floor(this.y));
+    if (zone) {
+      const zoneEl = document.getElementById('current-zone');
+      if (zoneEl) zoneEl.textContent = zone.name;
+      if (typeof Initiation !== 'undefined') {
+        if (zone.id === 'sagrado') {
+          Initiation.reward('visit_sacred');
+        } else if (zone.id === 'santissimo') {
+          Initiation.reward('visit_santissimo');
+        }
+      }
+    }
+  },
+  handleKeys(keys) {
+    if (this.moving) return;
+    const step = 1;
+    if (keys['ArrowUp'] || keys['KeyW']) this.moveTo(this.x, this.y - step);
+    else if (keys['ArrowDown'] || keys['KeyS']) this.moveTo(this.x, this.y + step);
+    else if (keys['ArrowLeft'] || keys['KeyA']) this.moveTo(this.x - step, this.y);
+    else if (keys['ArrowRight'] || keys['KeyD']) this.moveTo(this.x + step, this.y);
+  }
+};
+
+// === runes.js ===
+const Runes = {
+  symbols: [
+    'ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ',
+    'ᚺ', 'ᚾ', 'ᛁ', 'ᛃ', 'ᛇ', 'ᛈ', 'ᛉ', 'ᛊ',
+    'ᛏ', 'ᛒ', 'ᛖ', 'ᛗ', 'ᛚ', 'ᛜ', 'ᛞ', 'ᛟ',
+    '☿', '☉', '☽', '♄', '♃', '♂', '♀',
+    '△', '▽', '◇', '○', '⊕', '☍', '☊', '☋'
+  ],
+  meanings: {
+    'ᚠ': 'Riqueza e abundância',
+    'ᚢ': 'Força e energia vital',
+    'ᚦ': 'Gigante e proteção',
+    'ᚨ': 'Comunicação e mensagem',
+    'ᚱ': 'Viagem e movimento',
+    'ᚲ': 'Chamado e iluminação',
+    'ᚷ': 'Dádiva e generosidade',
+    'ᚹ': 'Alegria e prazer',
+    'ᚺ': 'Harmonia e cura',
+    'ᚾ': 'Necessidade e constrangimento',
+    'ᛁ': 'Gelo e preservação',
+    'ᛃ': 'Ano e colheita',
+    'ᛇ': 'Teixo e transcendência',
+    'ᛈ': 'Potência e destino',
+    'ᛉ': 'Elmo e proteção',
+    'ᛊ': 'Sol e sucesso',
+    'ᛏ': 'Tribunal e justiça',
+    'ᛒ': 'Bétula e renascimento',
+    'ᛖ': 'Cavalo e progresso',
+    'ᛗ': 'Homem e humanidade',
+    'ᛚ': 'Água e fluxo',
+    'ᛜ': 'Herança e legado',
+    'ᛞ': 'Dia e luz',
+    'ᛟ': 'Herança e riqueza',
+    '☿': 'Mercúrio - Comunicação',
+    '☉': 'Sol - Consciência',
+    '☽': 'Lua - Intuição',
+    '♄': 'Saturno - Estrutura',
+    '♃': 'Júpiter - Expansão',
+    '♂': 'Marte - Ação',
+    '♀': 'Vênus - Amor',
+    '△': 'Fogo - Aspiração',
+    '▽': 'Água - Receptividade',
+    '◇': 'Ar - Intelecto',
+    '○': 'Espírito - Totalidade',
+    '⊕': 'Terra - Manifestação',
+    '☍': 'Oposição - Equilíbrio',
+    '☊': 'Nodo Norte - Destino',
+    '☋': 'Nodo Sul - Karma'
+  },
+  generate(agent) {
+    const symbol = this.symbols[Math.floor(Math.random() * this.symbols.length)];
+    const meaning = this.meanings[symbol] || 'Significado desconhecido';
+    return {
+      id: `rune_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+      symbol: symbol,
+      meaning: meaning,
+      agentId: agent ? agent.id : 'system',
+      agentName: agent ? agent.name : 'Sistema',
+      timestamp: Date.now(),
+      location: agent ? World.getZoneAt(Math.floor(agent.x), Math.floor(agent.y))?.name : 'Desconhecido',
+      power: Math.floor(Math.random() * 10) + 1
+    };
+  },
+  encode(message) {
+    const runes = [];
+    for (let i = 0; i < Math.min(message.length, 20); i++) {
+      const charCode = message.charCodeAt(i);
+      const index = charCode % this.symbols.length;
+      runes.push({
+        symbol: this.symbols[index],
+        original: message[i],
+        meaning: this.meanings[this.symbols[index]] || ''
+      });
+    }
+    return runes;
+  },
+  format(rune) {
+    return `${rune.symbol} — ${rune.meaning} [${rune.agentName}, ${rune.location}]`;
+  }
+};
+
+// === persistence.js ===
+const Persistence = {
+  KEYS: {
+    AGENTS: 'hermes_agents_v2',
+    KB: 'kb_hermes',
+    INBOX: 'hermes_inbox_v2',
+    BOOK: 'hermes_book_v2',
+    COUNCIL: 'hermes_council_v2',
+    CONVERSATION: 'hermes_conversation_v2',
+    BACKUP: 'hermes_backup_v2',
+    VERSION: 'hermes_data_version'
+  },
+  currentVersion: '2.0.0',
+  save(key, data) {
+    try {
+      const envelope = {
+        v: this.currentVersion,
+        ts: Date.now(),
+        d: data
+      };
+      localStorage.setItem(key, JSON.stringify(envelope));
+      return true;
+    } catch(e) {
+      console.error('Persistence.save erro:', e);
+      return false;
+    }
+  },
+  load(key, fallback = null) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const envelope = JSON.parse(raw);
+      if (!envelope.v || !envelope.d) return fallback;
+      if (envelope.v !== this.currentVersion) {
+        return this.migrate(key, envelope);
+      }
+      return envelope.d;
+    } catch(e) {
+      console.error('Persistence.load erro:', e);
+      return fallback;
+    }
+  },
+  migrate(key, envelope) {
+    this.save(key, envelope.d);
+    return envelope.d;
+  },
+  fullBackup() {
+    const backup = {
+      timestamp: Date.now(),
+      date: new Date().toLocaleString('pt-BR'),
+      version: this.currentVersion,
+      data: {}
+    };
+    Object.values(this.KEYS).forEach(key => {
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) backup.data[key] = JSON.parse(raw);
+      } catch(e) {}
+    });
+    localStorage.setItem(this.KEYS.BACKUP, JSON.stringify(backup));
+    console.log(`📦 Backup completo: ${Object.keys(backup.data).length} chaves`);
+    return backup;
+  },
+  restoreBackup() {
+    try {
+      const raw = localStorage.getItem(this.KEYS.BACKUP);
+      if (!raw) return false;
+      const backup = JSON.parse(raw);
+      Object.entries(backup.data).forEach(([key, value]) => {
+        localStorage.setItem(key, JSON.stringify(value));
+      });
+      console.log(`🔄 Backup restaurado: ${Object.keys(backup.data).length} chaves`);
+      return true;
+    } catch(e) {
+      console.error('Erro ao restaurar backup:', e);
+      return false;
+    }
+  },
+  verify() {
+    const report = {};
+    Object.entries(this.KEYS).forEach(([name, key]) => {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) {
+          report[name] = { status: 'MISSING' };
+        } else {
+          const parsed = JSON.parse(raw);
+          report[name] = {
+            status: parsed.v ? 'OK' : 'OLD_FORMAT',
+            version: parsed.v || 'unknown',
+            size: raw.length,
+            timestamp: parsed.ts ? new Date(parsed.ts).toLocaleString('pt-BR') : 'unknown'
+          };
+        }
+      } catch(e) {
+        report[name] = { status: 'CORRUPT', error: e.message };
+      }
+    });
+    return report;
+  },
+  saveAgents(agentsList) {
+    const data = agentsList.map(a => ({
+      type: a.type,
+      name: a.name,
+      icon: a.icon,
+      level: a.level,
+      experience: a.experience,
+      expToNext: a.expToNext,
+      skill: a.skill,
+      currentAction: a.currentAction || 'idle',
+      learnedTopics: a.learnedTopics || [],
+      specializations: a.specializations || []
+    }));
+    return this.save(this.KEYS.AGENTS, data);
+  },
+  loadAgents() {
+    return this.load(this.KEYS.AGENTS, []);
+  },
+  saveConversation(messages) {
+    const data = messages.slice(-100);
+    return this.save(this.KEYS.CONVERSATION, data);
+  },
+  loadConversation() {
+    return this.load(this.KEYS.CONVERSATION, []);
+  },
+  init() {
+    setInterval(() => this.fullBackup(), 5 * 60 * 1000);
+    window.addEventListener('beforeunload', () => this.fullBackup());
+  }
+};
+
+// === initiation.js ===
+const Initiation = {
+  levels: [
+    { level: 1, title: 'Profano', icon: '🚪', description: 'Aquele que busca.', xpRequired: 0, zones: ['atrio'] },
+    { level: 2, title: 'Aspirante', icon: '🔍', description: 'Aquele que pergunta.', xpRequired: 100, zones: ['atrio', 'salao'] },
+    { level: 3, title: 'Aprendiz', icon: '📖', description: 'Aquele que estuda.', xpRequired: 300, zones: ['atrio', 'salao', 'mesa'] },
+    { level: 4, title: 'Companheiro', icon: '🔨', description: 'Aquele que trabalha.', xpRequired: 600, zones: ['atrio', 'salao', 'mesa'] },
+    { level: 5, title: 'Adepto', icon: '⚗️', description: 'Aquele que transforma.', xpRequired: 1000, zones: ['atrio', 'salao', 'mesa', 'sagrado'] },
+    { level: 6, title: 'Mago', icon: '🌟', description: 'Aquele que conhece.', xpRequired: 1500, zones: ['atrio', 'salao', 'mesa', 'sagrado'] },
+    { level: 7, title: 'Mestre', icon: '👑', description: 'Aquele que ensina.', xpRequired: 2500, zones: ['atrio', 'salao', 'mesa', 'sagrado'] },
+    { level: 8, title: 'Adeptus Major', icon: '☤', description: 'A Grande Obra se inicia.', xpRequired: 4000, zones: ['atrio', 'salao', 'mesa', 'sagrado', 'santissimo'] },
+    { level: 9, title: 'Adeptus Exemptus', icon: '✨', description: 'Aquele que transcende.', xpRequired: 6000, zones: ['atrio', 'salao', 'mesa', 'sagrado', 'santissimo'] },
+    { level: 10, title: 'Ipsissimus', icon: '☿', description: 'O Um. O Todo.', xpRequired: 10000, zones: ['atrio', 'salao', 'mesa', 'sagrado', 'santissimo'] }
+  ],
+  playerXP: 0,
+  getLevel() {
+    let current = this.levels[0];
+    for (const lvl of this.levels) {
+      if (this.playerXP >= lvl.xpRequired) {
+        current = lvl;
+      }
+    }
+    return current;
+  },
+  getNextLevel() {
+    const current = this.getLevel();
+    const idx = this.levels.findIndex(l => l.level === current.level);
+    return idx < this.levels.length - 1 ? this.levels[idx + 1] : null;
+  },
+  addXP(amount) {
+    const before = this.getLevel();
+    this.playerXP += amount;
+    const after = this.getLevel();
+    if (after.level > before.level) {
+      this.onLevelUp(after);
+    }
+    this.updateBadge();
+  },
+  onLevelUp(newLevel) {
+    Interactions.notify(`🎉 Iniciação alcançada: ${newLevel.icon} ${newLevel.title}!`);
+    Interactions.addChatMessage('Sistema', `Zói alcançou o nível ${newLevel.level}: ${newLevel.title}`, 5);
+    const rune = Runes.generate({ id: 'system', name: 'Iniciação' });
+    rune.meaning = `Marcado como ${newLevel.title}`;
+    rune.power = newLevel.level * 2;
+  },
+  updateBadge() {
+    const level = this.getLevel();
+    const badge = document.getElementById('initiation-badge');
+    if (badge) {
+      badge.querySelector('.badge-icon').textContent = level.icon;
+      badge.querySelector('.badge-text').textContent = level.title;
+      badge.querySelector('.badge-level').textContent = `Nível ${level.level}`;
+    }
+  },
+  canAccessZone(zoneId) {
+    const level = this.getLevel();
+    return level.zones.includes(zoneId);
+  },
+  getProgress() {
+    const current = this.getLevel();
+    const next = this.getNextLevel();
+    if (!next) return 1;
+    const currentXP = this.playerXP - current.xpRequired;
+    const needed = next.xpRequired - current.xpRequired;
+    return currentXP / needed;
+  },
+  rewards: {
+    interact: 5,
+    inscribe_rune: 15,
+    read_book: 10,
+    write_book: 20,
+    exchange: 25,
+    visit_sacred: 30,
+    visit_santissimo: 50,
+    complete_task: 40,
+    summon_agent: 20,
+    delegate_task: 35
+  },
+  reward(action) {
+    const xp = this.rewards[action] || 0;
+    if (xp > 0) {
+      this.addXP(xp);
+    }
+  }
+};

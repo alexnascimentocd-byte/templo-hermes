@@ -1,5 +1,5 @@
 /* Service Worker do Templo de Hermes — PWA Offline */
-const CACHE_NAME = 'templo-hermes-v4';
+const CACHE_NAME = 'templo-hermes-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -28,6 +28,10 @@ const ASSETS = [
   './js/alchemy-economy.js',
   './js/cognitive-cortex.js',
   './js/npc-grimoire.js',
+  './js/mental-health.js',
+  './js/neural-snippets.js',
+  './js/agent-conversations.js',
+  './js/renderer-3d.js',
   './manifest.json'
 ];
 

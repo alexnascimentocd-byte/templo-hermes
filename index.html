@@ -11,6 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="assets/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
   <!-- Tela de Carregamento -->
@@ -49,6 +50,7 @@
           <button id="btn-grimoire" title="Grimório" style="position:relative">📜<span id="grimoire-badge"></span></button>
           <button id="btn-mental-health" title="Saúde Mental" style="position:relative">🏥<span id="mh-badge"></span></button>
           <button id="btn-console" title="Console">⌨️</button>
+          <button id="btn-3d" title="Modo 3D" style="position:relative">🎮</button>
           <button id="btn-settings" title="Configurações">⚙️</button>
         </div>
         <!-- Mobile: botão de menu + ações rápidas -->
@@ -67,6 +69,7 @@
       <button class="mobile-menu-item" data-action="council">☤ Mesa de Reunião</button>
       <button class="mobile-menu-item" data-action="agents">👥 Mentes do Templo</button>
       <button class="mobile-menu-item" data-action="chat">💬 Conversação Livre</button>
+      <button class="mobile-menu-item" data-action="3d">🎮 Modo 3D (Minecraft)</button>
       <button class="mobile-menu-item" data-action="remote">🌍 Admin Remoto</button>
       <button class="mobile-menu-item" data-action="grimoire">📜 Grimório NPCs</button>
       <button class="mobile-menu-item" data-action="mental-health">🏥 Saúde Mental</button>
@@ -174,7 +177,7 @@
           <input type="text" id="console-input" class="console-input" placeholder="Digite um comando..." autocomplete="off" spellcheck="false">
         </div>
       </div>
-      <!-- Barra de ações rápidas -->
+      <!-- Barra de ações rápidas com 3D -->
       <div class="console-quickbar">
         <button class="quick-action" data-cmd="status" title="Ver estado do templo">
           <span class="quick-icon">🌡️</span>
@@ -195,6 +198,10 @@
         <button class="quick-action" data-cmd="mensagens" title="Ver caixa de entrada">
           <span class="quick-icon">🪬</span>
           <span class="quick-label">Mensagens</span>
+        </button>
+        <button class="quick-action" data-cmd="3d" title="Alternar Modo 3D Minecraft">
+          <span class="quick-icon">🎮</span>
+          <span class="quick-label">3D</span>
         </button>
         <button class="quick-action" data-cmd="energia" title="Ver energia MCP">
           <span class="quick-icon">🧿</span>
@@ -506,6 +513,8 @@
 <script src="js/npc-grimoire.js"></script>
 <script src="js/mental-health.js"></script>
 <script src="js/neural-snippets.js"></script>
+<script src="js/agent-conversations.js"></script>
+<script src="js/renderer-3d.js"></script>
 
 <!-- Painel Remoto -->
 <div id="remote-panel" class="panel hidden">

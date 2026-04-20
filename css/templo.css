@@ -3059,3 +3059,91 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* === 3D Renderer Mode === */
+#renderer-3d-container {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  background: #0a0a1a;
+}
+
+#renderer-3d-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#btn-back-2d {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 60;
+  background: rgba(26, 26, 46, 0.9);
+  color: #4aff4a;
+  border: 2px solid #4aff4a;
+  padding: 8px 16px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+#btn-back-2d:hover {
+  background: rgba(74, 255, 74, 0.2);
+}
+
+#hud-3d {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 60;
+  background: rgba(26, 26, 46, 0.85);
+  color: #d4a547;
+  border: 1px solid #4a1a6b;
+  padding: 10px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  border-radius: 4px;
+  min-width: 150px;
+}
+
+#instructions-3d {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  background: rgba(26, 26, 46, 0.85);
+  color: #aaa;
+  border: 1px solid #4a1a6b;
+  padding: 8px 16px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  border-radius: 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Mobile 3D adjustments */
+@media (max-width: 768px) {
+  #btn-back-2d {
+    font-size: 8px;
+    padding: 6px 12px;
+  }
+  
+  #hud-3d {
+    font-size: 7px;
+    min-width: 120px;
+    padding: 8px;
+  }
+  
+  #instructions-3d {
+    font-size: 6px;
+    padding: 6px 12px;
+  }
+}
