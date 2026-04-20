@@ -79,6 +79,7 @@ const Console = {
       case 'landing': case 'pagina': this.cmdLanding(args); break;
       case 'persist': case 'salvar': this.cmdPersist(args); break;
       case 'anuncio': case 'ads': case 'agencia': this.cmdAnuncio(args); break;
+      case 'global': case 'mundial': this.cmdGlobal(args); break;
       case 'ver': case 'olhar': case 'enxergar': this.cmdVer(args); break;
       case 'escrever': case 'write': this.cmdEscrever(args); break;
       case 'ler': case 'read': this.cmdLer(args); break;
@@ -2678,6 +2679,76 @@ const Console = {
       this.log('', 'dim');
       this.log('💡 O sistema detecta padrões automaticamente e mostra anúncios', 'dim');
       this.log('   baseados no nível de intenção do visitante.', 'dim');
+    }
+  },
+
+  cmdGlobal(args) {
+    if (typeof GlobalCampaign === 'undefined') {
+      this.log('❌ Campanha Global não disponível.', 'erro');
+      return;
+    }
+
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === 'ciclo' || sub === 'run' || sub === 'start') {
+      this.log('🌍 Executando campanha global...', 'info');
+      GlobalCampaign.runGlobalCampaign().then(results => {
+        if (results) {
+          this.log('═══ RESULTADOS GLOBAIS ═══', 'sucesso');
+          results.forEach(r => {
+            this.log(`  ${r.region}: ${r.impressions} imp | ${r.clicks} cliques | CTR ${r.ctr} | ${r.paymentMethod}`, 'dim');
+          });
+        }
+      });
+    } else if (sub === 'status' || sub === 'stats' || sub === '') {
+      const stats = GlobalCampaign.getStats();
+      this.log('═══ 🌍 CAMPANHA GLOBAL ═══', 'info');
+      this.log('', 'dim');
+      this.log('📍 Regiões configuradas:', 'info');
+      stats.regions.forEach(r => {
+        this.log(`  ${r.flag} ${r.name} — ${r.currency} via ${r.payment} (${r.products} produtos)`, 'dim');
+      });
+      this.log('', 'dim');
+      this.log(`📊 Anúncios exibidos: ${stats.ads.total}`, 'dim');
+      this.log(`💰 Vendas internacionais: ${stats.sales}`, 'dim');
+
+      // Verificar chaves faltando
+      const missing = GlobalCampaign.getMissingKeys();
+      if (missing.length > 0) {
+        this.log('', 'dim');
+        this.log('⚠️ CHAVES CRIPTO NÃO CONFIGURADAS:', 'aviso');
+        missing.forEach(m => {
+          this.log(`  ${m.region} — ${m.name} (${m.symbol}): CONFIGURAR`, 'aviso');
+        });
+      }
+    } else if (sub === 'chave' || sub === 'key') {
+      const symbol = (args[1] || '').toUpperCase();
+      const address = args[2];
+      if (symbol && address) {
+        const updated = GlobalCampaign.setCryptoKey(symbol, address);
+        this.log(`✅ Chave ${symbol} configurada em ${updated} regiões!`, 'sucesso');
+      } else {
+        this.log('Uso: global chave BTC <endereço>', 'aviso');
+        this.log('Símbolos: BTC, USDT, ETH', 'dim');
+      }
+    } else if (sub === 'checkout') {
+      const productIndex = parseInt(args[1]) || 0;
+      GlobalCampaign.showGlobalCheckout(productIndex);
+      this.log('🌍 Checkout global exibido!', 'sucesso');
+    } else if (sub === 'regiao' || sub === 'region') {
+      const region = GlobalCampaign.detectRegion();
+      const config = GlobalCampaign.paymentConfig[region];
+      this.log(`${config.flag} Região detectada: ${config.name} (${config.currency})`, 'info');
+      this.log(`💳 Método de pagamento: ${config.paymentMethod === 'pix' ? 'Pix' : 'Criptomoeda'}`, 'dim');
+    } else {
+      this.log('Comandos da Campanha Global:', 'info');
+      this.log('  global ciclo      — Executar campanha em todas as regiões', 'dim');
+      this.log('  global status     — Ver configuração global', 'dim');
+      this.log('  global chave BTC <addr> — Configurar chave cripto', 'dim');
+      this.log('  global checkout [n] — Mostrar checkout da região', 'dim');
+      this.log('  global regiao     — Detectar sua região atual', 'dim');
+      this.log('', 'dim');
+      this.log('🇧🇷 Brasil → Pix | 🇺🇸🇬🇧🇪🇺🌎🌍 → Cripto (BTC/USDT/ETH)', 'dim');
     }
   }
 };
