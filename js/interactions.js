@@ -71,28 +71,24 @@ const Interactions = {
     // Mouse wheel para zoom
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
-      
+
       const zoomSpeed = 0.001;
       const delta = -e.deltaY * zoomSpeed;
-      
+      const oldZoom = Renderer.camera.zoom;
+
       // Zoom limitado entre 0.5x e 3x
-      Renderer.camera.zoom = Math.max(0.5, Math.min(3, Renderer.camera.zoom + delta));
+      const newZoom = Math.max(0.5, Math.min(3, oldZoom + delta));
       
-      // Zoom centrado no mouse
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
+      // Zoom centrado no centro da tela (não no mouse)
+      // Ajustar targetX/targetY para manter o centro fixo
+      const centerX = Renderer.camera.targetX + canvas.width / (2 * oldZoom);
+      const centerY = Renderer.camera.targetY + canvas.height / (2 * oldZoom);
       
-      // Ajustar câmera para zoom centrado
-      if (delta > 0) {
-        // Zoom in: aproximar do mouse
-        Renderer.camera.targetX += (mouseX - canvas.width / 2) * 0.02;
-        Renderer.camera.targetY += (mouseY - canvas.height / 2) * 0.02;
-      } else {
-        // Zoom out: distanciar
-        Renderer.camera.targetX -= (mouseX - canvas.width / 2) * 0.01;
-        Renderer.camera.targetY -= (mouseY - canvas.height / 2) * 0.01;
-      }
+      Renderer.camera.zoom = newZoom;
+      
+      // Recalcular câmera para manter o centro
+      Renderer.camera.targetX = centerX - canvas.width / (2 * newZoom);
+      Renderer.camera.targetY = centerY - canvas.height / (2 * newZoom);
     }, { passive: false });
 
     // Touch para mobile — arrastar
@@ -135,16 +131,25 @@ const Interactions = {
           dragStartY = e.touches[0].clientY;
         }
       } else if (e.touches.length === 2) {
-        // Pinch zoom
+        // Pinch zoom (centrado na tela)
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        
+
         if (lastTouchDist > 0) {
           const scale = dist / lastTouchDist;
-          Renderer.camera.zoom = Math.max(0.5, Math.min(3, Renderer.camera.zoom * scale));
+          const oldZoom = Renderer.camera.zoom;
+          const newZoom = Math.max(0.5, Math.min(3, oldZoom * scale));
+          
+          // Manter centro fixo durante pinch
+          const centerX = Renderer.camera.targetX + canvas.width / (2 * oldZoom);
+          const centerY = Renderer.camera.targetY + canvas.height / (2 * oldZoom);
+          
+          Renderer.camera.zoom = newZoom;
+          Renderer.camera.targetX = centerX - canvas.width / (2 * newZoom);
+          Renderer.camera.targetY = centerY - canvas.height / (2 * newZoom);
         }
-        
+
         lastTouchDist = dist;
       }
     }, { passive: false });

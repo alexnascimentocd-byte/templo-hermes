@@ -92,7 +92,7 @@ const NPCGrimoire = {
   renderPainel() {
     const container = document.getElementById('grimoire-commands');
     if (!container) return;
-    
+
     if (this.pendingCommands.length === 0) {
       container.innerHTML = `
         <div class="grimoire-empty">
@@ -102,14 +102,14 @@ const NPCGrimoire = {
         </div>`;
       return;
     }
-    
+
     // Mostrar últimos 5 comandos (os mais recentes primeiro)
     const recentes = this.pendingCommands.slice(-5).reverse();
-    
+
     container.innerHTML = recentes.map((cmd, i) => {
       const isUnread = !cmd.lido ? 'unread' : '';
       const priorityClass = cmd.prioridade === 'alta' ? 'priority-high' : '';
-      
+
       const acoesHtml = cmd.acoes.map((acao, j) => {
         if (acao.link) {
           return `<button class="grimoire-action-btn" onclick="NPCGrimoire.executarAcao('${cmd.id}', ${j})">
@@ -125,7 +125,10 @@ const NPCGrimoire = {
           </button>`;
         }
       }).join('');
-      
+
+      // Gerar texto copiável do comando
+      const copiavel = cmd.comando || `hermes> ${cmd.npcName}: ${cmd.titulo} — ${cmd.descricao}`;
+
       return `
         <div class="grimoire-cmd ${isUnread} ${priorityClass}" onclick="NPCGrimoire.marcarLido('${cmd.id}')">
           <div class="grimoire-cmd-header">
@@ -134,7 +137,11 @@ const NPCGrimoire = {
           </div>
           <div class="grimoire-cmd-title">${cmd.titulo}</div>
           <div class="grimoire-cmd-desc">${cmd.descricao}</div>
-          <div class="grimoire-cmd-actions">${acoesHtml}</div>
+          <div class="grimoire-cmd-code" style="background:#1a1a2e;border:1px solid #3a3a5c;border-radius:6px;padding:8px;margin:6px 0;font-family:monospace;font-size:0.75rem;color:#d4a547;word-break:break-all">${copiavel}</div>
+          <div class="grimoire-cmd-actions">
+            <button class="grimoire-action-btn" onclick="NPCGrimoire.copiarComando('${cmd.id}')" style="background:#2e7d32">📋 Copiar</button>
+            ${acoesHtml}
+          </div>
         </div>`;
     }).join('');
   },
@@ -173,6 +180,33 @@ const NPCGrimoire = {
     this.save();
   },
   
+  // Marcar comando como lido
+
+  // Copiar comando para clipboard
+  copiarComando(cmdId) {
+    const cmd = this.pendingCommands.find(c => c.id === cmdId);
+    if (!cmd) return;
+    
+    const texto = cmd.comando || `hermes> ${cmd.npcName}: ${cmd.titulo} — ${cmd.descricao}`;
+    
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(texto).then(() => {
+        this.notificar(`📋 Comando copiado! Cole no terminal pra aprovar.`);
+      });
+    } else {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = texto;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      this.notificar(`📋 Comando copiado! Cole no terminal.`);
+    }
+    
+    this.marcarLido(cmdId);
+  },
+
   // Marcar comando como lido
   marcarLido(cmdId) {
     const cmd = this.pendingCommands.find(c => c.id === cmdId);

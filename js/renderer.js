@@ -445,10 +445,31 @@ const Renderer = {
     const lerp = 0.1;
     this.camera.x += (this.camera.targetX - this.camera.x) * lerp;
     this.camera.y += (this.camera.targetY - this.camera.y) * lerp;
-    
-    // Limites
-    const maxX = World.WORLD_WIDTH * World.TILE_SIZE - this.canvas.width;
-    const maxY = World.WORLD_HEIGHT * World.TILE_SIZE - this.canvas.height;
+
+    // Limites do mapa (ajustados pelo zoom)
+    const zoom = this.camera.zoom || 1;
+    const worldPixelW = World.WORLD_WIDTH * World.TILE_SIZE;
+    const worldPixelH = World.WORLD_HEIGHT * World.TILE_SIZE;
+    const visibleW = this.canvas.width / zoom;
+    const visibleH = this.canvas.height / zoom;
+
+    // Se o mundo é menor que a tela, centralizar
+    let maxX, maxY;
+    if (visibleW >= worldPixelW) {
+      // Mundo menor que tela: centralizar horizontalmente
+      maxX = (worldPixelW - visibleW) / 2;
+      this.camera.targetX = maxX;
+    } else {
+      maxX = worldPixelW - visibleW;
+    }
+    if (visibleH >= worldPixelH) {
+      // Mundo menor que tela: centralizar verticalmente
+      maxY = (worldPixelH - visibleH) / 2;
+      this.camera.targetY = maxY;
+    } else {
+      maxY = worldPixelH - visibleH;
+    }
+
     this.camera.x = Math.max(0, Math.min(maxX, this.camera.x));
     this.camera.y = Math.max(0, Math.min(maxY, this.camera.y));
   }
