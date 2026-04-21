@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔱 Templo 3D — GTA × CS × Half-Life × Age of Empires</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#000; overflow:hidden; font-family:'Courier New',monospace; }
+    canvas { display:block; }
+    
+    /* HUD */
+    #hud { position:fixed; top:0; left:0; right:0; z-index:100; padding:10px 20px; display:flex; justify-content:space-between; pointer-events:none; }
+    .hud-left, .hud-right { display:flex; gap:15px; align-items:center; }
+    .hud-item { background:rgba(0,0,0,0.6); border:1px solid rgba(255,215,0,0.3); border-radius:6px; padding:6px 12px; color:#FFD700; font-size:12px; }
+    
+    /* Minimap */
+    #minimap { position:fixed; bottom:20px; right:20px; width:180px; height:180px; border:2px solid rgba(255,215,0,0.4); border-radius:50%; overflow:hidden; z-index:100; background:rgba(0,0,0,0.5); }
+    #minimap canvas { width:100%; height:100%; }
+    
+    /* Chat */
+    #chat-log { position:fixed; bottom:20px; left:20px; width:350px; max-height:200px; overflow-y:auto; z-index:100; pointer-events:none; }
+    .chat-msg { background:rgba(0,0,0,0.5); color:#fff; padding:4px 10px; margin:2px 0; border-radius:4px; font-size:12px; animation:chatFade 8s forwards; }
+    @keyframes chatFade { 0%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
+    
+    /* Crosshair */
+    #crosshair { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:200; pointer-events:none; }
+    #crosshair::before, #crosshair::after { content:''; position:absolute; background:rgba(0,255,0,0.8); }
+    #crosshair::before { width:2px; height:20px; left:9px; top:0; }
+    #crosshair::after { width:20px; height:2px; top:9px; left:0; }
+    
+    /* Loading */
+    #loading { position:fixed; inset:0; background:#06060e; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#FFD700; }
+    #loading h1 { font-size:28px; margin-bottom:10px; }
+    #loading p { color:#888; font-size:14px; margin-bottom:20px; }
+    .load-bar { width:300px; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
+    .load-fill { height:100%; background:#FFD700; width:0%; transition:width 0.3s; }
+    
+    /* Inventory */
+    #inventory { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:100; display:flex; gap:4px; }
+    .inv-slot { width:50px; height:50px; background:rgba(0,0,0,0.6); border:2px solid rgba(255,215,0,0.2); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:24px; }
+    .inv-slot.active { border-color:#FFD700; background:rgba(255,215,0,0.1); }
+    
+    /* NPC Dialog */
+    #npc-dialog { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:300; background:rgba(0,0,0,0.9); border:2px solid #FFD700; border-radius:12px; padding:30px; max-width:500px; width:90%; display:none; }
+    #npc-dialog h2 { color:#FFD700; margin-bottom:10px; }
+    #npc-dialog p { color:#ccc; font-size:14px; line-height:1.6; margin-bottom:15px; }
+    #npc-dialog .options { display:flex; flex-direction:column; gap:8px; }
+    #npc-dialog .opt { padding:10px 16px; background:rgba(255,215,0,0.1); border:1px solid rgba(255,215,0,0.3); border-radius:6px; color:#FFD700; cursor:pointer; font-size:13px; transition:all 0.2s; }
+    #npc-dialog .opt:hover { background:rgba(255,215,0,0.2); }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loading">
+    <h1>☤ Templo Hermes 3D</h1>
+    <p>Carregando mundo hermético...</p>
+    <div class="load-bar"><div class="load-fill" id="load-fill"></div></div>
+    <p id="load-status" style="margin-top:15px; font-size:12px;">Inicializando motor...</p>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud" style="display:none;">
+    <div class="hud-left">
+      <div class="hud-item" id="hud-health">❤️ 100</div>
+      <div class="hud-item" id="hud-armor">🛡️ 100</div>
+      <div class="hud-item" id="hud-weapon">🔫 Mãos</div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-item" id="hud-money">💰 R$ 0,00</div>
+      <div class="hud-item" id="hud-fps">FPS: 60</div>
+      <div class="hud-item" id="hud-zone">📍 Templo</div>
+    </div>
+  </div>
+
+  <!-- Crosshair -->
+  <div id="crosshair" style="display:none;"></div>
+
+  <!-- Inventory Bar -->
+  <div id="inventory" style="display:none;">
+    <div class="inv-slot active">👊</div>
+    <div class="inv-slot">📜</div>
+    <div class="inv-slot">🔑</div>
+    <div class="inv-slot">💎</div>
+    <div class="inv-slot">🧪</div>
+    <div class="inv-slot">🕯️</div>
+    <div class="inv-slot">⚡</div>
+    <div class="inv-slot">👁️</div>
+    <div class="inv-slot">🔮</div>
+  </div>
+
+  <!-- Minimap -->
+  <div id="minimap" style="display:none;">
+    <canvas id="minimap-canvas" width="180" height="180"></canvas>
+  </div>
+
+  <!-- Chat -->
+  <div id="chat-log" style="display:none;"></div>
+
+  <!-- NPC Dialog -->
+  <div id="npc-dialog">
+    <h2 id="npc-name">NPC</h2>
+    <p id="npc-text">...</p>
+    <div class="options" id="npc-options"></div>
+  </div>
+
+  <!-- 3D Canvas -->
+  <canvas id="game-canvas"></canvas>
+
+  <script>
+    // ==============================
+    // AUDIO ENGINE (Web Audio API)
+    // ==============================
+    const AudioEngine = {
+      ctx: null,
+      musicGain: null,
+      sfxGain: null,
+      currentTrack: null,
+
+      init() {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        this.musicGain = this.ctx.createGain();
+        this.musicGain.gain.value = 0.3;
+        this.musicGain.connect(this.ctx.destination);
+        this.sfxGain = this.ctx.createGain();
+        this.sfxGain.gain.value = 0.5;
+        this.sfxGain.connect(this.ctx.destination);
+      },
+
+      // Generate procedural music (chiptune + ambient)
+      playAmbient() {
+        if (!this.ctx) this.init();
+        const now = this.ctx.currentTime;
+
+        // Drone pad
+        const osc1 = this.ctx.createOscillator();
+        osc1.type = 'sine';
+        osc1.frequency.value = 110; // A2
+        const gain1 = this.ctx.createGain();
+        gain1.gain.value = 0.15;
+        osc1.connect(gain1);
+        gain1.connect(this.musicGain);
+        osc1.start(now);
+
+        // Fifth harmony
+        const osc2 = this.ctx.createOscillator();
+        osc2.type = 'sine';
+        osc2.frequency.value = 165; // E3
+        const gain2 = this.ctx.createGain();
+        gain2.gain.value = 0.1;
+        osc2.connect(gain2);
+        gain2.connect(this.musicGain);
+        osc2.start(now);
+
+        // Slow LFO modulation
+        const lfo = this.ctx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 0.1;
+        const lfoGain = this.ctx.createGain();
+        lfoGain.gain.value = 5;
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc1.frequency);
+        lfo.start(now);
+
+        this.currentTrack = { osc1, osc2, lfo, gain1, gain2 };
+      },
+
+      playStep() {
+        if (!this.ctx) this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = 80 + Math.random() * 40;
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        osc.connect(gain);
+        gain.connect(this.sfxGain);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      },
+
+      playInteract() {
+        if (!this.ctx) this.init();
+        const now = this.ctx.currentTime;
+        [440, 554, 659].forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.2, now + i * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.3);
+          osc.connect(gain);
+          gain.connect(this.sfxGain);
+          osc.start(now + i * 0.1);
+          osc.stop(now + i * 0.1 + 0.3);
+        });
+      },
+
+      playDoor() {
+        if (!this.ctx) this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 0.5);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 1000;
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.sfxGain);
+        osc.start(now);
+        osc.stop(now + 0.5);
+      }
+    };
+
+    // ==============================
+    // GAME ENGINE (WebGL-free 3D)
+    // ==============================
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ==============================
+    // PLAYER (GTA-style + CS precision)
+    // ==============================
+    const player = {
+      x: 0, y: 1.7, z: 0, // 1.7m height (eye level)
+      vx: 0, vy: 0, vz: 0,
+      yaw: 0, pitch: 0, // Look direction
+      speed: 5, // m/s
+      health: 100,
+      armor: 100,
+      money: 0,
+      weapon: 0,
+      fov: 75, // CS-style FOV
+      sensitivity: 0.15,
+      grounded: true,
+      bobPhase: 0,
+      // Tattoo data (Zica's hermetic tattoo on hand)
+      tattoo: {
+        type: 'hermetic',
+        symbols: ['☤', '🔮', '👁️'],
+        description: 'Tatuagem hermética na mão — Caduceu, Olho de Hórus, Símbolo da Trindade'
+      }
+    };
+
+    // ==============================
+    // WORLD (Age of Empires style buildings + GTA world)
+    // ==============================
+    const WORLD_SIZE = 200;
+    const buildings = [];
+    const npcs = [];
+    const items = [];
+    const particles = [];
+
+    // Generate temple complex
+    function generateWorld() {
+      // Main Temple (center)
+      buildings.push({
+        type: 'temple', x: 0, z: 0, w: 30, h: 20, d: 30,
+        color: '#1a1a3e', accent: '#FFD700',
+        name: 'Templo Principal de Hermes',
+        rooms: ['salão', 'biblioteca', 'altar', 'cripta']
+      });
+
+      // Market (Age of Empires style)
+      buildings.push({
+        type: 'market', x: 50, z: 30, w: 20, h: 8, d: 15,
+        color: '#2a1a0a', accent: '#d4a547',
+        name: 'Mercado Hermético'
+      });
+
+      // Academy
+      buildings.push({
+        type: 'academy', x: -40, z: 20, w: 25, h: 12, d: 20,
+        color: '#0a1a3e', accent: '#4488ff',
+        name: 'Academia de Alquimia'
+      });
+
+      // Tower (Half-Life style)
+      buildings.push({
+        type: 'tower', x: -30, z: -50, w: 10, h: 40, d: 10,
+        color: '#1a1a1a', accent: '#ff4444',
+        name: 'Torre de Vigilância'
+      });
+
+      // Library
+      buildings.push({
+        type: 'library', x: 40, z: -40, w: 25, h: 15, d: 20,
+        color: '#1a0a0a', accent: '#8B4513',
+        name: 'Grande Biblioteca'
+      });
+
+      // Arena
+      buildings.push({
+        type: 'arena', x: 0, z: -70, w: 40, h: 10, d: 40,
+        color: '#2a0a0a', accent: '#ff6600',
+        name: 'Arena de Debates'
+      });
+
+      // Generate NPCs
+      npcs.push({
+        name: 'Zói — Mestre Hermes',
+        x: 0, z: 0, // Center of temple
+        dialog: [
+          { q: 'Bem-vindo ao Templo, iniciado. O que busca?', 
+            opts: ['Conhecimento hermético', 'Comerciar itens', 'Informações sobre o mundo'] },
+          { q: 'Os 7 Princípios Herméticos governam este mundo. Qual deseja aprender?',
+            opts: ['Mentalismo', 'Correspondência', 'Vibração', 'Polaridade'] },
+        ],
+        // NPC appearance includes Zica's tattoo data
+        appearance: {
+          skin: 'bronzed',
+          tattoo: player.tattoo,
+          outfit: 'robe_gold',
+          glow: '#FFD700'
+        }
+      });
+
+      npcs.push({
+        name: 'Mercador Thoth',
+        x: 50, z: 30,
+        dialog: [
+          { q: 'Tenho os melhores itens herméticos! O que procura?',
+            opts: ['Poção de Visão (R$50)', 'Pergaminho Arcano (R$100)', 'Cristal de Energia (R$200)'] }
+        ],
+        appearance: { skin: 'olive', outfit: 'merchant', glow: '#d4a547' }
+      });
+
+      npcs.push({
+        name: 'Sábia Ísis',
+        x: -40, z: 20,
+        dialog: [
+          { q: 'A alquimia é a arte da transformação. Pronto para aprender?',
+            opts: ['Sim, me ensine!', 'O que é a Pedra Filosofal?', 'Como transmutar metais?'] }
+        ],
+        appearance: { skin: 'fair', outfit: 'mage_blue', glow: '#4488ff' }
+      });
+
+      // Generate items on ground
+      for (let i = 0; i < 30; i++) {
+        items.push({
+          type: ['📜', '💎', '🧪', '🔑', '🕯️'][Math.floor(Math.random() * 5)],
+          x: (Math.random() - 0.5) * WORLD_SIZE,
+          z: (Math.random() - 0.5) * WORLD_SIZE,
+          y: 0.3,
+          bobPhase: Math.random() * Math.PI * 2
+        });
+      }
+    }
+
+    // ==============================
+    // RAYCASTING RENDERER (Wolfenstein/DOOM style)
+    // ==============================
+    const RAY_COUNT = Math.floor(canvas.width / 2); // Half resolution for performance
+    const MAX_DIST = 100;
+
+    function castRay(ox, oy, oz, dx, dy, dz) {
+      let minT = Infinity;
+      let hitBuilding = null;
+
+      for (const b of buildings) {
+        // AABB ray intersection
+        const t = rayAABB(ox, oy, oz, dx, dy, dz,
+          b.x - b.w/2, 0, b.z - b.d/2,
+          b.x + b.w/2, b.h, b.z + b.d/2
+        );
+        if (t > 0 && t < minT) {
+          minT = t;
+          hitBuilding = b;
+        }
+      }
+      return { dist: minT, building: hitBuilding };
+    }
+
+    function rayAABB(ox, oy, oz, dx, dy, dz, x1, y1, z1, x2, y2, z2) {
+      let tmin = -Infinity, tmax = Infinity;
+      const dims = [[ox, dx, x1, x2], [oy, dy, y1, y2], [oz, dz, z1, z2]];
+      for (const [o, d, mn, mx] of dims) {
+        if (Math.abs(d) < 0.0001) {
+          if (o < mn || o > mx) return Infinity;
+        } else {
+          let t1 = (mn - o) / d, t2 = (mx - o) / d;
+          if (t1 > t2) [t1, t2] = [t2, t1];
+          tmin = Math.max(tmin, t1);
+          tmax = Math.min(tmax, t2);
+          if (tmin > tmax) return Infinity;
+        }
+      }
+      return tmin > 0 ? tmin : (tmax > 0 ? tmax : Infinity);
+    }
+
+    // ==============================
+    // RENDER FRAME
+    // ==============================
+    let lastTime = 0;
+    let fps = 60;
+
+    function render(time) {
+      const dt = Math.min((time - lastTime) / 1000, 0.05);
+      lastTime = time;
+      fps = Math.round(1 / dt);
+
+      ctx.fillStyle = '#0a0a2e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Sky gradient (Half-Life atmosphere)
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      skyGrad.addColorStop(0, '#0a0a1e');
+      skyGrad.addColorStop(0.3, '#1a1a3e');
+      skyGrad.addColorStop(0.5, '#2a1a2e');
+      skyGrad.addColorStop(1, '#0a0a0a');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Floor
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(0, canvas.height * 0.55, canvas.width, canvas.height * 0.45);
+
+      // Cast rays for each column (raycasting)
+      const fovRad = player.fov * Math.PI / 180;
+      const halfFov = fovRad / 2;
+
+      for (let i = 0; i < canvas.width; i += 2) {
+        const screenX = (i / canvas.width - 0.5) * 2;
+        const rayAngle = player.yaw + screenX * halfFov;
+        
+        const dx = Math.sin(rayAngle);
+        const dz = Math.cos(rayAngle);
+        const dy = player.pitch * screenX;
+
+        const hit = castRay(player.x, player.y, player.z, dx, dy, dz);
+        
+        if (hit.dist < MAX_DIST && hit.building) {
+          const wallHeight = (hit.building.h / hit.dist) * canvas.height * 0.4;
+          const wallTop = (canvas.height - wallHeight) / 2;
+          
+          // Shading based on distance (fog)
+          const fog = Math.max(0, 1 - hit.dist / MAX_DIST);
+          const b = hit.building;
+          
+          // Parse color
+          ctx.fillStyle = b.color;
+          ctx.globalAlpha = fog;
+          ctx.fillRect(i, wallTop, 2, wallHeight);
+          
+          // Accent strip at top
+          ctx.fillStyle = b.accent;
+          ctx.fillRect(i, wallTop, 2, 3);
+          
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      // Render NPCs as sprites
+      for (const npc of npcs) {
+        const relX = npc.x - player.x;
+        const relZ = npc.z - player.z;
+        const dist = Math.sqrt(relX * relX + relZ * relZ);
+        
+        if (dist < 50 && dist > 1) {
+          const angle = Math.atan2(relX, relZ) - player.yaw;
+          if (Math.abs(angle) < halfFov) {
+            const screenX = canvas.width / 2 + (angle / halfFov) * canvas.width / 2;
+            const size = (3 / dist) * canvas.height * 0.3;
+            const screenY = canvas.height / 2 - size / 2;
+            
+            // NPC body (colored glow)
+            ctx.fillStyle = npc.appearance.glow;
+            ctx.globalAlpha = 0.8;
+            ctx.beginPath();
+            ctx.arc(screenX, screenY + size * 0.3, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // NPC body
+            ctx.fillStyle = npc.appearance.glow;
+            ctx.globalAlpha = 0.6;
+            ctx.fillRect(screenX - size * 0.15, screenY + size * 0.1, size * 0.3, size * 0.7);
+            
+            ctx.globalAlpha = 1;
+            
+            // Name tag
+            if (dist < 10) {
+              ctx.fillStyle = npc.appearance.glow;
+              ctx.font = '12px Courier New';
+              ctx.textAlign = 'center';
+              ctx.fillText(npc.name, screenX, screenY - 5);
+            }
+          }
+        }
+      }
+
+      // Render items (floating)
+      for (const item of items) {
+        const relX = item.x - player.x;
+        const relZ = item.z - player.z;
+        const dist = Math.sqrt(relX * relX + relZ * relZ);
+        
+        if (dist < 30 && dist > 0.5) {
+          const angle = Math.atan2(relX, relZ) - player.yaw;
+          if (Math.abs(angle) < halfFov) {
+            const screenX = canvas.width / 2 + (angle / halfFov) * canvas.width / 2;
+            const bob = Math.sin(time / 500 + item.bobPhase) * 5;
+            const size = Math.max(16, (0.5 / dist) * canvas.height * 0.1);
+            const screenY = canvas.height / 2 + bob;
+            
+            ctx.font = `${size}px serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText(item.type, screenX, screenY);
+          }
+        }
+      }
+
+      // Weapon viewmodel (GTA-style hands)
+      drawWeapon(time);
+
+      // Update HUD
+      updateHUD();
+
+      // Player movement
+      handleMovement(dt);
+
+      requestAnimationFrame(render);
+    }
+
+    // ==============================
+    // WEAPON VIEWMODEL
+    // ==============================
+    function drawWeapon(time) {
+      const bobX = Math.sin(player.bobPhase) * 5;
+      const bobY = Math.abs(Math.cos(player.bobPhase)) * 3;
+      const cx = canvas.width / 2;
+      const cy = canvas.height;
+
+      // Hand/arm
+      ctx.fillStyle = '#c68642'; // Skin
+      ctx.beginPath();
+      ctx.arc(cx + 80 + bobX, cy - 80 + bobY, 30, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Tattoo on hand
+      ctx.font = '20px serif';
+      ctx.fillText('☤', cx + 70 + bobX, cy - 75 + bobY);
+      ctx.font = '14px serif';
+      ctx.fillText('👁️', cx + 90 + bobX, cy - 65 + bobY);
+
+      // Fingers
+      for (let i = 0; i < 5; i++) {
+        const angle = -0.3 + i * 0.15;
+        ctx.fillStyle = '#c68642';
+        ctx.beginPath();
+        ctx.arc(cx + 60 + bobX + i * 10, cy - 100 + bobY + Math.sin(angle) * 10, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Weapon based on selection
+      const weapons = ['👊', '📜', '🔫', '⚔️', '🧪', '🕯️', '⚡', '👁️', '🔮'];
+      ctx.font = '40px serif';
+      ctx.fillText(weapons[player.weapon] || '👊', cx + 120 + bobX, cy - 50 + bobY);
+    }
+
+    // ==============================
+    // MOVEMENT (CS:GO precision)
+    // ==============================
+    const keys = {};
+    window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+    window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+    function handleMovement(dt) {
+      const moveX = (keys['d'] ? 1 : 0) - (keys['a'] ? 1 : 0);
+      const moveZ = (keys['s'] ? 1 : 0) - (keys['w'] ? 1 : 0);
+
+      if (moveX || moveZ) {
+        const angle = player.yaw;
+        const dx = (moveX * Math.cos(angle) + moveZ * Math.sin(angle)) * player.speed * dt;
+        const dz = (-moveX * Math.sin(angle) + moveZ * Math.cos(angle)) * player.speed * dt;
+        player.x += dx;
+        player.z += dz;
+        player.bobPhase += dt * 10;
+        
+        // Step sound
+        if (Math.floor(player.bobPhase * 2) % 2 === 0 && player.grounded) {
+          AudioEngine.playStep();
+        }
+      }
+
+      // Jump (Space)
+      if (keys[' '] && player.grounded) {
+        player.vy = 6;
+        player.grounded = false;
+      }
+
+      // Gravity
+      if (!player.grounded) {
+        player.vy -= 15 * dt;
+        player.y += player.vy * dt;
+        if (player.y <= 1.7) {
+          player.y = 1.7;
+          player.vy = 0;
+          player.grounded = true;
+        }
+      }
+
+      // Weapon switch (1-9)
+      for (let i = 1; i <= 9; i++) {
+        if (keys[i.toString()]) {
+          player.weapon = i - 1;
+          document.querySelectorAll('.inv-slot').forEach((s, idx) => {
+            s.classList.toggle('active', idx === player.weapon);
+          });
+        }
+      }
+
+      // Interact (E)
+      if (keys['e']) {
+        keys['e'] = false; // Prevent repeat
+        checkInteraction();
+      }
+    }
+
+    // ==============================
+    // MOUSE LOOK (CS:GO precision)
+    // ==============================
+    canvas.addEventListener('click', () => {
+      canvas.requestPointerLock();
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (document.pointerLockElement === canvas) {
+        player.yaw += e.movementX * player.sensitivity * 0.01;
+        player.pitch = Math.max(-1, Math.min(1, player.pitch - e.movementY * player.sensitivity * 0.01));
+      }
+    });
+
+    // ==============================
+    // NPC INTERACTION (Age of Empires style)
+    // ==============================
+    function checkInteraction() {
+      for (const npc of npcs) {
+        const dx = npc.x - player.x;
+        const dz = npc.z - player.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        
+        if (dist < 5) {
+          AudioEngine.playInteract();
+          showNPCDialog(npc);
+          return;
+        }
+      }
+    }
+
+    function showNPCDialog(npc) {
+      const dialog = document.getElementById('npc-dialog');
+      const nameEl = document.getElementById('npc-name');
+      const textEl = document.getElementById('npc-text');
+      const optsEl = document.getElementById('npc-options');
+
+      const d = npc.dialog[0];
+      nameEl.textContent = npc.name;
+      textEl.textContent = d.q;
+      optsEl.innerHTML = '';
+      
+      d.opts.forEach(opt => {
+        const btn = document.createElement('div');
+        btn.className = 'opt';
+        btn.textContent = '▸ ' + opt;
+        btn.onclick = () => {
+          dialog.style.display = 'none';
+          addChat(`${npc.name}: "${opt}"`);
+          document.exitPointerLock();
+          canvas.requestPointerLock();
+        };
+        optsEl.appendChild(btn);
+      });
+
+      dialog.style.display = 'block';
+      document.exitPointerLock();
+    }
+
+    // ==============================
+    // CHAT SYSTEM
+    // ==============================
+    function addChat(msg) {
+      const log = document.getElementById('chat-log');
+      const div = document.createElement('div');
+      div.className = 'chat-msg';
+      div.textContent = msg;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+      setTimeout(() => div.remove(), 8000);
+    }
+
+    // ==============================
+    // HUD UPDATE
+    // ==============================
+    function updateHUD() {
+      document.getElementById('hud-health').textContent = `❤️ ${player.health}`;
+      document.getElementById('hud-armor').textContent = `🛡️ ${player.armor}`;
+      document.getElementById('hud-money').textContent = `💰 R$ ${player.money.toFixed(2)}`;
+      document.getElementById('hud-fps').textContent = `FPS: ${fps}`;
+      
+      const weapons = ['Mãos', 'Pergaminho', 'Pistola', 'Espada', 'Poção', 'Vela', 'Raio', 'Visão', 'Orbe'];
+      document.getElementById('hud-weapon').textContent = `🔫 ${weapons[player.weapon]}`;
+
+      // Zone detection
+      const zones = [
+        { name: 'Templo Principal', x: 0, z: 0, r: 25 },
+        { name: 'Mercado', x: 50, z: 30, r: 15 },
+        { name: 'Academia', x: -40, z: 20, r: 18 },
+        { name: 'Torre', x: -30, z: -50, r: 10 },
+        { name: 'Biblioteca', x: 40, z: -40, r: 18 },
+        { name: 'Arena', x: 0, z: -70, r: 25 },
+      ];
+      for (const z of zones) {
+        const dx = player.x - z.x, dz = player.z - z.z;
+        if (Math.sqrt(dx*dx + dz*dz) < z.r) {
+          document.getElementById('hud-zone').textContent = `📍 ${z.name}`;
+          break;
+        }
+      }
+
+      // Minimap
+      drawMinimap();
+    }
+
+    // ==============================
+    // MINIMAP (Age of Empires style)
+    // ==============================
+    function drawMinimap() {
+      const mc = document.getElementById('minimap-canvas');
+      const mctx = mc.getContext('2d');
+      mctx.fillStyle = '#0a0a1a';
+      mctx.fillRect(0, 0, 180, 180);
+
+      const scale = 180 / WORLD_SIZE;
+      const ox = 90, oy = 90;
+
+      // Buildings
+      for (const b of buildings) {
+        mctx.fillStyle = b.accent;
+        mctx.globalAlpha = 0.6;
+        mctx.fillRect(
+          ox + (b.x - b.w/2) * scale,
+          oy + (b.z - b.d/2) * scale,
+          b.w * scale, b.d * scale
+        );
+      }
+      mctx.globalAlpha = 1;
+
+      // NPCs
+      for (const npc of npcs) {
+        mctx.fillStyle = npc.appearance.glow;
+        mctx.beginPath();
+        mctx.arc(ox + npc.x * scale, oy + npc.z * scale, 3, 0, Math.PI * 2);
+        mctx.fill();
+      }
+
+      // Player (with direction arrow)
+      mctx.save();
+      mctx.translate(ox + player.x * scale, oy + player.z * scale);
+      mctx.rotate(player.yaw);
+      mctx.fillStyle = '#00ff00';
+      mctx.beginPath();
+      mctx.moveTo(0, -5);
+      mctx.lineTo(-3, 5);
+      mctx.lineTo(3, 5);
+      mctx.closePath();
+      mctx.fill();
+      mctx.restore();
+    }
+
+    // ==============================
+    // LOADING SEQUENCE
+    // ==============================
+    async function initGame() {
+      const fill = document.getElementById('load-fill');
+      const status = document.getElementById('load-status');
+      
+      const steps = [
+        ['Inicializando motor 3D...', 10],
+        ['Gerando mundo hermético...', 30],
+        ['Criando NPCs com tatuagens...', 50],
+        ['Carregando sistema de áudio...', 70],
+        ['Conectando ao Templo...', 90],
+        ['Pronto! Clique para começar.', 100]
+      ];
+
+      for (const [text, pct] of steps) {
+        status.textContent = text;
+        fill.style.width = pct + '%';
+        await new Promise(r => setTimeout(r, 400));
+      }
+
+      generateWorld();
+      AudioEngine.init();
+
+      // Start on click
+      document.getElementById('loading').addEventListener('click', () => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('hud').style.display = 'flex';
+        document.getElementById('crosshair').style.display = 'block';
+        document.getElementById('inventory').style.display = 'flex';
+        document.getElementById('minimap').style.display = 'block';
+        document.getElementById('chat-log').style.display = 'block';
+        
+        AudioEngine.playAmbient();
+        addChat('☤ Bem-vindo ao Templo Hermes 3D!');
+        addChat('WASD mover | Mouse olhar | E interagir | 1-9 armas');
+        addChat('Espaço pular | Clique para capturar mouse');
+        
+        canvas.requestPointerLock();
+        requestAnimationFrame(render);
+      });
+    }
+
+    initGame();
+  </script>
+</body>
+</html>
