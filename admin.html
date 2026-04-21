@@ -398,7 +398,7 @@
 
       // Aceitar variações
       const normalized = input.toLowerCase().replace(/\s+/g, '');
-      const validKeys = ['veragajota', 'veragájota', 'ver a gá jota', 'vgj', 'ver_a_ga_jota'];
+      const validKeys = ['veragajota', 'veragájota', 'ver a gá jota', 'vgj', 'ver_a_ga_jota', 'v-h-j', 'vhj', 'vga'];
 
       if (validKeys.some(k => k.replace(/\s+/g, '') === normalized)) {
         document.getElementById('auth-gate').style.display = 'none';

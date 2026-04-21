@@ -219,10 +219,10 @@ async function authenticatePassword(password) {
   
   // Aceitar senha em vários formatos
   const normalizedInput = password.toLowerCase().replace(/\s+/g, '');
-  const validPasswords = [
-    'veragajota', 'veragájota', 'ver a gá jota', 'veragajota',
-    'vgj', 'VGJ', 'ver_a_ga_jota'
-  ];
+      const validPasswords = [
+        'veragajota', 'veragájota', 'ver a gá jota', 'veragajota',
+        'vgj', 'VGJ', 'ver_a_ga_jota', 'v-h-j', 'vga', 'vhj'
+      ];
   
   let isValid = validPasswords.some(p => 
     p.toLowerCase().replace(/\s+/g, '') === normalizedInput
