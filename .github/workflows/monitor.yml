@@ -1,0 +1,45 @@
+name: Uptime Monitor
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # A cada 30 minutos
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check vendas.html
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://alexnascimentocd-byte.github.io/templo-hermes/vendas.html")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ VENDAS PAGE DOWN! Status: $STATUS"
+            exit 1
+          else
+            echo "✅ Vendas page OK ($STATUS)"
+          fi
+
+      - name: Check index.html
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://alexnascimentocd-byte.github.io/templo-hermes/index.html")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ TEMPLO PAGE DOWN! Status: $STATUS"
+            exit 1
+          else
+            echo "✅ Templo page OK ($STATUS)"
+          fi
+
+      - name: Check login.html
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://alexnascimentocd-byte.github.io/templo-hermes/login.html")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ LOGIN PAGE DOWN! Status: $STATUS"
+            exit 1
+          else
+            echo "✅ Login page OK ($STATUS)"
+          fi
+
+      - name: Check SSL
+        run: |
+          echo "🔒 Verificando SSL..."
+          curl -sI "https://alexnascimentocd-byte.github.io" | grep -i "strict-transport" && echo "✅ SSL OK" || echo "⚠️ SSL header missing"

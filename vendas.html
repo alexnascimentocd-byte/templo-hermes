@@ -5,7 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Digital Pack — Produtos Digitais Premium</title>
   <meta name="description" content="Packs digitais de alta qualidade para marketing, scripts e mentalidade empreendedora.">
-  <meta name="theme-color" content="#0a0a1a">
+  <meta name="theme-color" content="#06060e">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <meta property="og:title" content="Digital Pack — Produtos Digitais Premium">
+  <meta property="og:description" content="550+ scripts, método de vendas em 48h, marketing digital + mentalidade. Pix Brasil, Crypto Mundo.">
+  <meta property="og:image" content="https://alexnascimentocd-byte.github.io/templo-hermes/og-image.png">
+  <meta property="og:url" content="https://alexnascimentocd-byte.github.io/templo-hermes/vendas.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Digital Pack — Produtos Digitais Premium">
+  <meta name="twitter:description" content="Packs digitais de marketing, scripts e mentalidade empreendedora.">
+  <meta name="keywords" content="marketing digital, scripts de vendas, copies, PLR, empreendedorismo, mentalidade, pix, criptomoeda">
+  <meta name="author" content="Digital Pack">
+  <meta name="robots" content="index, follow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -940,6 +954,20 @@
     </div>
   </section>
 
+  <!-- Email Capture -->
+  <section style="position:relative; z-index:1; padding:60px 24px; background:rgba(212,165,71,0.04); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+    <div style="max-width:500px; margin:0 auto; text-align:center;">
+      <div style="font-size:36px; margin-bottom:12px;">📧</div>
+      <h2 style="font-size:1.4rem; margin-bottom:8px;">Ganhe Dicas Exclusivas</h2>
+      <p style="color:var(--text-secondary); font-size:14px; margin-bottom:20px;">Receba estratégias de marketing digital direto no seu email. Sem spam, só conteúdo de qualidade.</p>
+      <form id="email-capture" onsubmit="captureEmail(event)" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+        <input type="email" id="email-input" placeholder="seu@email.com" required style="flex:1; min-width:200px; padding:14px 16px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); font-size:15px; font-family:inherit; outline:none;">
+        <button type="submit" style="padding:14px 24px; background:linear-gradient(135deg, var(--gold), #b8860b); color:#000; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit;">📨 Inscrever</button>
+      </form>
+      <p style="color:var(--text-muted); font-size:11px; margin-top:10px;">🔒 Seus dados estão seguros. Nunca compartilhamos.</p>
+    </div>
+  </section>
+
   <!-- Footer -->
   <footer>
     <p>Digital Pack © 2026 — Todos os direitos reservados</p>
@@ -1080,6 +1108,47 @@
       }
       draw();
     })();
+
+    // ==============================
+    // EMAIL CAPTURE
+    // ==============================
+    function captureEmail(e) {
+      e.preventDefault();
+      const email = document.getElementById('email-input').value;
+      if (!email) return;
+
+      // Salvar no localStorage (grátis, sem servidor)
+      const leads = JSON.parse(localStorage.getItem('dp_leads') || '[]');
+      leads.push({ email, date: new Date().toISOString(), source: 'vendas-page' });
+      localStorage.setItem('dp_leads', JSON.stringify(leads));
+
+      showToast('✅ Email cadastrado! Você receberá nossas dicas.');
+      document.getElementById('email-input').value = '';
+    }
+
+    // ==============================
+    // CHAT WIDGET (tawk.to placeholder)
+    // ==============================
+    // Descomente quando criar conta no tawk.to (grátis):
+    // var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+    // (function() { var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0]; s1.async = true; s1.src = 'https://embed.tawk.to/SEU_ID/default'; s1.charset = 'UTF-8'; s1.setAttribute('crossorigin', '*'); s0.parentNode.insertBefore(s1, s0); })();
+
+    // ==============================
+    // LAZY LOADING (performance)
+    // ==============================
+    if ('IntersectionObserver' in window) {
+      const lazyObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('loaded');
+            lazyObserver.unobserve(entry.target);
+          }
+        });
+      });
+      document.querySelectorAll('.product-card, .security-card').forEach(el => {
+        lazyObserver.observe(el);
+      });
+    }
 
     console.log('🔒 Digital Pack — Public Site | No API keys exposed');
   </script>

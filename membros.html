@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎁 Área de Membros — Digital Pack</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#06060e; --bg2:#0c0c1a; --card:rgba(12,12,30,0.8); --border:rgba(255,255,255,0.06); --gold:#d4a547; --green:#00c853; --text:#e8e8f0; --muted:#8888a0; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+
+    .container { max-width:600px; width:100%; }
+    .header { text-align:center; margin-bottom:32px; }
+    .header .icon { font-size:64px; margin-bottom:12px; }
+    .header h1 { font-size:2rem; font-weight:800; background:linear-gradient(135deg,var(--gold),#f0c75e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .header p { color:var(--muted); margin-top:8px; }
+
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:16px; }
+    .card h2 { font-size:1.1rem; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+    .card .desc { color:var(--muted); font-size:13px; margin-bottom:16px; }
+
+    .btn-download { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px; background:linear-gradient(135deg,var(--green),#00a844); color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; text-decoration:none; transition:all 0.3s; }
+    .btn-download:hover { transform:translateY(-2px); box-shadow:0 4px 20px rgba(0,200,83,0.25); }
+
+    .bonus { background:rgba(212,165,71,0.08); border:1px solid rgba(212,165,71,0.15); border-radius:12px; padding:20px; margin-top:24px; text-align:center; }
+    .bonus h3 { color:var(--gold); margin-bottom:8px; }
+    .bonus p { color:var(--muted); font-size:13px; }
+
+    .support { text-align:center; margin-top:24px; padding:16px; border-top:1px solid var(--border); color:var(--muted); font-size:13px; }
+    .support a { color:var(--gold); text-decoration:none; }
+
+    .check { color:var(--green); margin-right:6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="icon">🎉</div>
+      <h1>Obrigado pela Compra!</h1>
+      <p>Seu acesso foi liberado. Baixe seus produtos abaixo.</p>
+    </div>
+
+    <!-- Pack 550+ Scripts -->
+    <div class="card" id="card-pack550">
+      <h2>📜 Pack 550+ Scripts e Copies</h2>
+      <div class="desc">550+ scripts prontos para vendas, anúncios, emails e redes sociais</div>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:12px;"><span class="check">✓</span>Inclui: Scripts de vendas, copies para anúncios, templates de email, textos para redes sociais</p>
+      <a href="#" class="btn-download" id="btn-pack550">📥 Acessar Conteúdo</a>
+    </div>
+
+    <!-- Primeira Venda -->
+    <div class="card" id="card-primeira">
+      <h2>🚀 Primeira Venda em 48h</h2>
+      <div class="desc">Método comprovado para fazer sua primeira venda online</div>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:12px;"><span class="check">✓</span>Inclui: Guia passo a passo, estratégias validadas, planilha de acompanhamento</p>
+      <a href="#" class="btn-download" id="btn-primeira">📥 Acessar Conteúdo</a>
+    </div>
+
+    <!-- Marketing + Mentalidade -->
+    <div class="card" id="card-marketing">
+      <h2>🧠 Marketing Digital + Mentalidade</h2>
+      <div class="desc">O guia completo de marketing digital com mindset de vencedor</div>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:12px;"><span class="check">✓</span>Inclui: Estratégias avançadas, mentalidade empreendedora, bônus exclusivos</p>
+      <a href="#" class="btn-download" id="btn-marketing">📥 Acessar Conteúdo</a>
+    </div>
+
+    <!-- Bônus -->
+    <div class="bonus">
+      <h3>🎁 Bônus Exclusivo</h3>
+      <p>Acesso à comunidade VIP + atualizações gratuitas vitalícias</p>
+    </div>
+
+    <!-- Suporte -->
+    <div class="support">
+      <p>Dúvidas? Fale conosco: <a href="mailto:alexnascimentocd@gmail.com">alexnascimentocd@gmail.com</a></p>
+      <p style="margin-top:8px;">Ou envie mensagem via <a href="https://t.me/hermesagent">Telegram</a></p>
+    </div>
+  </div>
+
+  <script>
+    // ==============================
+    // CONFIGURAÇÃO DE LINKS (edite aqui)
+    // ==============================
+    const DRIVE_LINKS = {
+      pack550: 'https://drive.google.com/drive/folders/SEU_LINK_AQUI_550',
+      primeira: 'https://drive.google.com/drive/folders/SEU_LINK_AQUI_PRIMEIRA',
+      marketing: 'https://drive.google.com/drive/folders/SEU_LINK_AQUI_MARKETING'
+    };
+
+    // Detectar qual produto foi comprado via URL hash
+    function initLinks() {
+      const hash = window.location.hash.replace('#', '');
+      const allCards = ['card-pack550', 'card-primeira', 'card-marketing'];
+
+      if (hash && hash !== 'all') {
+        // Mostrar apenas o produto comprado
+        allCards.forEach(id => {
+          const card = document.getElementById(id);
+          if (card && !id.includes(hash)) {
+            card.style.display = 'none';
+          }
+        });
+      }
+
+      // Configurar links de download
+      document.getElementById('btn-pack550').href = DRIVE_LINKS.pack550;
+      document.getElementById('btn-primeira').href = DRIVE_LINKS.primeira;
+      document.getElementById('btn-marketing').href = DRIVE_LINKS.marketing;
+    }
+
+    initLinks();
+
+    // Esconder cards não comprados se veio de link específico
+    // Exemplo: membros.html#pack550 mostra só o Pack 550
+  </script>
+</body>
+</html>

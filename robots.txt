@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /vendas.html
+Allow: /index.html
+Disallow: /admin.html
+Disallow: /login.html
+Disallow: /js/
+Disallow: /css/
+
+Sitemap: https://alexnascimentocd-byte.github.io/templo-hermes/sitemap.xml

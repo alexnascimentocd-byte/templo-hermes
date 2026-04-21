@@ -1,0 +1,33 @@
+name: Daily Backup
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Todo dia às 6h UTC
+  workflow_dispatch:      # Permitir execução manual
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Create backup
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          mkdir -p backups
+          zip -r "backups/backup-${DATE}.zip" . -x ".git/*" "backups/*" "node_modules/*"
+          echo "✅ Backup criado: backup-${DATE}.zip"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ github.run_id }}
+          path: backups/*.zip
+          retention-days: 30
+
+      - name: Clean old backups (keep last 7)
+        run: |
+          cd backups
+          ls -t backup-*.zip | tail -n +8 | xargs -r rm
+          echo "🧹 Backups antigos removidos"
