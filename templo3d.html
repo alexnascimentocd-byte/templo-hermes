@@ -108,6 +108,7 @@
   <!-- 3D Canvas -->
   <canvas id="game-canvas"></canvas>
 
+  <script src="js/cortex-engine.js"></script>
   <script>
     // ==============================
     // AUDIO ENGINE (Web Audio API)
@@ -408,10 +409,7 @@
     let lastTime = 0;
     let fps = 60;
 
-    function render(time) {
-      const dt = Math.min((time - lastTime) / 1000, 0.05);
-      lastTime = time;
-      fps = Math.round(1 / dt);
+    function renderFrame(ctx, dt, time) {
 
       ctx.fillStyle = '#0a0a2e';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -655,6 +653,10 @@
         
         if (dist < 5) {
           AudioEngine.playInteract();
+          CortexEngine.furnaceSystem.trigger(0.4, npc.appearance.glow);
+          CortexEngine.auraSystem.emit(canvas.width/2, canvas.height/2, npc.appearance.glow, 16);
+          CortexEngine.notificationSystem.push(`💬 Conversando com ${npc.name}`, 'info', 3000);
+          CortexEngine.chatSystem.addMessage(npc.name, 'Interagindo...', 'npc');
           showNPCDialog(npc);
           return;
         }
@@ -805,6 +807,22 @@
 
       generateWorld();
       AudioEngine.init();
+      CortexEngine.init(canvas);
+
+      // Wire up integration menu clicks
+      canvas.addEventListener('click', (e) => {
+        const action = CortexEngine.integrationMenu.handleClick(e.clientX, e.clientY);
+        if (action) {
+          CortexEngine.panelSystem.toggle(action);
+          AudioEngine.playInteract();
+          CortexEngine.furnaceSystem.trigger(0.3, '#FFD700');
+          CortexEngine.auraSystem.emit(e.clientX, e.clientY, '#FFD700', 12);
+        }
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        CortexEngine.integrationMenu.handleHover(e.clientX, e.clientY);
+      });
 
       // Start on click
       document.getElementById('loading').addEventListener('click', () => {
@@ -814,14 +832,22 @@
         document.getElementById('inventory').style.display = 'flex';
         document.getElementById('minimap').style.display = 'block';
         document.getElementById('chat-log').style.display = 'block';
-        
+
         AudioEngine.playAmbient();
-        addChat('☤ Bem-vindo ao Templo Hermes 3D!');
-        addChat('WASD mover | Mouse olhar | E interagir | 1-9 armas');
-        addChat('Espaço pular | Clique para capturar mouse');
-        
+        CortexEngine.chatSystem.addMessage('Sistema', 'Bem-vindo ao Templo Hermes 3D!', 'system');
+        CortexEngine.chatSystem.addMessage('Sistema', 'WASD mover | Mouse olhar | E interagir', 'system');
+        CortexEngine.chatSystem.addMessage('Sistema', '☰ Menu flutuante no canto direito', 'system');
+        CortexEngine.notificationSystem.push('☤ Templo Hermes 3D inicializado', 'achievement', 4000);
+        CortexEngine.notificationSystem.push('🎮 Use WASD + Mouse para navegar', 'info', 6000);
+        CortexEngine.furnaceSystem.trigger(0.5, '#FFD700');
+
         canvas.requestPointerLock();
-        requestAnimationFrame(render);
+        requestAnimationFrame(function loop(time) {
+          CortexEngine.frame(time, (ctx, dt) => {
+            renderFrame(ctx, dt, time);
+          });
+          requestAnimationFrame(loop);
+        });
       });
     }
 
