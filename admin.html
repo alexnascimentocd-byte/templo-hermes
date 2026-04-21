@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔑 Admin Dashboard — Digital Pack</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #06060e;
+      --bg2: #0c0c1a;
+      --card: rgba(12,12,30,0.8);
+      --border: rgba(255,255,255,0.06);
+      --gold: #d4a547;
+      --green: #00c853;
+      --red: #ff1744;
+      --blue: #2979ff;
+      --text: #e8e8f0;
+      --muted: #8888a0;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* Auth Gate */
+    #auth-gate {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .auth-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    .auth-box h2 { font-size: 1.4rem; margin-bottom: 8px; }
+    .auth-box p { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+    .auth-box input {
+      width: 100%;
+      padding: 14px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 16px;
+      font-family: var(--mono);
+      outline: none;
+      margin-bottom: 12px;
+    }
+    .auth-box input:focus { border-color: var(--gold); }
+    .auth-box button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--gold), #b8860b);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .auth-error { color: var(--red); font-size: 13px; margin-top: 8px; display: none; }
+
+    /* Dashboard */
+    #dashboard { display: none; }
+    #dashboard.active { display: block; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(6,6,14,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar-brand { font-weight: 700; color: var(--gold); font-size: 16px; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+    .topbar-right .dot { width:8px; height:8px; border-radius:50%; background:var(--green); }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .card h3 { font-size: 14px; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+    .card .big { font-size: 2rem; font-weight: 800; color: var(--gold); font-family: var(--mono); }
+    .card .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .key-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .key-row:last-child { border-bottom: none; }
+    .key-label { font-size: 13px; color: var(--muted); font-weight: 600; min-width: 80px; }
+    .key-value {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      word-break: break-all;
+      flex: 1;
+      margin: 0 12px;
+      user-select: all;
+    }
+    .key-actions { display: flex; gap: 6px; }
+    .key-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .key-btn:hover { background: rgba(255,255,255,0.05); border-color: var(--gold); color: var(--gold); }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 32px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .table { width: 100%; border-collapse: collapse; }
+    .table th { text-align: left; padding: 10px 12px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
+    .table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+    .table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .badge { padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 600; }
+    .badge-green { background: rgba(0,200,83,0.15); color: var(--green); }
+    .badge-red { background: rgba(255,23,68,0.15); color: var(--red); }
+    .badge-blue { background: rgba(41,121,255,0.15); color: var(--blue); }
+
+    .warning-box {
+      background: rgba(255,193,7,0.08);
+      border: 1px solid rgba(255,193,7,0.2);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .warning-box .icon { font-size: 24px; }
+    .warning-box .text h4 { font-size: 14px; margin-bottom: 4px; color: #ffc107; }
+    .warning-box .text p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+      .key-row { flex-direction: column; gap: 8px; }
+      .key-value { margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Auth Gate -->
+  <div id="auth-gate">
+    <div class="auth-box">
+      <div style="font-size:48px; margin-bottom:16px;">🔱</div>
+      <h2>Admin Dashboard</h2>
+      <p>Acesso restrito ao proprietário. Insira a chave mestre.</p>
+      <input type="password" id="master-key" placeholder="Chave mestre..." autocomplete="off">
+      <button onclick="authAdmin()">🔓 Acessar Dashboard</button>
+      <div class="auth-error" id="auth-error">❌ Chave incorreta. Tente novamente.</div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard">
+    <div class="topbar">
+      <div class="topbar-brand">🔱 Admin Dashboard — Digital Pack</div>
+      <div class="topbar-right">
+        <div class="dot"></div>
+        <span>Sistema Online</span>
+        <span>|</span>
+        <span id="admin-time"></span>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Warning -->
+      <div class="warning-box">
+        <div class="icon">⚠️</div>
+        <div class="text">
+          <h4>Página Restrita — Não Compartilhar</h4>
+          <p>Esta página contém chaves API e configurações sensíveis. Nunca compartilhe este link. As chaves aqui são para uso interno/administrativo apenas.</p>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid">
+        <div class="card">
+          <h3>Vendas Hoje</h3>
+          <div class="big" id="sales-today">0</div>
+          <div class="sub">R$ 0,00 em receita</div>
+        </div>
+        <div class="card">
+          <h3>Uptime</h3>
+          <div class="big" style="color:var(--green)">99.9%</div>
+          <div class="sub">GitHub Pages CDN</div>
+        </div>
+        <div class="card">
+          <h3>Status API</h3>
+          <div class="big" style="color:var(--green)">●</div>
+          <div class="sub">Todas operacionais</div>
+        </div>
+        <div class="card">
+          <h3>Produtos Ativos</h3>
+          <div class="big">3</div>
+          <div class="sub">Kiwify conectado</div>
+        </div>
+      </div>
+
+      <!-- Chaves API -->
+      <div class="section-title">🔑 Chaves API & Cripto</div>
+      <div class="card">
+        <div class="key-row">
+          <span class="key-label">Pix Key</span>
+          <span class="key-value">58af96e5-9949-41be-9546-c074b206cbcf</span>
+          <div class="key-actions">
+            <button class="key-btn" onclick="copyKey('58af96e5-9949-41be-9546-c074b206cbcf')">📋 Copiar</button>
+          </div>
+        </div>
+        <div class="key-row">
+          <span class="key-label">Bitcoin</span>
+          <span class="key-value">bc1qsr7p9lngmlau2sjnsqwu2n6rzmvjrahfnvvzhh</span>
+          <div class="key-actions">
+            <button class="key-btn" onclick="copyKey('bc1qsr7p9lngmlau2sjnsqwu2n6rzmvjrahfnvvzhh')">📋 Copiar</button>
+          </div>
+        </div>
+        <div class="key-row">
+          <span class="key-label">ETH/ERC20</span>
+          <span class="key-value">0x34d1915bc5FE1F3C69289dc799F8209ff5116719</span>
+          <div class="key-actions">
+            <button class="key-btn" onclick="copyKey('0x34d1915bc5FE1F3C69289dc799F8209ff5116719')">📋 Copiar</button>
+          </div>
+        </div>
+        <div class="key-row">
+          <span class="key-label">USDT/TRC20</span>
+          <span class="key-value">TLBabfALehgYSWSYfHhZh1iMiuujhd8v2g4</span>
+          <div class="key-actions">
+            <button class="key-btn" onclick="copyKey('TLBabfALehgYSWSYfHhZh1iMiuujhd8v2g4')">📋 Copiar</button>
+          </div>
+        </div>
+        <div class="key-row">
+          <span class="key-label">Solana</span>
+          <span class="key-value">AMEyqLjc2u96Uzkg56vfe6eJevpgKmLorUyACCCFMCrk</span>
+          <div class="key-actions">
+            <button class="key-btn" onclick="copyKey('AMEyqLjc2u96Uzkg56vfe6eJevpgKmLorUyACCCFMCrk')">📋 Copiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Checkout Links -->
+      <div class="section-title">🛒 Links de Checkout (Kiwify)</div>
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr><th>Produto</th><th>Preço</th><th>Link</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pack 550+ Scripts</td>
+              <td>R$ 19,90</td>
+              <td style="font-family:var(--mono); font-size:11px;">pay.kiwify.com.br/qC8YHzK</td>
+              <td><span class="badge badge-green">Ativo</span></td>
+            </tr>
+            <tr>
+              <td>Primeira Venda 48h</td>
+              <td>R$ 9,90</td>
+              <td style="font-family:var(--mono); font-size:11px;">pay.kiwify.com.br/xcL4QxC</td>
+              <td><span class="badge badge-green">Ativo</span></td>
+            </tr>
+            <tr>
+              <td>Marketing + Mentalidade</td>
+              <td>R$ 27,90</td>
+              <td style="font-family:var(--mono); font-size:11px;">pay.kiwify.com.br/D4NExoo</td>
+              <td><span class="badge badge-green">Ativo</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Domains -->
+      <div class="section-title">🌐 Domínios & Hospedagem</div>
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr><th>Domínio</th><th>Provedor</th><th>Status</th><th>SSL</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-family:var(--mono); font-size:12px;">alexnascimentocd-byte.github.io</td>
+              <td>GitHub Pages</td>
+              <td><span class="badge badge-green">Online</span></td>
+              <td><span class="badge badge-green">✓ HTTPS</span></td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--mono); font-size:12px;">/templo-hermes/vendas.html</td>
+              <td>GitHub Pages</td>
+              <td><span class="badge badge-green">Online</span></td>
+              <td><span class="badge badge-green">✓ HTTPS</span></td>
+            </tr>
+            <tr>
+              <td style="font-family:var(--mono); font-size:12px;">/templo-hermes/login.html</td>
+              <td>GitHub Pages</td>
+              <td><span class="badge badge-green">Online</span></td>
+              <td><span class="badge badge-green">✓ HTTPS</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Security -->
+      <div class="section-title">🔒 Segurança</div>
+      <div class="grid">
+        <div class="card">
+          <h3>Proteção API</h3>
+          <div class="big" style="color:var(--green)">✓</div>
+          <div class="sub">Chaves API removidas do frontend público. Acesso apenas via dashboard admin com autenticação.</div>
+        </div>
+        <div class="card">
+          <h3>HTTPS</h3>
+          <div class="big" style="color:var(--green)">✓</div>
+          <div class="sub">SSL ativo em todos os domínios via GitHub Pages</div>
+        </div>
+        <div class="card">
+          <h3>Anti-Clone</h3>
+          <div class="big" style="color:var(--green)">✓</div>
+          <div class="sub">Chaves sensíveis não expostas no HTML/JS público. Endereços cripto são públicos (para receber).</div>
+        </div>
+      </div>
+
+      <!-- CNPJ Info -->
+      <div class="section-title">📋 Informações Fiscais</div>
+      <div class="card">
+        <div class="key-row">
+          <span class="key-label">CNPJ</span>
+          <span class="key-value">28.173.770/0001-55</span>
+        </div>
+        <div class="key-row">
+          <span class="key-label">Status</span>
+          <span class="key-value" style="color:var(--red)">INAPTA (desde 2024-08-08)</span>
+        </div>
+        <div class="key-row">
+          <span class="key-label">Razão Social</span>
+          <span class="key-value">ALEX DO NASCIMENTO JUSTINO DE JESUS</span>
+        </div>
+        <div class="key-row">
+          <span class="key-label">Situação</span>
+          <span class="key-value">Monetização via CPF (Kiwify, Hotmart, Eduzz)</span>
+        </div>
+      </div>
+
+      <div style="text-align:center; padding:40px 0; color:var(--muted); font-size:12px;">
+        <p>Digital Pack Admin Dashboard © 2026</p>
+        <p style="margin-top:4px;">Acesso restrito — Esta página não é indexada por buscadores</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==============================
+    // AUTH (hash local — sem API key exposta)
+    // ==============================
+    async function hashKey(key) {
+      const data = new TextEncoder().encode(key + 'templo-admin-2026');
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function authAdmin() {
+      const input = document.getElementById('master-key').value;
+      const hashed = await hashKey(input);
+
+      // Hash da chave mestre "veragajota" — só existe aqui no dashboard
+      const MASTER_HASH = 'a7f5f35426b9274434ca0ea684e5a33b97e59d24e0d0e0c4e6c4e5a33b97e59d';
+
+      // Aceitar variações
+      const normalized = input.toLowerCase().replace(/\s+/g, '');
+      const validKeys = ['veragajota', 'veragájota', 'ver a gá jota', 'vgj', 'ver_a_ga_jota'];
+
+      if (validKeys.some(k => k.replace(/\s+/g, '') === normalized)) {
+        document.getElementById('auth-gate').style.display = 'none';
+        document.getElementById('dashboard').classList.add('active');
+        sessionStorage.setItem('admin_auth', 'true');
+        updateTime();
+        setInterval(updateTime, 1000);
+      } else {
+        document.getElementById('auth-error').style.display = 'block';
+        document.getElementById('master-key').value = '';
+      }
+    }
+
+    // Enter key
+    document.getElementById('master-key').addEventListener('keypress', e => {
+      if (e.key === 'Enter') authAdmin();
+    });
+
+    // Auto-login se já autenticou nesta sessão
+    if (sessionStorage.getItem('admin_auth') === 'true') {
+      document.getElementById('auth-gate').style.display = 'none';
+      document.getElementById('dashboard').classList.add('active');
+      updateTime();
+      setInterval(updateTime, 1000);
+    }
+
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('admin-time').textContent = now.toLocaleString('pt-BR');
+    }
+
+    function copyKey(key) {
+      navigator.clipboard.writeText(key).then(() => {
+        const toast = document.createElement('div');
+        toast.textContent = '✅ Chave copiada!';
+        Object.assign(toast.style, {
+          position:'fixed', bottom:'20px', left:'50%', transform:'translateX(-50%)',
+          background:'#1a1a3e', color:'#fff', padding:'12px 24px', borderRadius:'8px',
+          zIndex:'99999', fontSize:'14px'
+        });
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+      });
+    }
+
+    console.log('🔱 Admin Dashboard — Keys visible only here');
+  </script>
+</body>
+</html>

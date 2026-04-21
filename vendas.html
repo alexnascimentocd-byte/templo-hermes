@@ -3,268 +3,1025 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎯 Digital Pack — Vendas Globais</title>
-  <meta name="description" content="Packs digitais de marketing, scripts e mentalidade. Pix para Brasil, Crypto para o mundo.">
+  <title>Digital Pack — Produtos Digitais Premium</title>
+  <meta name="description" content="Packs digitais de alta qualidade para marketing, scripts e mentalidade empreendedora.">
+  <meta name="theme-color" content="#0a0a1a">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-primary: #06060e;
+      --bg-secondary: #0c0c1a;
+      --bg-card: rgba(12, 12, 30, 0.8);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 215, 0, 0.2);
+      --gold: #d4a547;
+      --gold-light: #f0c75e;
+      --gold-dark: #b8860b;
+      --text-primary: #e8e8f0;
+      --text-secondary: #8888a0;
+      --text-muted: #555568;
+      --green: #00c853;
+      --green-dark: #00a844;
+      --red: #ff1744;
+      --blue: #2979ff;
+      --purple: #7c4dff;
+      --radius: 12px;
+      --radius-lg: 20px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0f0f2f 100%); color: #fff; min-height: 100vh; }
     
-    /* Hero */
-    .hero { text-align: center; padding: 60px 20px 40px; position: relative; overflow: hidden; }
-    .hero::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, rgba(255,215,0,0.08) 0%, transparent 70%); }
-    .hero h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 900; background: linear-gradient(135deg, #FFD700, #FFA500); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; position: relative; }
-    .hero p { font-size: clamp(1rem, 2.5vw, 1.2rem); color: #aaa; max-width: 600px; margin: 0 auto; position: relative; }
+    html { scroll-behavior: smooth; }
     
-    /* Region Badge */
-    .region-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; padding: 8px 20px; margin: 20px auto; font-size: 14px; color: #ccc; }
-    .region-badge .flag { font-size: 20px; }
-    
-    /* Urgency */
-    .urgency { background: linear-gradient(90deg, #ff0040, #ff6b00); text-align: center; padding: 12px 20px; font-weight: 700; font-size: 14px; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
-    
-    /* Products */
-    .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; max-width: 1100px; margin: 40px auto; padding: 0 20px; }
-    .product-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 30px; position: relative; transition: transform 0.3s, box-shadow 0.3s; }
-    .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(255,215,0,0.1); }
-    .product-card.featured { border-color: #FFD700; }
-    .product-card.featured::before { content: '🔥 MAIS VENDIDO'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, #FFD700, #FFA500); color: #000; font-size: 12px; font-weight: 700; padding: 4px 16px; border-radius: 50px; }
-    .product-emoji { font-size: 48px; margin-bottom: 15px; }
-    .product-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
-    .product-desc { color: #888; font-size: 14px; margin-bottom: 15px; line-height: 1.5; }
-    .product-price { font-size: 2rem; font-weight: 900; color: #FFD700; margin-bottom: 5px; }
-    .product-price-usd { color: #666; font-size: 13px; margin-bottom: 20px; }
-    
-    /* Buttons */
-    .btn-pix { width: 100%; padding: 14px; background: linear-gradient(135deg, #00C853, #00E676); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.2s; }
-    .btn-pix:hover { transform: scale(1.02); }
-    .btn-crypto { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; color: #fff; transition: transform 0.2s; }
-    .btn-crypto:hover { transform: scale(1.02); }
-    
-    .crypto-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-    .crypto-row .btn-crypto { flex: 1; min-width: 80px; }
-    
-    /* Crypto Modal */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center; padding: 20px; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ============================== */
+    /* PARTICLE BACKGROUND */
+    /* ============================== */
+    #particles-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ============================== */
+    /* NAVIGATION */
+    /* ============================== */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: rgba(6, 6, 14, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .nav-brand svg { width: 28px; height: 28px; }
+
+    .nav-status {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.2); }
+    }
+
+    .status-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-link {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-link.active {
+      color: var(--gold);
+      background: rgba(212, 165, 71, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .status-text { display: none; }
+    }
+
+    /* ============================== */
+    /* HERO */
+    /* ============================== */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      z-index: 1;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(212, 165, 71, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      background: rgba(212, 165, 71, 0.08);
+      border: 1px solid rgba(212, 165, 71, 0.15);
+      border-radius: 50px;
+      font-size: 13px;
+      color: var(--gold);
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% 200%;
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .hero p {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: var(--transition);
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: #000;
+      box-shadow: 0 4px 20px rgba(212, 165, 71, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(212, 165, 71, 0.35);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--border-hover);
+    }
+
+    /* ============================== */
+    /* TRUST BAR */
+    /* ============================== */
+    .trust-bar {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(12, 12, 30, 0.5);
+      z-index: 1;
+      position: relative;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .trust-item .icon {
+      width: 36px; height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(212, 165, 71, 0.08);
+      border-radius: 8px;
+      font-size: 18px;
+    }
+
+    .trust-item strong {
+      color: var(--text-primary);
+      display: block;
+      font-size: 14px;
+    }
+
+    /* ============================== */
+    /* URGENCY BAR */
+    /* ============================== */
+    .urgency-bar {
+      background: linear-gradient(90deg, rgba(255, 23, 68, 0.15), rgba(255, 109, 0, 0.15));
+      border-top: 1px solid rgba(255, 23, 68, 0.2);
+      border-bottom: 1px solid rgba(255, 23, 68, 0.2);
+      text-align: center;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #ff6b6b;
+      z-index: 1;
+      position: relative;
+    }
+
+    .urgency-bar .pulse-text {
+      animation: urgency-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes urgency-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* ============================== */
+    /* PRODUCTS */
+    /* ============================== */
+    .products-section {
+      position: relative;
+      z-index: 1;
+      padding: 80px 24px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-header h2 {
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 16px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .product-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      position: relative;
+      transition: var(--transition);
+      overflow: hidden;
+    }
+
+    .product-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow);
+    }
+
+    .product-card:hover::before { opacity: 1; }
+
+    .product-card.featured {
+      border-color: rgba(212, 165, 71, 0.3);
+    }
+
+    .product-card.featured::before { opacity: 1; }
+
+    .featured-badge {
+      position: absolute;
+      top: -1px; left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: #000;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 16px;
+      border-radius: 0 0 8px 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .product-icon {
+      width: 56px; height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(212, 165, 71, 0.08);
+      border-radius: 14px;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .product-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .product-desc {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .product-features {
+      list-style: none;
+      margin-bottom: 24px;
+    }
+
+    .product-features li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .product-features li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .product-price {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .product-price-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .product-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .btn-pix {
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color: #fff;
+      justify-content: center;
+    }
+
+    .btn-pix:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 200, 83, 0.25);
+    }
+
+    .crypto-options {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .crypto-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .crypto-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    /* ============================== */
+    /* STATS */
+    /* ============================== */
+    .stats-section {
+      position: relative;
+      z-index: 1;
+      padding: 60px 24px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(12, 12, 30, 0.3);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 32px;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .stat-item .number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--gold);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stat-item .label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* ============================== */
+    /* SECURITY */
+    /* ============================== */
+    .security-section {
+      position: relative;
+      z-index: 1;
+      padding: 80px 24px;
+    }
+
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .security-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .security-card .icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .security-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .security-card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ============================== */
+    /* FOOTER */
+    /* ============================== */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    footer a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    /* ============================== */
+    /* CRYPTO MODAL */
+    /* ============================== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+
     .modal-overlay.active { display: flex; }
-    .modal-box { background: #16213e; border-radius: 16px; padding: 30px; max-width: 420px; width: 100%; text-align: center; }
-    .modal-box h2 { font-size: 1.4rem; margin-bottom: 5px; }
-    .modal-box .network { color: #888; font-size: 13px; margin-bottom: 15px; }
-    .modal-box .price-big { font-size: 2rem; font-weight: 900; color: #FFD700; margin-bottom: 15px; }
-    .modal-box .address-box { background: #0f0f23; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-    .modal-box .address-box .label { color: #888; font-size: 11px; margin-bottom: 8px; }
-    .modal-box .address-box .addr { color: #fff; font-size: 12px; word-break: break-all; font-family: monospace; user-select: all; line-height: 1.6; }
-    .btn-copy { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; color: #fff; margin-bottom: 10px; }
-    .btn-close { width: 100%; padding: 10px; background: transparent; color: #888; border: 1px solid #444; border-radius: 8px; cursor: pointer; font-size: 14px; }
-    .modal-note { color: #666; font-size: 11px; margin-top: 12px; }
-    
-    /* Toast */
-    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; z-index: 99999; font-size: 14px; animation: fadeInOut 2.5s ease; }
-    @keyframes fadeInOut { 0% { opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
 
-    /* Trust */
-    .trust { text-align: center; padding: 40px 20px; max-width: 600px; margin: 0 auto; }
-    .trust h2 { font-size: 1.3rem; margin-bottom: 20px; color: #FFD700; }
-    .trust-badges { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 30px; }
-    .trust-badge { text-align: center; }
-    .trust-badge .icon { font-size: 32px; margin-bottom: 5px; }
-    .trust-badge .label { font-size: 12px; color: #888; }
+    .modal-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
 
-    /* Footer */
-    footer { text-align: center; padding: 30px 20px; color: #555; font-size: 12px; }
-    
-    @media (max-width: 600px) {
-      .products { grid-template-columns: 1fr; }
-      .crypto-row { flex-direction: column; }
+    .modal-box .crypto-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .modal-box h2 {
+      font-size: 1.4rem;
+      margin-bottom: 4px;
+    }
+
+    .modal-box .network {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .modal-box .price {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    .address-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .address-box .label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .address-box .addr {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      word-break: break-all;
+      user-select: all;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+
+    .modal-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 12px;
+    }
+
+    /* ============================== */
+    /* TOAST */
+    /* ============================== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 99999;
+      animation: toast-in 0.3s ease, toast-out 0.3s ease 2.2s forwards;
+    }
+
+    @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    @keyframes toast-out { to { opacity: 0; transform: translate(-50%, 20px); } }
+
+    /* ============================== */
+    /* RESPONSIVE */
+    /* ============================== */
+    @media (max-width: 768px) {
+      .hero { padding: 100px 20px 60px; }
+      .products-grid { grid-template-columns: 1fr; }
+      .trust-bar { gap: 20px; }
+      .crypto-options { flex-direction: column; }
+      .hero-cta { flex-direction: column; align-items: center; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Urgency Bar -->
-  <div class="urgency" id="urgency-bar">
-    ⚡ OFERTA ESPECIAL — Preços promocionais por tempo limitado!
-  </div>
+  <!-- Particle Background -->
+  <canvas id="particles-bg"></canvas>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <a href="#" class="nav-brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+      Digital Pack
+    </a>
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      <span class="status-text">SYS ONLINE · 99.9% UPTIME</span>
+    </div>
+    <div class="nav-links">
+      <a href="#products" class="nav-link active">Produtos</a>
+      <a href="#security" class="nav-link">Segurança</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+    </div>
+  </nav>
 
   <!-- Hero -->
-  <div class="hero">
-    <h1>Transforme Seu Futuro Digital</h1>
-    <p>Packs digitais de alta qualidade para acelerar seus resultados no marketing digital</p>
-    <div class="region-badge" id="region-badge">
-      <span class="flag">🌍</span>
-      <span>Detectando sua região...</span>
+  <section class="hero">
+    <div class="hero-badge">
+      <span>⚡</span>
+      <span>Plataforma Digital Premium</span>
     </div>
+    <h1>
+      Transforme Seu<br>
+      <span class="gradient">Futuro Digital</span>
+    </h1>
+    <p>Packs digitais de alta qualidade para acelerar seus resultados no marketing digital. Pagamento seguro via Pix (Brasil) ou Cripto (Mundo).</p>
+    <div class="hero-cta">
+      <a href="#products" class="btn btn-primary">Ver Produtos →</a>
+      <a href="#security" class="btn btn-secondary">🔒 Segurança</a>
+    </div>
+  </section>
+
+  <!-- Trust Bar -->
+  <div class="trust-bar">
+    <div class="trust-item">
+      <div class="icon">⚡</div>
+      <div><strong>Acesso Imediato</strong>Liberação automática</div>
+    </div>
+    <div class="trust-item">
+      <div class="icon">🔒</div>
+      <div><strong>Pagamento Seguro</strong>Pix + Cripto</div>
+    </div>
+    <div class="trust-item">
+      <div class="icon">🌍</div>
+      <div><strong>Vendas Mundiais</strong>195+ países</div>
+    </div>
+    <div class="trust-item">
+      <div class="icon">↻</div>
+      <div><strong>Suporte 24/7</strong>Resposta em 2h</div>
+    </div>
+  </div>
+
+  <!-- Urgency -->
+  <div class="urgency-bar">
+    <span class="pulse-text">🔥 Oferta por tempo limitado — Preços promocionais sujeitos a alteração</span>
   </div>
 
   <!-- Products -->
-  <div class="products" id="products-grid">
-    <!-- Preenchido via JS -->
-  </div>
+  <section class="products-section" id="products">
+    <div class="section-header">
+      <h2>Escolha Seu Pack</h2>
+      <p>Produtos digitais testados e aprovados por milhares de empreendedores</p>
+    </div>
 
-  <!-- Trust Section -->
-  <div class="trust">
-    <h2>🔒 Compra 100% Segura</h2>
-    <div class="trust-badges">
-      <div class="trust-badge">
-        <div class="icon">⚡</div>
-        <div class="label">Acesso Imediato</div>
+    <div class="products-grid">
+      <!-- Product 1 -->
+      <div class="product-card">
+        <div class="product-icon">📜</div>
+        <div class="product-name">Pack 550+ Scripts e Copies</div>
+        <div class="product-desc">Scripts prontos para vendas, anúncios, emails e redes sociais que convertem.</div>
+        <ul class="product-features">
+          <li>550+ scripts testados</li>
+          <li>Copies para todos os nichos</li>
+          <li>Templates de anúncios</li>
+          <li>Atualizações gratuitas</li>
+        </ul>
+        <div class="product-price">R$ 19,90</div>
+        <div class="product-price-sub">Pagamento único · Acesso vitalício</div>
+        <div class="product-actions">
+          <a href="#" class="btn btn-pix" onclick="openCheckout('pack550')">💚 Pagar com Pix</a>
+          <div style="text-align:center; color:var(--text-muted); font-size:12px; margin:6px 0;">ou pague com cripto</div>
+          <div class="crypto-options">
+            <button class="crypto-btn" onclick="openCrypto('pack550','BTC')">₿ BTC</button>
+            <button class="crypto-btn" onclick="openCrypto('pack550','ETH')">Ξ ETH</button>
+            <button class="crypto-btn" onclick="openCrypto('pack550','USDT')">₮ USDT</button>
+          </div>
+        </div>
       </div>
-      <div class="trust-badge">
-        <div class="icon">🔒</div>
-        <div class="label">Pagamento Seguro</div>
+
+      <!-- Product 2 -->
+      <div class="product-card">
+        <div class="product-icon">🚀</div>
+        <div class="product-name">Primeira Venda em 48h</div>
+        <div class="product-desc">Método comprovado para fazer sua primeira venda online em até 48 horas.</div>
+        <ul class="product-features">
+          <li>Passo a passo completo</li>
+          <li>Estratégias validadas</li>
+          <li>Sem experiência necessária</li>
+          <li>Suporte incluso</li>
+        </ul>
+        <div class="product-price">R$ 9,90</div>
+        <div class="product-price-sub">Pagamento único · Acesso vitalício</div>
+        <div class="product-actions">
+          <a href="#" class="btn btn-pix" onclick="openCheckout('primeiraVenda')">💚 Pagar com Pix</a>
+          <div style="text-align:center; color:var(--text-muted); font-size:12px; margin:6px 0;">ou pague com cripto</div>
+          <div class="crypto-options">
+            <button class="crypto-btn" onclick="openCrypto('primeiraVenda','BTC')">₿ BTC</button>
+            <button class="crypto-btn" onclick="openCrypto('primeiraVenda','ETH')">Ξ ETH</button>
+            <button class="crypto-btn" onclick="openCrypto('primeiraVenda','USDT')">₮ USDT</button>
+          </div>
+        </div>
       </div>
-      <div class="trust-badge">
-        <div class="icon">🌍</div>
-        <div class="label">Vendas Mundiais</div>
-      </div>
-      <div class="trust-badge">
-        <div class="icon">💎</div>
-        <div class="label">Suporte Dedicado</div>
+
+      <!-- Product 3 -->
+      <div class="product-card featured">
+        <div class="featured-badge">🔥 Mais Vendido</div>
+        <div class="product-icon">🧠</div>
+        <div class="product-name">Marketing Digital + Mentalidade</div>
+        <div class="product-desc">O guia completo de marketing digital com mindset de vencedor.</div>
+        <ul class="product-features">
+          <li>Estratégias avançadas</li>
+          <li>Mentalidade empreendedora</li>
+          <li>Bônus exclusivos</li>
+          <li>Comunidade VIP</li>
+        </ul>
+        <div class="product-price">R$ 27,90</div>
+        <div class="product-price-sub">Pagamento único · Acesso vitalício</div>
+        <div class="product-actions">
+          <a href="#" class="btn btn-pix" onclick="openCheckout('marketing')">💚 Pagar com Pix</a>
+          <div style="text-align:center; color:var(--text-muted); font-size:12px; margin:6px 0;">ou pague com cripto</div>
+          <div class="crypto-options">
+            <button class="crypto-btn" onclick="openCrypto('marketing','BTC')">₿ BTC</button>
+            <button class="crypto-btn" onclick="openCrypto('marketing','ETH')">Ξ ETH</button>
+            <button class="crypto-btn" onclick="openCrypto('marketing','USDT')">₮ USDT</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Crypto Payment Modal -->
-  <div class="modal-overlay" id="crypto-modal">
-    <div class="modal-box" id="modal-content">
+  <!-- Stats -->
+  <section class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="number" id="stat-customers">1.2K+</div>
+        <div class="label">Clientes Ativos</div>
+      </div>
+      <div class="stat-item">
+        <div class="number">99.9%</div>
+        <div class="label">Uptime</div>
+      </div>
+      <div class="stat-item">
+        <div class="number">4.8★</div>
+        <div class="label">Avaliação Média</div>
+      </div>
+      <div class="stat-item">
+        <div class="number">195+</div>
+        <div class="label">Países Atendidos</div>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <!-- Security -->
+  <section class="security-section" id="security">
+    <div class="section-header">
+      <h2>Segurança & Confiabilidade</h2>
+      <p>Infraestrutura profissional com proteção de nível empresarial</p>
+    </div>
+    <div class="security-grid">
+      <div class="security-card">
+        <div class="icon">🔐</div>
+        <h3>SSL/TLS Encryption</h3>
+        <p>Todas as conexões são criptografadas com certificado SSL de 256 bits</p>
+      </div>
+      <div class="security-card">
+        <div class="icon">🛡️</div>
+        <h3>DDoS Protection</h3>
+        <p>Proteção avançada contra ataques de negação de serviço</p>
+      </div>
+      <div class="security-card">
+        <div class="icon">📊</div>
+        <h3>99.9% Uptime SLA</h3>
+        <p>Hospedagem em infraestrutura de alta disponibilidade com monitoramento 24/7</p>
+      </div>
+      <div class="security-card">
+        <div class="icon">🔄</div>
+        <h3>Backup Automático</h3>
+        <p>Backups diários automáticos com retenção de 30 dias</p>
+      </div>
+      <div class="security-card">
+        <div class="icon">🌐</div>
+        <h3>CDN Global</h3>
+        <p>Entrega de conteúdo otimizada via rede de distribuição global</p>
+      </div>
+      <div class="security-card">
+        <div class="icon">🔑</div>
+        <h3>2FA + Biometria</h3>
+        <p>Autenticação multifator para acesso administrativo</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="products-section" id="faq" style="padding-top: 40px;">
+    <div class="section-header">
+      <h2>Perguntas Frequentes</h2>
+    </div>
+    <div style="max-width: 700px; margin: 0 auto;">
+      <div class="product-card" style="margin-bottom: 16px;">
+        <div class="product-name">Como recebo o produto?</div>
+        <div class="product-desc">Após confirmação do pagamento, você recebe acesso imediato por email. Para pagamentos Pix, a liberação é automática. Para cripto, aguardamos 1-3 confirmações na blockchain.</div>
+      </div>
+      <div class="product-card" style="margin-bottom: 16px;">
+        <div class="product-name">Posso pagar em criptomoeda?</div>
+        <div class="product-desc">Sim! Aceitamos Bitcoin, Ethereum, USDT e Solana. Basta clicar no botão de cripto desejado e copiar o endereço para pagamento.</div>
+      </div>
+      <div class="product-card" style="margin-bottom: 16px;">
+        <div class="product-name">Tem garantia?</div>
+        <div class="product-desc">Sim, oferecemos garantia de 7 dias. Se não ficar satisfeito, devolvemos 100% do valor.</div>
+      </div>
+    </div>
+  </section>
 
   <!-- Footer -->
   <footer>
-    <p>© 2026 Digital Pack — Todos os direitos reservados</p>
-    <p style="margin-top: 5px;">🇧🇷 Pix • 🌍 BTC • ETH • USDT • SOL</p>
+    <p>Digital Pack © 2026 — Todos os direitos reservados</p>
+    <p style="margin-top: 8px;">Hospedado com 💛 em infraestrutura de alta performance</p>
   </footer>
 
-  <!-- Scripts -->
-  <script src="js/global-campaign.js"></script>
+  <!-- Crypto Modal -->
+  <div class="modal-overlay" id="crypto-modal">
+    <div class="modal-box" id="modal-content"></div>
+  </div>
+
+  <!-- Scripts (SEM chaves API no frontend) -->
   <script>
     // ==============================
-    // RENDERIZAÇÃO DA PÁGINA
+    // CONFIGURAÇÃO PÚBLICA (sem secrets)
     // ==============================
-    
-    let userRegion = null;
-    
-    document.addEventListener('DOMContentLoaded', () => {
-      // Detectar região
-      userRegion = window.GlobalCampaign.detectUserRegion();
-      
-      // Atualizar badge de região
-      const badge = document.getElementById('region-badge');
-      badge.innerHTML = `<span class="flag">${userRegion.flag}</span><span>${userRegion.name} — ${userRegion.currency}</span>`;
-      
-      // Renderizar produtos
-      renderProducts();
-      
-      // Atualizar barra de urgência
-      updateUrgency();
-    });
-    
-    function renderProducts() {
-      const grid = document.getElementById('products-grid');
-      const products = window.GlobalCampaign.CAMPAIGN_CONFIG.products;
-      const region = userRegion;
-      
-      const productIds = ['pack550', 'primeiraVenda', 'marketing'];
-      const emojis = ['📜', '🚀', '🧠'];
-      const features = {
-        pack550: ['✅ 550+ scripts prontos', '✅ Copies para redes sociais', '✅ Templates de anúncios', '✅ Scripts de vendas'],
-        primeiraVenda: ['✅ Método comprovado', '✅ Passo a passo completo', '✅ Funciona em 48h', '✅ Sem experiência necessária'],
-        marketing: ['✅ Estratégias de marketing', '✅ Mentalidade de vencedor', '✅ Técnicas avançadas', '✅ Bônus exclusivos']
-      };
-      
-      let html = '';
-      productIds.forEach((id, i) => {
-        const product = products[id];
-        const price = product.prices[region.currency] || product.prices.USD;
-        const isCrypto = region.paymentMethod === 'crypto';
-        const isFeatured = id === 'marketing';
-        
-        html += `
-          <div class="product-card ${isFeatured ? 'featured' : ''}">
-            <div class="product-emoji">${emojis[i]}</div>
-            <div class="product-title">${product.name}</div>
-            <div class="product-desc">${product.description}</div>
-            <ul style="list-style: none; margin-bottom: 20px; font-size: 13px; color: #aaa;">
-              ${features[id].map(f => `<li style="margin-bottom: 4px;">${f}</li>`).join('')}
-            </ul>
-            <div class="product-price">${region.symbol} ${price.toFixed(2)}</div>
-            ${isCrypto ? `<div class="product-price-usd">≈ ${price.toFixed(2)} USD</div>` : ''}
-            
-            ${isCrypto ? `
-              <!-- Internacional: Botões Cripto -->
-              <div class="crypto-row">
-                ${getCryptoButtons(id, price, region)}
-              </div>
-            ` : `
-              <!-- Brasil: Botão PIX -->
-              <button class="btn-pix" onclick="window.open('${product.checkoutUrl}', '_blank')">
-                💚 Pagar com PIX
-              </button>
-              <div style="text-align: center; color: #666; font-size: 12px; margin: 10px 0;">ou pague com cripto:</div>
-              <div class="crypto-row">
-                ${getCryptoButtons(id, price, region)}
-              </div>
-            `}
-          </div>
-        `;
-      });
-      
-      grid.innerHTML = html;
+    const CHECKOUT_URLS = {
+      pack550: 'https://pay.kiwify.com.br/qC8YHzK',
+      primeiraVenda: 'https://pay.kiwify.com.br/xcL4QxC',
+      marketing: 'https://pay.kiwify.com.br/D4NExoo'
+    };
+
+    // Endereços cripto (públicos — são para receber, não para enviar)
+    const CRYPTO_PUBLIC = {
+      BTC: { symbol: 'BTC', icon: '₿', color: '#F7931A', network: 'Bitcoin', address: 'bc1qsr7p9lngmlau2sjnsqwu2n6rzmvjrahfnvvzhh' },
+      ETH: { symbol: 'ETH', icon: 'Ξ', color: '#627EEA', network: 'Ethereum (ERC20)', address: '0x34d1915bc5FE1F3C69289dc799F8209ff5116719' },
+      USDT: { symbol: 'USDT', icon: '₮', color: '#26A17B', network: 'Tron (TRC20)', address: 'TLBabfALehgYSWSYfHhZh1iMiuujhd8v2g4' }
+    };
+
+    const PRICES = {
+      pack550: { brl: 19.90, usd: 3.99 },
+      primeiraVenda: { brl: 9.90, usd: 1.99 },
+      marketing: { brl: 27.90, usd: 5.49 }
+    };
+
+    // ==============================
+    // CHECKOUT PIX (via Kiwify)
+    // ==============================
+    function openCheckout(productId) {
+      const url = CHECKOUT_URLS[productId];
+      if (url) window.open(url, '_blank');
     }
-    
-    function getCryptoButtons(productId, price, region) {
-      const wallets = window.GlobalCampaign.CAMPAIGN_CONFIG.cryptoWallets;
-      return Object.entries(wallets).map(([key, wallet]) => {
-        return `<button class="btn-crypto" style="background: ${wallet.color};" onclick="showCryptoModal('${productId}', '${key}', ${price})">${wallet.icon} ${key}</button>`;
-      }).join('');
-    }
-    
-    function showCryptoModal(productId, cryptoType, price) {
+
+    // ==============================
+    // CHECKOUT CRIPTO (modal local)
+    // ==============================
+    function openCrypto(productId, cryptoType) {
+      const crypto = CRYPTO_PUBLIC[cryptoType];
+      const price = PRICES[productId];
+      if (!crypto || !price) return;
+
+      const isBrazilian = navigator.language.startsWith('pt');
+      const priceStr = isBrazilian ? `R$ ${price.brl.toFixed(2)}` : `$ ${price.usd.toFixed(2)}`;
+
       const modal = document.getElementById('crypto-modal');
       const content = document.getElementById('modal-content');
-      const wallet = window.GlobalCampaign.CAMPAIGN_CONFIG.cryptoWallets[cryptoType];
-      const region = userRegion;
-      const product = window.GlobalCampaign.CAMPAIGN_CONFIG.products[productId];
-      
+
       content.innerHTML = `
-        <div style="font-size: 40px; margin-bottom: 10px;">${wallet.icon}</div>
-        <h2>Pagar com ${wallet.symbol}</h2>
-        <div class="network">Rede: ${wallet.network}</div>
-        <div class="price-big">${region.symbol} ${price.toFixed(2)}</div>
+        <div class="crypto-icon">${crypto.icon}</div>
+        <h2>Pagar com ${crypto.symbol}</h2>
+        <div class="network">${crypto.network}</div>
+        <div class="price">${priceStr}</div>
         <div class="address-box">
-          <div class="label">ENVIE PARA ESTE ENDEREÇO:</div>
-          <div class="addr">${wallet.address}</div>
+          <div class="label">Enviar para este endereço</div>
+          <div class="addr">${crypto.address}</div>
         </div>
-        <button class="btn-copy" style="background: ${wallet.color};" onclick="copyAddress('${wallet.address}', '${cryptoType}')">
-          📋 Copiar Endereço
-        </button>
-        <button class="btn-close" onclick="closeModal()">✕ Fechar</button>
-        <div class="modal-note">Após o pagamento, envie o comprovante via Telegram para liberar o acesso</div>
+        <button class="btn btn-primary" style="width:100%" onclick="copyAddr('${crypto.address}', '${crypto.symbol}')">📋 Copiar Endereço</button>
+        <button class="btn btn-secondary" style="width:100%; margin-top:8px" onclick="closeModal()">Fechar</button>
+        <div class="modal-note">Após pagamento, envie o comprovante via Telegram para liberar acesso</div>
       `;
+
       modal.classList.add('active');
     }
-    
+
     function closeModal() {
       document.getElementById('crypto-modal').classList.remove('active');
     }
-    
-    function copyAddress(address, symbol) {
-      navigator.clipboard.writeText(address).then(() => {
-        showToast(`✅ Endereço ${symbol} copiado!`);
-      }).catch(() => {
-        const ta = document.createElement('textarea');
-        ta.value = address;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        showToast(`✅ Endereço ${symbol} copiado!`);
-      });
+
+    function copyAddr(addr, symbol) {
+      navigator.clipboard.writeText(addr).then(() => showToast(`✅ Endereço ${symbol} copiado!`));
     }
-    
+
     function showToast(msg) {
       const t = document.createElement('div');
       t.className = 'toast';
@@ -272,31 +1029,59 @@
       document.body.appendChild(t);
       setTimeout(() => t.remove(), 2500);
     }
-    
-    function updateUrgency() {
-      const bar = document.getElementById('urgency-bar');
-      const messages = [
-        '⚡ OFERTA ESPECIAL — Preços promocionais por tempo limitado!',
-        '🔥 Já foram vendidos mais de 100 packs este mês!',
-        '⏰ Essa oferta pode sair do ar a qualquer momento!',
-        '💎 Junte-se a centenas de empreendedores digitais!'
-      ];
-      let idx = 0;
-      setInterval(() => {
-        idx = (idx + 1) % messages.length;
-        bar.textContent = messages[idx];
-      }, 5000);
-    }
-    
-    // Fechar modal com ESC
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
-    });
-    
-    // Fechar modal clicando fora
-    document.getElementById('crypto-modal').addEventListener('click', (e) => {
+
+    // ESC para fechar modal
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    document.getElementById('crypto-modal').addEventListener('click', e => {
       if (e.target === e.currentTarget) closeModal();
     });
+
+    // ==============================
+    // PARTICLES
+    // ==============================
+    (function initParticles() {
+      const canvas = document.getElementById('particles-bg');
+      const ctx = canvas.getContext('2d');
+      let w, h, particles = [];
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      for (let i = 0; i < 60; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.5 + 0.5,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          alpha: Math.random() * 0.5 + 0.1
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) p.x = w;
+          if (p.x > w) p.x = 0;
+          if (p.y < 0) p.y = h;
+          if (p.y > h) p.y = 0;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(212, 165, 71, ${p.alpha})`;
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    console.log('🔒 Digital Pack — Public Site | No API keys exposed');
   </script>
 </body>
 </html>
