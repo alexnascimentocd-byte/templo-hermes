@@ -47,6 +47,8 @@
 | 24 | Money Machine | 100 gecs | Digital |
 | 25 | Humble | Kendrick Lamar | Disciplina |
 | 26 | Drip da Roça 2 | Doode ft. Lil Whind | Agro Trap 🌾 |
+| 27 | KGL's | Filipe Ret | Mandrake 🇧🇷 |
+| 28 | RETALHOS | Kayuá | Profundo 💎 |
 
 ## 🌙 ALQUIMIA — Mistura & Transformação
 | # | Música | Artista | Vibe |
@@ -78,8 +80,8 @@
 ---
 
 ### 📊 Estatísticas
-- **Total:** 41 faixas
-- **Duração estimada:** ~2h45min
+- **Total:** 43 faixas
+- **Duração estimada:** ~3h
 - **Gêneros:** Funk, Rap, MPB, Pop, Rock, Eletrônica, Agro Trap, Trilha Sonora
 - **Idiomas:** PT-BR 🇧🇷, EN 🇺🇸, IT 🇮🇹
 

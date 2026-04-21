@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔐 Templo Hermes — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 30%, #0a1a3e 60%, #0a0a1a 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 50% 80%, rgba(0, 191, 255, 0.03) 0%, transparent 50%);
+      animation: bgPulse 10s ease-in-out infinite;
+    }
+    
+    @keyframes bgPulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    
+    /* Floating particles */
+    .particles {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(255, 215, 0, 0.5);
+      border-radius: 50%;
+      animation: float linear infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    }
+    
+    /* Main container */
+    .login-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+    }
+    
+    /* Logo */
+    .logo-section {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .logo-icon {
+      font-size: 60px;
+      display: block;
+      margin-bottom: 10px;
+      animation: logoFloat 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.3));
+    }
+    
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .logo-title {
+      font-family: 'Cinzel', serif;
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: none;
+      letter-spacing: 3px;
+    }
+    
+    .logo-subtitle {
+      color: #666;
+      font-size: 13px;
+      margin-top: 5px;
+      letter-spacing: 2px;
+    }
+    
+    /* Card */
+    .auth-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 215, 0, 0.1);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s;
+    }
+    
+    .auth-card:hover {
+      border-color: rgba(255, 215, 0, 0.2);
+    }
+    
+    /* Steps indicator */
+    .steps {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 25px;
+    }
+    
+    .step-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      transition: all 0.3s;
+    }
+    
+    .step-dot.active {
+      background: #FFD700;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    
+    .step-dot.completed {
+      background: #00C853;
+    }
+    
+    /* Step title */
+    .step-title {
+      text-align: center;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .step-desc {
+      text-align: center;
+      color: #888;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+    
+    /* Input group */
+    .input-group {
+      position: relative;
+      margin-bottom: 15px;
+    }
+    
+    .input-group label {
+      display: block;
+      color: #888;
+      font-size: 12px;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+    }
+    
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s;
+      outline: none;
+    }
+    
+    .input-group input:focus {
+      border-color: #FFD700;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+    }
+    
+    .input-group input::placeholder {
+      color: #555;
+    }
+    
+    /* Buttons */
+    .btn-auth {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Inter', sans-serif;
+      margin-top: 10px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #000;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      margin-top: 8px;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Message */
+    .message {
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .message.error {
+      display: block;
+      background: rgba(255, 0, 0, 0.1);
+      color: #ff6b6b;
+      border: 1px solid rgba(255, 0, 0, 0.2);
+    }
+    
+    .message.success {
+      display: block;
+      background: rgba(0, 200, 83, 0.1);
+      color: #00C853;
+      border: 1px solid rgba(0, 200, 83, 0.2);
+    }
+    
+    .message.info {
+      display: block;
+      background: rgba(33, 150, 243, 0.1);
+      color: #42A5F5;
+      border: 1px solid rgba(33, 150, 243, 0.2);
+    }
+    
+    /* Step sections */
+    .step-section {
+      display: none;
+    }
+    
+    .step-section.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Device info */
+    .device-info {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .device-info .label {
+      color: #888;
+      font-size: 11px;
+      margin-bottom: 5px;
+    }
+    
+    .device-info .value {
+      color: #FFD700;
+      font-size: 12px;
+      font-family: monospace;
+      word-break: break-all;
+    }
+    
+    /* Code input */
+    .code-input {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 15px 0;
+    }
+    
+    .code-input input {
+      width: 45px;
+      height: 55px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: #FFD700;
+      outline: none;
+      transition: all 0.3s;
+    }
+    
+    .code-input input:focus {
+      border-color: #FFD700;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    }
+    
+    /* Timer */
+    .timer {
+      text-align: center;
+      color: #888;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+    
+    /* Authenticated state */
+    .authenticated-section {
+      text-align: center;
+    }
+    
+    .auth-success-icon {
+      font-size: 60px;
+      display: block;
+      margin-bottom: 15px;
+      animation: successPop 0.5s ease;
+    }
+    
+    @keyframes successPop {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    
+    .auth-success-text {
+      color: #00C853;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    
+    .auth-success-sub {
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    
+    /* Footer */
+    .login-footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #555;
+      font-size: 11px;
+    }
+    
+    .login-footer a {
+      color: #FFD700;
+      text-decoration: none;
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(0, 0, 0, 0.2);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 480px) {
+      .login-container { padding: 15px; }
+      .auth-card { padding: 20px; }
+      .logo-title { font-size: 22px; }
+      .code-input input { width: 40px; height: 50px; font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Login Container -->
+  <div class="login-container">
+    
+    <!-- Logo -->
+    <div class="logo-section">
+      <span class="logo-icon">🔯</span>
+      <div class="logo-title">TEMPLO HERMES</div>
+      <div class="logo-subtitle">VERIFICAÇÃO DE ACESSO</div>
+    </div>
+
+    <!-- Auth Card -->
+    <div class="auth-card">
+      
+      <!-- Steps Indicator -->
+      <div class="steps">
+        <div class="step-dot active" id="step-1-dot"></div>
+        <div class="step-dot" id="step-2-dot"></div>
+        <div class="step-dot" id="step-3-dot"></div>
+      </div>
+
+      <!-- Message Area -->
+      <div class="message" id="auth-message"></div>
+
+      <!-- STEP 1: Senha -->
+      <div class="step-section active" id="step-password">
+        <div class="step-title">🔑 Senha de Acesso</div>
+        <div class="step-desc">Digite a senha mestre do Templo</div>
+        
+        <div class="input-group">
+          <label>SENHA</label>
+          <input type="password" id="password-input" placeholder="••••••••" autocomplete="off">
+        </div>
+        
+        <button class="btn-auth btn-primary" id="btn-password" onclick="submitPassword()">
+          Verificar Senha
+        </button>
+        
+        <div class="login-footer">
+          <span style="color: #555;">Dica: "ver a gá jota" 🔮</span>
+        </div>
+      </div>
+
+      <!-- STEP 2: Dispositivo -->
+      <div class="step-section" id="step-device">
+        <div class="step-title">📱 Verificação de Dispositivo</div>
+        <div class="step-desc">Registrando seu dispositivo para acesso seguro</div>
+        
+        <div class="device-info">
+          <div class="label">FINGERPRINT DO DISPOSITIVO</div>
+          <div class="value" id="device-fp">Gerando...</div>
+        </div>
+        
+        <div class="device-info">
+          <div class="label">NAVEGADOR</div>
+          <div class="value" id="device-browser">Detectando...</div>
+        </div>
+        
+        <div class="device-info">
+          <div class="label">RESOLUÇÃO</div>
+          <div class="value" id="device-screen">Detectando...</div>
+        </div>
+        
+        <button class="btn-auth btn-primary" id="btn-device" onclick="submitDevice()">
+          ✅ Confirmar Dispositivo
+        </button>
+        
+        <button class="btn-auth btn-secondary" onclick="goBack()">
+          ← Voltar
+        </button>
+      </div>
+
+      <!-- STEP 3: Email -->
+      <div class="step-section" id="step-email">
+        <div class="step-title">📧 Verificação de Email</div>
+        <div class="step-desc">Digite seu email para receber o código de verificação</div>
+        
+        <div id="email-form">
+          <div class="input-group">
+            <label>EMAIL</label>
+            <input type="email" id="email-input" placeholder="seu@email.com">
+          </div>
+          
+          <button class="btn-auth btn-primary" id="btn-send-code" onclick="sendCode()">
+            📨 Enviar Código
+          </button>
+        </div>
+        
+        <div id="code-form" style="display: none;">
+          <div class="step-desc">Código enviado! Digite os 6 dígitos:</div>
+          
+          <div class="code-input">
+            <input type="text" maxlength="1" id="code-1" oninput="autoFocus(this, 2)">
+            <input type="text" maxlength="1" id="code-2" oninput="autoFocus(this, 3)">
+            <input type="text" maxlength="1" id="code-3" oninput="autoFocus(this, 4)">
+            <input type="text" maxlength="1" id="code-4" oninput="autoFocus(this, 5)">
+            <input type="text" maxlength="1" id="code-5" oninput="autoFocus(this, 6)">
+            <input type="text" maxlength="1" id="code-6" oninput="verifyCode()">
+          </div>
+          
+          <div class="timer" id="code-timer">Código expira em: 10:00</div>
+          
+          <button class="btn-auth btn-primary" id="btn-verify-code" onclick="verifyCode()">
+            ✅ Verificar Código
+          </button>
+          
+          <button class="btn-auth btn-secondary" onclick="resendCode()">
+            🔄 Reenviar Código
+          </button>
+        </div>
+        
+        <button class="btn-auth btn-secondary" onclick="goBack()">
+          ← Voltar
+        </button>
+      </div>
+
+      <!-- STEP 4: Autenticado -->
+      <div class="step-section" id="step-authenticated">
+        <div class="authenticated-section">
+          <span class="auth-success-icon">🔱</span>
+          <div class="auth-success-text">BEM-VINDO AO TEMPLO</div>
+          <div class="auth-success-sub">Acesso liberado, Hermes Trismegistus</div>
+          
+          <button class="btn-auth btn-primary" onclick="enterTemple()">
+            ⚡ Entrar no Templo
+          </button>
+          
+          <button class="btn-auth btn-secondary" onclick="doLogout()">
+            🚪 Sair
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer" style="margin-top: 15px;">
+      *"Como acima, assim embaixo" — Templo Hermes © 2026*
+    </div>
+  </div>
+
+  <!-- Auth Script -->
+  <script src="js/templo-auth.js"></script>
+  <script>
+    // ==============================
+    // PARTICLES ANIMATION
+    // ==============================
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        particle.style.animationDelay = Math.random() * 10 + 's';
+        particle.style.width = (Math.random() * 3 + 1) + 'px';
+        particle.style.height = particle.style.width;
+        const colors = ['rgba(255,215,0,0.5)', 'rgba(138,43,226,0.5)', 'rgba(0,191,255,0.3)'];
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    // ==============================
+    // UI HELPERS
+    // ==============================
+    function showStep(stepId) {
+      document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-' + stepId).classList.add('active');
+      
+      // Update dots
+      const steps = ['password', 'device', 'email', 'authenticated'];
+      const idx = steps.indexOf(stepId);
+      steps.forEach((s, i) => {
+        const dot = document.getElementById(`step-${i+1}-dot`);
+        if (dot) {
+          dot.className = 'step-dot';
+          if (i < idx) dot.classList.add('completed');
+          if (i === idx) dot.classList.add('active');
+        }
+      });
+    }
+
+    function showMessage(text, type = 'info') {
+      const el = document.getElementById('auth-message');
+      el.className = 'message ' + type;
+      el.textContent = text;
+      setTimeout(() => { el.className = 'message'; }, 5000);
+    }
+
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      if (loading) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Verificando...';
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = btn.dataset.originalText || 'Verificar';
+      }
+    }
+
+    // ==============================
+    // STEP 1: PASSWORD
+    // ==============================
+    async function submitPassword() {
+      const password = document.getElementById('password-input').value;
+      if (!password) {
+        showMessage('Digite a senha!', 'error');
+        return;
+      }
+      
+      setLoading('btn-password', true);
+      
+      const result = await window.TemploAuth.authenticatePassword(password);
+      
+      setLoading('btn-password', false);
+      
+      if (result.success) {
+        showMessage(result.message, 'success');
+        setTimeout(() => showStep('device'), 500);
+        initDeviceStep();
+      } else {
+        showMessage(result.message, 'error');
+        document.getElementById('password-input').value = '';
+      }
+    }
+
+    // Enter key on password
+    document.getElementById('password-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') submitPassword();
+    });
+
+    // ==============================
+    // STEP 2: DEVICE
+    // ==============================
+    function initDeviceStep() {
+      const fp = window.TemploAuth.getDeviceFingerprint();
+      document.getElementById('device-fp').textContent = fp;
+      document.getElementById('device-browser').textContent = navigator.userAgent.split(' ').pop();
+      document.getElementById('device-screen').textContent = screen.width + 'x' + screen.height;
+    }
+
+    function submitDevice() {
+      const result = window.TemploAuth.authenticateDevice();
+      
+      if (result.success) {
+        showMessage(result.message, 'success');
+        if (result.nextStep === 'authenticated') {
+          showStep('authenticated');
+        } else {
+          setTimeout(() => showStep('email'), 500);
+        }
+      } else {
+        showMessage(result.message, 'error');
+      }
+    }
+
+    // ==============================
+    // STEP 3: EMAIL
+    // ==============================
+    let codeTimer = null;
+
+    async function sendCode() {
+      const email = document.getElementById('email-input').value;
+      if (!email || !email.includes('@')) {
+        showMessage('Digite um email válido!', 'error');
+        return;
+      }
+      
+      setLoading('btn-send-code', true);
+      const result = await window.TemploAuth.initiateEmailVerification(email);
+      setLoading('btn-send-code', false);
+      
+      if (result.success) {
+        showMessage(result.message, 'success');
+        document.getElementById('email-form').style.display = 'none';
+        document.getElementById('code-form').style.display = 'block';
+        startCodeTimer();
+        document.getElementById('code-1').focus();
+      } else {
+        showMessage(result.message, 'error');
+      }
+    }
+
+    function startCodeTimer() {
+      let seconds = 600; // 10 minutos
+      const timerEl = document.getElementById('code-timer');
+      
+      codeTimer = setInterval(() => {
+        seconds--;
+        const min = Math.floor(seconds / 60);
+        const sec = seconds % 60;
+        timerEl.textContent = `Código expira em: ${min}:${sec.toString().padStart(2, '0')}`;
+        
+        if (seconds <= 0) {
+          clearInterval(codeTimer);
+          timerEl.textContent = '⚠️ Código expirado!';
+          timerEl.style.color = '#ff6b6b';
+        }
+      }, 1000);
+    }
+
+    function autoFocus(current, nextIdx) {
+      if (current.value.length === 1 && nextIdx <= 6) {
+        document.getElementById('code-' + nextIdx).focus();
+      }
+    }
+
+    function verifyCode() {
+      const code = Array.from({length: 6}, (_, i) => 
+        document.getElementById('code-' + (i+1)).value
+      ).join('');
+      
+      if (code.length !== 6) {
+        showMessage('Digite os 6 dígitos!', 'error');
+        return;
+      }
+      
+      const result = window.TemploAuth.verifyEmail(code);
+      
+      if (result.success) {
+        clearInterval(codeTimer);
+        showMessage(result.message, 'success');
+        setTimeout(() => showStep('authenticated'), 500);
+      } else {
+        showMessage(result.message, 'error');
+        // Clear code inputs
+        for (let i = 1; i <= 6; i++) {
+          document.getElementById('code-' + i).value = '';
+        }
+        document.getElementById('code-1').focus();
+      }
+    }
+
+    function resendCode() {
+      document.getElementById('code-form').style.display = 'none';
+      document.getElementById('email-form').style.display = 'block';
+      clearInterval(codeTimer);
+    }
+
+    // ==============================
+    // NAVIGATION
+    // ==============================
+    function goBack() {
+      const current = document.querySelector('.step-section.active');
+      if (current.id === 'step-device') {
+        showStep('password');
+      } else if (current.id === 'step-email') {
+        showStep('device');
+      }
+    }
+
+    function enterTemple() {
+      showMessage('🔱 Redirecionando para o Templo...', 'success');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1000);
+    }
+
+    function doLogout() {
+      window.TemploAuth.logout();
+      showStep('password');
+      showMessage('👋 Logout realizado.', 'info');
+      document.getElementById('password-input').value = '';
+    }
+
+    // ==============================
+    // AUTO-LOGIN CHECK
+    // ==============================
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.TemploAuth.checkExistingSession()) {
+        showStep('authenticated');
+      }
+    });
+  </script>
+</body>
+</html>
